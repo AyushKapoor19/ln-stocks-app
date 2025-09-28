@@ -1,38 +1,30 @@
-// Set up required globals before importing Lightning JS
-if (typeof window !== "undefined") {
-  (window as any).lng = (window as any).lng || {};
-  (window as any).lng.Utils = (window as any).lng.Utils || {};
-  (window as any).lng.Utils.asset =
-    (window as any).lng.Utils.asset || ((path: string) => path);
-}
+import { Launch } from "@lightningjs/sdk";
+import App from "./app/App.js";
 
-import { Launch, Lightning } from "@lightningjs/sdk";
+console.log("Starting Lightning Stocks App...");
 
-class App extends Lightning.Component {
-  static _template() {
-    return {
-      rect: true,
+Launch(
+  App,
+  {
+    stage: {
       w: 1920,
       h: 1080,
-      color: 0xff0b0b0c,
-
-      TestText: {
-        x: 960,
-        y: 540,
-        mount: 0.5,
-        text: {
-          text: "🚀 Lightning Stocks TV",
-          fontFace: "Arial",
-          fontSize: 64,
-          textColor: 0xffffffff,
-        },
-      },
-    };
-  }
-
-  static getFonts() {
-    return [];
-  }
-}
-
-Launch(App);
+      clearColor: 0xff0b0b0c,
+      canvas: document.getElementById("app") as HTMLCanvasElement,
+      useImageWorker: false,
+    },
+    debug: true,
+    keys: {
+      8: "Back",
+      13: "Enter",
+      27: "Menu",
+      37: "Left",
+      38: "Up",
+      39: "Right",
+      40: "Down",
+    },
+    enablePointer: true,
+  },
+  {},
+  {}
+);

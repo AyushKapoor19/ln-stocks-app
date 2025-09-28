@@ -6,22 +6,20 @@
     <style>
       body {
         margin: 0;
-        background: #0c0b0b;
+        background: #0b0b0c;
         overflow: hidden;
       }
-      /* Canvas will be auto-inserted by Lightning; styling is optional */
       canvas {
         display: block;
         position: absolute;
-        top: 0;
-        left: 0;
+        inset: 0;
         width: 100vw;
         height: 100vh;
       }
     </style>
   </head>
   <body>
-    <!-- Just load the module; it creates ONE App instance -->
+    <canvas id="app" width="1920" height="1080"></canvas>
     <script type="module" src="/src/index.ts"></script>
   </body>
 </html>
