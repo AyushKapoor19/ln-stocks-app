@@ -1,1 +1,0 @@
-// placeholder for apps/frontend/src/utils/images.ts

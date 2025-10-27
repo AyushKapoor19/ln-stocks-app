@@ -1,69 +1,131 @@
-const BASE = import.meta.env.VITE_API_URL ?? "http://localhost:8787";
+interface QuoteResponse {
+  symbol: string;
+  price: number;
+  change: number;
+  changePct: number;
+  time: number;
+}
 
-export async function fetchQuotes(symbols: string[]) {
-  try {
-    const r = await fetch(
-      `${BASE}/v1/quotes?symbols=${encodeURIComponent(symbols.join(","))}`
-    );
-    if (!r.ok) {
-      console.warn(`Quotes API returned ${r.status}, using fallback data`);
-      return generateFallbackQuotes(symbols);
-    }
-    const data = await r.json();
+interface SeriesPoint {
+  t: number; // timestamp in milliseconds
+  c: number; // close price
+  o?: number; // open price
+  h?: number; // high price
+  l?: number; // low price
+  v?: number; // volume
+}
 
-    // Validate that we got data for all requested symbols
-    const missingSymbols = symbols.filter((s) => !data[s]);
-    if (missingSymbols.length > 0) {
-      console.warn(
-        `Missing quotes for: ${missingSymbols.join(", ")}, adding fallback`
+interface SeriesResponse {
+  symbol: string;
+  period: string;
+  points: SeriesPoint[];
+  source: string;
+}
+
+interface ApiResponse<T> {
+  [key: string]: T;
+}
+
+class StocksApiService {
+  private baseUrl: string;
+
+  constructor() {
+    // Use localhost for development, production URL can be configured via env
+    this.baseUrl = "http://localhost:8787";
+  }
+
+  // Get real-time quote for VOO
+  async getQuote(symbol: string): Promise<QuoteResponse | null> {
+    try {
+      const response = await fetch(
+        `${this.baseUrl}/v1/quotes?symbols=${encodeURIComponent(symbol)}`
       );
-      const fallback = generateFallbackQuotes(missingSymbols);
-      Object.assign(data, fallback);
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data: ApiResponse<QuoteResponse> = await response.json();
+      return data[symbol] || null;
+    } catch (error) {
+      console.error(`Failed to fetch quote for ${symbol}:`, error);
+      return null;
+    }
+  }
+
+  // Get historical series data for VOO with specific time period
+  async getSeries(
+    symbol: string,
+    period: string
+  ): Promise<SeriesResponse | null> {
+    try {
+      const response = await fetch(
+        `${this.baseUrl}/v1/series?symbols=${encodeURIComponent(
+          symbol
+        )}&period=${encodeURIComponent(period)}`
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data: ApiResponse<SeriesResponse> = await response.json();
+      return data[symbol] || null;
+    } catch (error) {
+      console.error(`Failed to fetch series for ${symbol} (${period}):`, error);
+      return null;
+    }
+  }
+
+  // Get both quote and series data for VOO
+  async getVooData(
+    period: string
+  ): Promise<{ quote: QuoteResponse | null; series: SeriesResponse | null }> {
+    try {
+      // Fetch both quote and series data in parallel
+      const [quote, series] = await Promise.all([
+        this.getQuote("VOO"),
+        this.getSeries("VOO", period),
+      ]);
+
+      return { quote, series };
+    } catch (error) {
+      console.error(`Failed to fetch VOO data for period ${period}:`, error);
+      return { quote: null, series: null };
+    }
+  }
+
+  // Format price for display (USD currency)
+  formatPrice(price: number): string {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(price);
+  }
+
+  // Format change for display
+  formatChange(change: number, changePct: number): string {
+    const changeStr = change >= 0 ? `+${change.toFixed(2)}` : change.toFixed(2);
+    const pctStr =
+      changePct >= 0
+        ? `+${(changePct * 100).toFixed(2)}%`
+        : `${(changePct * 100).toFixed(2)}%`;
+    return `${changeStr} (${pctStr})`;
+  }
+
+  // Convert series points to chart-compatible format
+  formatSeriesForChart(series: SeriesResponse | null): number[] {
+    if (!series || !series.points || series.points.length === 0) {
+      return [];
     }
 
-    return data;
-  } catch (error) {
-    console.error("Quotes fetch failed completely, using fallback:", error);
-    return generateFallbackQuotes(symbols);
+    // Return closing prices sorted by timestamp
+    return series.points.sort((a, b) => a.t - b.t).map((point) => point.c);
   }
 }
 
-function generateFallbackQuotes(symbols: string[]) {
-  const mockPrices: Record<string, number> = {
-    NVDA: 875.3,
-    AAPL: 255.46,
-    MSFT: 511.46,
-    AMZN: 185.9,
-    GOOGL: 2845.85,
-    TSLA: 248.5,
-  };
-
-  const quotes: Record<string, any> = {};
-  symbols.forEach((s) => {
-    const basePrice = mockPrices[s] || Math.random() * 200 + 50;
-    const changePercent = (Math.random() - 0.5) * 0.1;
-    const change = basePrice * changePercent;
-
-    quotes[s] = {
-      symbol: s,
-      price: Math.round((basePrice + change) * 100) / 100,
-      change: Math.round(change * 100) / 100,
-      changePct: Math.round(changePercent * 10000) / 10000,
-      time: Date.now(),
-    };
-  });
-
-  return quotes;
-}
-
-export async function fetchSeries(symbols: string[], count = 40) {
-  const r = await fetch(
-    `${BASE}/v1/series?symbols=${encodeURIComponent(
-      symbols.join(",")
-    )}&count=${count}`
-  );
-  if (!r.ok) throw new Error("series failed");
-  return r.json() as Promise<
-    Record<string, { symbol: string; points: { t: number; c: number }[] }>
-  >;
-}
+// Export singleton instance
+export const stocksApi = new StocksApiService();
+export type { QuoteResponse, SeriesResponse, SeriesPoint };

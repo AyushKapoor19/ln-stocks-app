@@ -1,1 +1,0 @@
-// placeholder for apps/frontend/src/components/hud/MarketPulseBar.ts

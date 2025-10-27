@@ -1,1 +1,0 @@
-// placeholder for apps/frontend/src/store/index.ts

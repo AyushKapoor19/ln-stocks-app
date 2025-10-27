@@ -1,317 +1,388 @@
 import { Lightning } from "@lightningjs/sdk";
-import GalaxyBackground from "../components/backgrounds/GalaxyBackground";
-import FlowingChart from "../components/charts/FlowingChart";
-import WatchlistCard from "../components/cards/WatchlistCard";
-import TimeSelector, { TimePeriod } from "../components/controls/TimeSelector";
-import { fetchQuotes, fetchSeries } from "../services/api";
+import BeautifulChart from "../components/charts/BeautifulChart";
+import { stocksApi } from "../services/api";
 
-// Galaxy-themed stock dashboard
+interface TimePeriod {
+  id: string;
+  label: string;
+  days: number;
+}
+
+interface LightningComponent {
+  tag(tagName: string): LightningComponent | null;
+  text: {
+    textColor: number;
+  };
+  color: number;
+  setSmooth(
+    property: string,
+    value: number,
+    options: { duration: number }
+  ): void;
+}
+
+interface ChartComponent extends LightningComponent {
+  points: number[];
+  lineColor: string;
+}
+
+const TIME_PERIODS: TimePeriod[] = [
+  { id: "1M", label: "1M", days: 30 },
+  { id: "3M", label: "3M", days: 90 },
+  { id: "1Y", label: "1Y", days: 365 },
+];
 
 export default class Home extends Lightning.Component {
-  private currentTimePeriod: TimePeriod = { id: "1W", label: "1W", days: 7 };
-  private featuredStock = "NVDA";
-  private watchlistSymbols = ["AAPL", "TSLA", "AMZN"];
+  private currentTimePeriod: TimePeriod = { id: "1M", label: "1M", days: 30 };
+  private selectedPeriodIndex = 0; // Default to 1M (now first in list)
+  private isLoading = false;
+  private currentPrice = 428.75; // Default VOO price
+  private currentChange = 2.45;
+  private currentChangePct = 0.0057;
 
-  static _template() {
+  static _template(): object {
     return {
       w: 1920,
       h: 1080,
       rect: true,
-      color: 0xff000000, // Pure black base
+      color: 0xff000000, // Pure black background
 
-      // Galaxy background with animated particles
-      GalaxyBg: {
-        type: GalaxyBackground,
-      },
+      // Time selector buttons (left side, vertical)
+      TimeSelectorContainer: Object.assign(
+        {
+          x: 50,
+          y: 240,
+          w: 60,
+          h: 400,
+        },
+        TIME_PERIODS.reduce(
+          (acc: Record<string, object>, period: TimePeriod, index: number) => {
+            acc[`TimeButton_${period.id}`] = {
+              y: index * 60,
+              w: 50,
+              h: 40,
+              Background: {
+                w: 50,
+                h: 40,
+                rect: true,
+                color: 0x00000000, // Transparent initially
+                shader: { type: Lightning.shaders.RoundedRectangle, radius: 8 },
+              },
+              Label: {
+                x: 25,
+                y: 20,
+                mount: 0.5,
+                text: {
+                  text: period.label,
+                  fontFace: "Arial",
+                  fontSize: 16,
+                  textColor: period.id === "1W" ? 0xffffffff : 0x88ffffff,
+                  fontWeight: 500,
+                },
+              },
+            };
+            return acc;
+          },
+          {}
+        )
+      ),
 
-      // Flowing chart background (left side)
-      FlowingChart: {
-        type: FlowingChart,
-        x: 0,
-        y: 0,
-      },
-
-      // Main stock display (left side)
-      StockDisplay: {
-        x: 80,
-        y: 120,
+      // Main S&P 500 display
+      MainDisplay: {
+        x: 144,
+        y: 60,
         StockSymbol: {
           text: {
-            text: "NVDA",
+            text: "VOO - Vanguard S&P 500 ETF",
             fontFace: "Arial",
-            fontSize: 72,
+            fontSize: 60,
             fontWeight: 700,
             textColor: 0xffffffff,
           },
         },
         StockPrice: {
-          y: 100,
+          y: 90,
           text: {
-            text: "302.14",
+            text: "$428.75",
             fontFace: "Arial",
-            fontSize: 96,
+            fontSize: 80,
             fontWeight: 600,
-            textColor: 0xff00d4ff,
+            textColor: 0xff00ff88, // Green color matching the image
           },
         },
         StockChange: {
-          y: 220,
+          y: 190,
           text: {
-            text: "+2.88%",
+            text: "+2.45 (+0.57%)",
             fontFace: "Arial",
-            fontSize: 32,
+            fontSize: 28,
             fontWeight: 500,
-            textColor: 0xff00d27a,
+            textColor: 0xff00ff88, // Same green color
           },
         },
       },
 
-      // Watchlist section (right side)
-      WatchlistSection: {
-        x: 1100,
-        y: 150,
-        w: 500,
-        h: 400,
-        WatchlistTitle: {
-          x: 0,
-          y: 0,
-          text: {
-            text: "WATCHLIST",
-            fontFace: "Arial",
-            fontSize: 24,
-            fontWeight: 600,
-            textColor: 0x99ffffff,
-            letterSpacing: 3,
-          },
+      // Large chart area - moved down to avoid overlap
+      ChartContainer: {
+        x: 134,
+        y: 340,
+        w: 1600,
+        h: 550,
+        Chart: {
+          type: BeautifulChart,
+          w: 1600,
+          h: 550,
         },
-        WatchlistCards: {
-          x: 0,
-          y: 50,
-          w: 500,
-          h: 350,
-          // Cards will be populated dynamically
-        },
-      },
-
-      // Time selector (bottom)
-      TimeSelector: {
-        x: 80,
-        y: 950,
-        type: TimeSelector,
       },
     };
   }
 
-  _init() {
-    // Add some test text first to ensure rendering works
-    this.patch({
-      TestText: {
-        x: 960,
-        y: 540,
-        mount: 0.5,
-        text: {
-          text: "🚀 Lightning Stocks Loading...",
-          fontFace: "Arial",
-          fontSize: 64,
-          textColor: 0xffffffff,
-        },
-      },
-    });
+  _init(): void {
+    console.log("📊 Initializing VOO Dashboard...");
+    this._loadVooData();
   }
 
-  async _active() {
+  async _active(): Promise<void> {
     try {
-      console.log("🌌 Initializing Galaxy Stock Dashboard...");
-
-      // Setup time selector callback
-      const timeSelector = this.tag("TimeSelector") as any;
-      if (timeSelector) {
-        timeSelector.onChange = (period: TimePeriod) => {
-          console.log("🕐 Time period changed to:", period);
-          this.currentTimePeriod = period;
-          this._loadDataForTimePeriod(period);
-        };
-      }
-
-      // Remove test text
-      this.patch({ TestText: undefined });
-
-      // Load initial data
-      await this._loadDataForTimePeriod(this.currentTimePeriod);
+      console.log("🚀 VOO Dashboard ready");
+      // Refresh data when component becomes active
+      this._loadVooData();
     } catch (error) {
-      console.error("❌ Failed to load stock data:", error);
-      this._showError("Failed to load stock data");
+      console.error("❌ Failed to initialize:", error);
     }
   }
 
-  private async _loadDataForTimePeriod(period: TimePeriod) {
+  private async _loadVooData(): Promise<void> {
+    if (this.isLoading) return;
+
+    this.isLoading = true;
+    console.log(`📈 Loading VOO data for period: ${this.currentTimePeriod.id}`);
+
     try {
-      // Calculate data points based on time period
-      const dataPoints = Math.min(period.days, 120); // Max 120 points for performance
-
-      const allSymbols = [this.featuredStock, ...this.watchlistSymbols];
-      const [quotes, series] = await Promise.all([
-        fetchQuotes(allSymbols),
-        fetchSeries(allSymbols, dataPoints),
-      ]);
-
-      // Remove test text
-      this.patch({ TestText: undefined });
-
-      // Update featured stock display
-      await this._updateFeaturedStock(
-        quotes[this.featuredStock],
-        series[this.featuredStock]
+      // Fetch real VOO data from backend
+      const { quote, series } = await stocksApi.getVooData(
+        this.currentTimePeriod.id
       );
 
-      // Update watchlist cards
-      await this._updateWatchlistCards(quotes, series);
+      // ALWAYS use the REAL quote price for display (from Finnhub)
+      if (quote) {
+        this.currentPrice = quote.price;
+        this.currentChange = quote.change;
+        this.currentChangePct = quote.changePct;
+        this._updatePriceDisplay();
 
-      console.log(`📊 Loaded ${period.label} data with ${dataPoints} points`);
-    } catch (error) {
-      console.error(`Failed to load ${period.label} data:`, error);
-    }
-  }
-
-  private async _updateFeaturedStock(quote: any, seriesData: any) {
-    if (!quote || !seriesData) return;
-
-    const isPositive = quote.changePct >= 0;
-    const changeText = `${isPositive ? "+" : ""}${(
-      quote.changePct * 100
-    ).toFixed(2)}%`;
-
-    // Update stock display
-    this.patch({
-      StockDisplay: {
-        StockSymbol: {
-          text: { text: quote.symbol },
-          alpha: 0,
-        },
-        StockPrice: {
-          text: { text: quote.price.toFixed(2) },
-          alpha: 0,
-        },
-        StockChange: {
-          text: {
-            text: changeText,
-            textColor: isPositive ? 0xff00d27a : 0xffff4757,
-          },
-          alpha: 0,
-        },
-      },
-    });
-
-    // Animate text elements
-    setTimeout(() => {
-      this.tag("StockDisplay")
-        ?.tag("StockSymbol")
-        ?.setSmooth("alpha", 1, { duration: 0.8, delay: 0.1 });
-      this.tag("StockDisplay")
-        ?.tag("StockPrice")
-        ?.setSmooth("alpha", 1, { duration: 0.8, delay: 0.3 });
-      this.tag("StockDisplay")
-        ?.tag("StockChange")
-        ?.setSmooth("alpha", 1, { duration: 0.8, delay: 0.5 });
-    }, 200);
-
-    // Update flowing chart
-    const chartComponent = this.tag("FlowingChart");
-    if (chartComponent && seriesData.points) {
-      const chartPoints = seriesData.points.map((p: any) => p.c);
-      chartComponent.points = chartPoints;
-    }
-  }
-
-  private async _updateWatchlistCards(quotes: any, series: any) {
-    const watchlistCards = this.tag("WatchlistSection")?.tag("WatchlistCards");
-    if (!watchlistCards) {
-      console.warn("❌ WatchlistCards container not found");
-      return;
-    }
-
-    console.log(
-      "🎯 Creating watchlist cards for symbols:",
-      this.watchlistSymbols
-    );
-
-    // Create watchlist cards
-    const cards: any[] = [];
-    this.watchlistSymbols.forEach((symbol, index) => {
-      const quote = quotes[symbol];
-      const seriesData = series[symbol];
-
-      console.log(`📊 Card ${index}: ${symbol}`, {
-        quote,
-        seriesData: !!seriesData,
-      });
-
-      if (quote && seriesData) {
-        const cardData = {
-          ref: `Card_${symbol}`,
-          type: WatchlistCard,
-          x: 0,
-          y: index * 100, // Spaced 100px apart
-          alpha: 0,
-          scale: 0.8,
-        };
-
-        cards.push(cardData);
+        console.log(
+          `✅ Using REAL Finnhub price: $${quote.price} (${
+            quote.change >= 0 ? "+" : ""
+          }${quote.change})`
+        );
       }
-    });
 
-    console.log("🎯 Setting cards as children:", cards.length);
-    watchlistCards.children = cards;
+      // Update chart if series data is available (for visualization only)
+      if (series) {
+        const chartData = stocksApi.formatSeriesForChart(series);
+        if (chartData.length > 0) {
+          // Pass full series data with timestamps to chart
+          this._updateChartWithTimestamps(series);
 
-    // Set stock data after cards are created and animate
-    setTimeout(() => {
-      this.watchlistSymbols.forEach((symbol, index) => {
-        const quote = quotes[symbol];
-        const seriesData = series[symbol];
-
-        if (quote && seriesData) {
-          const card = watchlistCards.tag(`Card_${symbol}`) as WatchlistCard;
-          if (card) {
-            console.log(`✅ Setting data for card: ${symbol}`);
-
-            // Set stock data
-            card.stockData = {
-              symbol: quote.symbol,
-              price: quote.price,
-              changePct: quote.changePct,
-              series: seriesData.points.map((p: any) => p.c),
-            };
-
-            // Animate card entrance
-            setTimeout(() => {
-              card.setSmooth("alpha", 1, { duration: 0.6 });
-              card.setSmooth("scale", 1, { duration: 0.8 });
-            }, index * 300);
-          } else {
-            console.warn(`❌ Card not found for symbol: ${symbol}`);
-          }
+          console.log(
+            `✅ Loaded ${chartData.length} chart points from ${series.source}`
+          );
+        } else {
+          console.warn("⚠️ No chart data available, using fallback");
+          this._loadFallbackData();
         }
-      });
-    }, 500);
+      } else {
+        console.warn("⚠️ No series data available, using fallback");
+        this._loadFallbackData();
+      }
+    } catch (error) {
+      console.error("❌ Failed to load VOO data:", error);
+      this._loadFallbackData();
+    } finally {
+      this.isLoading = false;
+    }
   }
 
-  private _showError(message: string) {
-    this.patch({
-      ErrorMessage: {
-        x: 960,
-        y: 540,
-        mount: 0.5,
-        text: {
-          text: `⚠️ ${message}`,
-          fontFace: "Arial",
-          fontSize: 32,
-          textColor: 0xffff4757,
-        },
-      },
-    });
+  private _updatePriceDisplay(): void {
+    const mainDisplay = this.tag("MainDisplay");
+    if (mainDisplay) {
+      // Update price
+      const priceElement = mainDisplay.tag("StockPrice");
+      if (priceElement) {
+        priceElement.text.text = stocksApi.formatPrice(this.currentPrice);
+      }
+
+      // Update change with color
+      const changeElement = mainDisplay.tag("StockChange");
+      if (changeElement) {
+        changeElement.text.text = stocksApi.formatChange(
+          this.currentChange,
+          this.currentChangePct
+        );
+        // Set color based on positive/negative change
+        const changeColor = this.currentChange >= 0 ? 0xff00ff88 : 0xffff4444; // Green or red
+        changeElement.text.textColor = changeColor;
+      }
+    }
   }
 
-  _getFocused() {
-    return this.tag("TimeSelector"); // Start with time selector focused
+  private _updateChart(data: number[]): void {
+    const chartContainer = this.tag("ChartContainer");
+    if (chartContainer) {
+      const chartComponent = chartContainer.tag("Chart");
+      if (chartComponent) {
+        (chartComponent as ChartComponent).points = data;
+        (chartComponent as ChartComponent).lineColor =
+          this.currentChange >= 0 ? "#00ff88" : "#ff4444"; // Green or red based on change
+      }
+    }
+  }
+
+  private _updateChartWithTimestamps(seriesData: any): void {
+    const chartContainer = this.tag("ChartContainer");
+    if (chartContainer) {
+      const chartComponent = chartContainer.tag("Chart");
+      if (chartComponent) {
+        // Pass full series data with timestamps and period info
+        (chartComponent as any).seriesData = seriesData;
+        (chartComponent as any).lineColor =
+          this.currentChange >= 0 ? "#00ff88" : "#ff4444"; // Green or red based on change
+      }
+    }
+  }
+
+  private _loadFallbackData(): void {
+    // Generate realistic, consistent VOO fallback data matching backend
+    const basePrice = 615.3;
+    const pointCount =
+      this.currentTimePeriod.days === 1
+        ? 50
+        : this.currentTimePeriod.days <= 30
+        ? 100
+        : 200;
+
+    const fallbackData: number[] = [];
+
+    // Use deterministic seed for consistency matching backend logic
+    const seed = this.currentTimePeriod.id.charCodeAt(0);
+    let seededRandom = seed;
+    const deterministicRandom = () => {
+      seededRandom = (seededRandom * 9301 + 49297) % 233280;
+      return seededRandom / 233280;
+    };
+
+    for (let i = 0; i < pointCount; i++) {
+      const timeProgress = i / pointCount;
+
+      // Create realistic VOO price movements matching backend logic
+      const periodMultiplier =
+        {
+          "1D": 0.002, // ±0.2% for intraday
+          "1W": 0.005, // ±0.5% for weekly
+          "1M": 0.015, // ±1.5% for monthly
+          "3M": 0.03, // ±3% for quarterly
+          "1Y": 0.08, // ±8% for yearly
+        }[this.currentTimePeriod.id] || 0.01;
+
+      // Create gradual trend with market-like volatility
+      const trendDirection =
+        this.currentTimePeriod.id === "1Y"
+          ? 1
+          : deterministicRandom() > 0.5
+          ? 1
+          : -1;
+      const overallTrend =
+        trendDirection * periodMultiplier * timeProgress * 0.3;
+
+      // Add market cycles and realistic volatility
+      const marketCycle =
+        Math.sin(timeProgress * Math.PI * 2) * periodMultiplier * 0.4;
+      const volatility = (deterministicRandom() - 0.5) * periodMultiplier * 0.8;
+      const dailyVariation =
+        Math.sin(timeProgress * Math.PI * 20) * periodMultiplier * 0.1;
+
+      let price =
+        basePrice *
+        (1 + overallTrend + marketCycle + volatility + dailyVariation);
+
+      // Ensure reasonable bounds for VOO
+      price = Math.max(580, Math.min(650, price));
+      fallbackData.push(Math.round(price * 100) / 100);
+    }
+
+    // Update price display with latest fallback data
+    const latestPrice = fallbackData[fallbackData.length - 1];
+    const previousPrice = fallbackData[fallbackData.length - 2];
+
+    this.currentPrice = latestPrice;
+    this.currentChange = latestPrice - previousPrice;
+    this.currentChangePct = this.currentChange / previousPrice;
+    this._updatePriceDisplay();
+
+    this._updateChart(fallbackData);
+    console.log("📊 Using realistic VOO fallback data matching backend");
+  }
+
+  _handleUp(): boolean {
+    if (this.selectedPeriodIndex > 0) {
+      this._selectTimePeriod(this.selectedPeriodIndex - 1);
+    }
+    return true;
+  }
+
+  _handleDown(): boolean {
+    if (this.selectedPeriodIndex < TIME_PERIODS.length - 1) {
+      this._selectTimePeriod(this.selectedPeriodIndex + 1);
+    }
+    return true;
+  }
+
+  private _selectTimePeriod(newIndex: number): void {
+    const oldPeriod = TIME_PERIODS[this.selectedPeriodIndex];
+    const newPeriod = TIME_PERIODS[newIndex];
+
+    this.selectedPeriodIndex = newIndex;
+    this.currentTimePeriod = newPeriod;
+
+    // Update button appearances
+    const container = this.tag("TimeSelectorContainer");
+    if (container) {
+      // Update old button
+      const oldButton = container.tag(`TimeButton_${oldPeriod.id}`);
+      if (oldButton) {
+        const oldLabel = oldButton.tag("Label");
+        const oldBackground = oldButton.tag("Background");
+        if (oldLabel) {
+          oldLabel.text.textColor = 0x88ffffff;
+        }
+        if (oldBackground) {
+          oldBackground.setSmooth("alpha", 0, { duration: 0.3 });
+        }
+      }
+
+      // Update new button
+      const newButton = container.tag(`TimeButton_${newPeriod.id}`);
+      if (newButton) {
+        const newLabel = newButton.tag("Label");
+        const newBackground = newButton.tag("Background");
+        if (newLabel) {
+          newLabel.text.textColor = 0xffffffff;
+        }
+        if (newBackground) {
+          newBackground.color = 0x22ffffff;
+          newBackground.setSmooth("alpha", 0.3, { duration: 0.3 });
+        }
+      }
+    }
+
+    console.log(`🕐 Time period changed to: ${newPeriod.label}`);
+
+    // Load new data for the selected time period
+    this._loadVooData();
+  }
+
+  _getFocused(): Lightning.Component {
+    return this; // Keep focus on main component for navigation
   }
 }

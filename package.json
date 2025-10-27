@@ -1,12 +1,15 @@
 {
-  "name": "@ln/frontend",
+  "name": "@ln/monorepo",
   "version": "0.1.0",
   "private": true,
-  "type": "module",
+  "workspaces": [
+    "apps/*"
+  ],
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview"
+    "dev": "npm run dev:backend & npm run dev:frontend",
+    "dev:backend": "cd apps/backend && npm run dev",
+    "dev:frontend": "cd apps/frontend && npx vite",
+    "dev:both": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\""
   },
   "dependencies": {
     "@lightningjs/sdk": "^5.8.0"
