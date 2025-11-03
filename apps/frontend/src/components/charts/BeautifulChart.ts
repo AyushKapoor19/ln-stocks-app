@@ -332,52 +332,42 @@ export default class BeautifulChart extends Lightning.Component {
     this.ctx.font = "16px Arial";
     this.ctx.textAlign = "center";
 
-    // Calculate how many labels to show based on chart width and data points
-    const maxLabels = 8;
-    const dataPointsPerLabel = Math.floor(this.chartData.length / maxLabels);
+    // Number of labels to show
+    const labelCount = 8;
 
-    // Generate dynamic labels based on data distribution
-    const labels = [];
-    for (let i = 0; i < maxLabels; i++) {
-      const dataIndex = Math.min(
-        i * dataPointsPerLabel,
-        this.chartData.length - 1
-      );
-      labels.push(dataIndex);
-    }
-
-    // Add last point if not already included
-    if (labels[labels.length - 1] !== this.chartData.length - 1) {
-      labels.push(this.chartData.length - 1);
-    }
-
-    // Draw labels at calculated positions
-    labels.forEach((dataIndex, labelIndex) => {
+    // Draw labels EVENLY SPACED across the chart width
+    for (let i = 0; i < labelCount; i++) {
+      // Calculate X position - EVENLY distributed across chart width
       const x =
         padding +
-        (dataIndex / (this.chartData.length - 1)) * (width - 2 * padding);
+        (i / (labelCount - 1)) * (width - 2 * padding);
       const y = height - bottomPadding + 40;
 
-      // Format label based on data position
-      // For now, use simple position-based labels
-      // In future, we can use actual timestamps from series data
-      const labelText = this.generateTimeLabel(labelIndex, labels.length);
+      // Calculate corresponding data index for this position
+      const dataIndex = Math.floor(
+        (i / (labelCount - 1)) * (this.chartData.length - 1)
+      );
 
-      if (this.ctx) {
+      // Get timestamp for this data point
+      const labelText = this.generateTimeLabel(dataIndex, this.chartData.length);
+
+      if (this.ctx && labelText) {
         this.ctx.fillText(labelText, x, y);
       }
-    });
+    }
   }
 
-  private generateTimeLabel(index: number, total: number): string {
-    // Use actual timestamps if available
-    const actualIndex = Math.floor(
-      (index / (total - 1)) * (this.timestamps.length - 1)
-    );
-
-    if (this.timestamps && this.timestamps[actualIndex]) {
-      const timestamp = this.timestamps[actualIndex];
+  private generateTimeLabel(dataIndex: number, totalDataPoints: number): string {
+    // dataIndex is the index into the chartData/timestamps arrays
+    if (this.timestamps && this.timestamps[dataIndex]) {
+      const timestamp = this.timestamps[dataIndex];
       const date = new Date(timestamp);
+
+      // Month names for formatting
+      const monthNames = [
+        "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+        "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+      ];
 
       // Format based on time period
       switch (this.currentPeriod) {
@@ -388,43 +378,9 @@ export default class BeautifulChart extends Lightning.Component {
           return `${hours}:${minutes.toString().padStart(2, "0")}`;
 
         case "1W":
-          // Show day/month (e.g., "Oct 06")
-          const monthNames = [
-            "Jan",
-            "Feb",
-            "Mar",
-            "Apr",
-            "May",
-            "Jun",
-            "Jul",
-            "Aug",
-            "Sep",
-            "Oct",
-            "Nov",
-            "Dec",
-          ];
-          return `${monthNames[date.getMonth()]} ${date
-            .getDate()
-            .toString()
-            .padStart(2, "0")}`;
-
         case "1M":
-          // Show dates (e.g., "Sep 08", "Sep 12")
-          const monthNamesMonth = [
-            "Jan",
-            "Feb",
-            "Mar",
-            "Apr",
-            "May",
-            "Jun",
-            "Jul",
-            "Aug",
-            "Sep",
-            "Oct",
-            "Nov",
-            "Dec",
-          ];
-          return `${monthNamesMonth[date.getMonth()]} ${date
+          // Show day/month (e.g., "Oct 06")
+          return `${monthNames[date.getMonth()]} ${date
             .getDate()
             .toString()
             .padStart(2, "0")}`;
@@ -432,28 +388,14 @@ export default class BeautifulChart extends Lightning.Component {
         case "3M":
         case "1Y":
           // Show months only (e.g., "Oct", "Nov", "Dec")
-          const monthNamesYear = [
-            "Jan",
-            "Feb",
-            "Mar",
-            "Apr",
-            "May",
-            "Jun",
-            "Jul",
-            "Aug",
-            "Sep",
-            "Oct",
-            "Nov",
-            "Dec",
-          ];
-          return monthNamesYear[date.getMonth()];
+          return monthNames[date.getMonth()];
 
         default:
           return date.toLocaleDateString();
       }
     }
 
-    // Fallback if no timestamps (shouldn't happen)
+    // Fallback if no timestamps
     return "";
   }
 

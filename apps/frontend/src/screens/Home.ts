@@ -128,37 +128,40 @@ export default class Home extends Lightning.Component {
         },
       },
 
-      // Time selector buttons (left side, vertical)
+      // Time selector buttons (left side, vertical) - Centered vertically
       TimeSelectorContainer: Object.assign(
         {
-          x: 50,
-          y: 240,
-          w: 60,
+          x: 40,
+          y: 370,
+          w: 70,
           h: 400,
         },
         TIME_PERIODS.reduce(
           (acc: Record<string, object>, period: TimePeriod, index: number) => {
             acc[`TimeButton_${period.id}`] = {
-              y: index * 60,
-              w: 50,
-              h: 40,
+              y: index * 70,
+              w: 65,
+              h: 50,
               Background: {
-                w: 50,
-                h: 40,
+                w: 65,
+                h: 50,
                 rect: true,
-                color: 0x00000000, // Transparent initially
-                shader: { type: Lightning.shaders.RoundedRectangle, radius: 8 },
+                color: period.id === "1M" ? 0x22ffffff : 0x11ffffff,
+                shader: {
+                  type: Lightning.shaders.RoundedRectangle,
+                  radius: 10,
+                },
               },
               Label: {
-                x: 25,
-                y: 20,
+                x: 32.5,
+                y: 25,
                 mount: 0.5,
                 text: {
                   text: period.label,
                   fontFace: "Avenir Next",
-                  fontSize: 16,
-                  textColor: period.id === "1W" ? 0xffffffff : 0x88ffffff,
-                  fontWeight: 500,
+                  fontSize: 20,
+                  textColor: period.id === "1M" ? 0xffffffff : 0xaaffffff,
+                  fontWeight: 700,
                 },
               },
             };
@@ -168,51 +171,51 @@ export default class Home extends Lightning.Component {
         )
       ),
 
-      // Main S&P 500 display
+      // Main S&P 500 display - Super compact header
       MainDisplay: {
         x: 144,
-        y: 50,
+        y: 30,
         StockSymbol: {
           text: {
             text: "VOO - Vanguard S&P 500 ETF", // Will be updated dynamically
             fontFace: "Avenir Next",
-            fontSize: 48,
+            fontSize: 38,
             fontWeight: 700,
             textColor: 0xffffffff,
           },
         },
         StockPrice: {
-          y: 75,
+          y: 50,
           text: {
             text: "$428.75",
             fontFace: "Avenir Next",
-            fontSize: 72,
+            fontSize: 64,
             fontWeight: 600,
             textColor: 0xff00ff88, // Green color matching the image
           },
         },
         StockChange: {
-          y: 165,
+          y: 125,
           text: {
             text: "+2.45 (+0.57%)",
             fontFace: "Avenir Next",
-            fontSize: 26,
+            fontSize: 22,
             fontWeight: 500,
             textColor: 0xff00ff88, // Same green color
           },
         },
       },
 
-      // Large chart area - positioned below text with clear gap
+      // Large chart area - MAXIMUM SIZE to fill entire bottom
       ChartContainer: {
         x: 134,
-        y: 380,
-        w: 1600,
-        h: 520,
+        y: 180,
+        w: 1760,
+        h: 880,
         Chart: {
           type: BeautifulChart,
-          w: 1600,
-          h: 520,
+          w: 1760,
+          h: 880,
         },
       },
     };
@@ -221,6 +224,8 @@ export default class Home extends Lightning.Component {
   _init(): void {
     console.log("📊 Initializing Stock Dashboard...");
     this._loadStockData(this.currentSymbol);
+    // Set initial button states
+    this._restoreButtonStates();
   }
 
   async _active(): Promise<void> {
@@ -228,8 +233,35 @@ export default class Home extends Lightning.Component {
       console.log(`🚀 Stock Dashboard ready (${this.currentSymbol})`);
       // Refresh data when component becomes active
       this._loadStockData(this.currentSymbol);
+      // Restore proper button selection state
+      this._restoreButtonStates();
     } catch (error) {
       console.error("❌ Failed to initialize:", error);
+    }
+  }
+
+  private _restoreButtonStates(): void {
+    // Ensure button states are correct when component regains focus
+    const container = this.tag("TimeSelectorContainer");
+    if (container) {
+      TIME_PERIODS.forEach((period, index) => {
+        const button = container.tag(`TimeButton_${period.id}`);
+        if (button) {
+          const label = button.tag("Label");
+          const background = button.tag("Background");
+          const isSelected = index === this.selectedPeriodIndex;
+
+          if (label && label.text) {
+            label.text.textColor = isSelected ? 0xffffffff : 0xaaffffff;
+          }
+          if (background) {
+            background.color = isSelected ? 0x22ffffff : 0x11ffffff;
+          }
+        }
+      });
+
+      // Force stage update to ensure rendering
+      this.stage.update();
     }
   }
 
@@ -500,32 +532,31 @@ export default class Home extends Lightning.Component {
     // Update button appearances
     const container = this.tag("TimeSelectorContainer");
     if (container) {
-      // Update old button
-      const oldButton = container.tag(`TimeButton_${oldPeriod.id}`);
-      if (oldButton) {
-        const oldLabel = oldButton.tag("Label");
-        const oldBackground = oldButton.tag("Background");
-        if (oldLabel) {
-          oldLabel.text.textColor = 0x88ffffff;
-        }
-        if (oldBackground) {
-          oldBackground.setSmooth("alpha", 0, { duration: 0.3 });
-        }
-      }
+      // Update ALL buttons to ensure proper state
+      TIME_PERIODS.forEach((period) => {
+        const button = container.tag(`TimeButton_${period.id}`);
+        if (button) {
+          const label = button.tag("Label");
+          const background = button.tag("Background");
+          const isSelected = period.id === newPeriod.id;
 
-      // Update new button
-      const newButton = container.tag(`TimeButton_${newPeriod.id}`);
-      if (newButton) {
-        const newLabel = newButton.tag("Label");
-        const newBackground = newButton.tag("Background");
-        if (newLabel) {
-          newLabel.text.textColor = 0xffffffff;
+          if (label && label.text) {
+            label.text.textColor = isSelected ? 0xffffffff : 0xaaffffff;
+          }
+          if (background) {
+            background.setSmooth(
+              "color",
+              isSelected ? 0x22ffffff : 0x11ffffff,
+              {
+                duration: 0.2,
+              }
+            );
+          }
         }
-        if (newBackground) {
-          newBackground.color = 0x22ffffff;
-          newBackground.setSmooth("alpha", 0.3, { duration: 0.3 });
-        }
-      }
+      });
+
+      // Force stage update
+      this.stage.update();
     }
 
     console.log(`🕐 Time period changed to: ${newPeriod.label}`);
