@@ -95,25 +95,36 @@ export default class Home extends Lightning.Component {
         y: 106,
         w: 380,
         alpha: 0,
+        // Outer shadow for depth
+        OuterShadow: {
+          w: 390,
+          h: 270,
+          x: -5,
+          y: -5,
+          rect: true,
+          color: 0x66000000,
+          shader: { type: Lightning.shaders.RoundedRectangle, radius: 20 },
+        },
+        // Main background with border
         Background: {
           w: 380,
-          h: 280,
+          h: 260,
           rect: true,
-          color: 0xff1a1a1a, // Dark background
+          color: 0xff1c1c1e, // Slightly lighter dark
           shader: { type: Lightning.shaders.RoundedRectangle, radius: 16 },
         },
-        Shadow: {
+        // Subtle border/highlight
+        Border: {
           w: 380,
-          h: 280,
+          h: 260,
           rect: true,
-          color: 0x88000000, // Subtle shadow
+          color: 0x33ffffff, // Subtle white border
           shader: { type: Lightning.shaders.RoundedRectangle, radius: 16 },
-          y: 4,
-          x: 4,
         },
+        // Content container
         ResultsList: {
-          x: 16,
-          y: 16,
+          x: 12,
+          y: 12,
         },
       },
 
@@ -624,16 +635,74 @@ export default class Home extends Lightning.Component {
 
     try {
       const results = await stocksApi.searchStocks(this.searchQuery);
-      this.searchResults = results.slice(0, 5); // Show top 5 results
+
+      // Apply intelligent ranking to prioritize better matches
+      const rankedResults = this._rankSearchResults(results, this.searchQuery);
+      this.searchResults = rankedResults.slice(0, 4); // Show top 4 results
       this.selectedSearchIndex = 0;
 
-      console.log(`✅ Found ${this.searchResults.length} results`);
+      console.log(`✅ Found ${this.searchResults.length} results (ranked)`);
 
       this._showSearchResults();
     } catch (error) {
       console.error("❌ Search failed:", error);
       this.searchResults = [];
     }
+  }
+
+  private _rankSearchResults(results: any[], query: string): any[] {
+    const queryUpper = query.toUpperCase();
+
+    // Score each result based on relevance
+    const scored = results.map((result) => {
+      const symbol = (result.symbol || "").toUpperCase();
+      const name = (result.name || "").toUpperCase();
+      let score = 0;
+
+      // PRIORITY 1: Exact symbol match (highest priority)
+      if (symbol === queryUpper) {
+        score += 1000;
+      }
+      // PRIORITY 2: Symbol starts with query
+      else if (symbol.startsWith(queryUpper)) {
+        score += 500;
+        // Bonus: shorter symbols rank higher (AAPL > AAPLD)
+        score += Math.max(0, 10 - symbol.length);
+      }
+      // PRIORITY 3: Symbol contains query
+      else if (symbol.includes(queryUpper)) {
+        score += 100;
+        // Bonus: earlier position in symbol
+        const position = symbol.indexOf(queryUpper);
+        score += Math.max(0, 10 - position);
+      }
+
+      // PRIORITY 4: Name matches (lower priority than symbol)
+      if (name.includes(queryUpper)) {
+        score += 50;
+        // Bonus: starts with query
+        if (name.startsWith(queryUpper)) {
+          score += 25;
+        }
+      }
+
+      // Penalty for very long symbols (likely less relevant)
+      if (symbol.length > 6) {
+        score -= 5;
+      }
+
+      return Object.assign({}, result, { _score: score });
+    });
+
+    // Sort by score (highest first)
+    scored.sort((a, b) => b._score - a._score);
+
+    console.log(
+      `📊 Top results for "${query}":`,
+      scored.slice(0, 4).map((r) => `${r.symbol} (score: ${r._score})`)
+    );
+
+    return scored;
   }
 
   private _showSearchResults(): void {
@@ -654,35 +723,66 @@ export default class Home extends Lightning.Component {
 
       resultsList.childList.add({
         ref: `Result_${index}`,
-        y: index * 56,
-        w: 348,
-        h: 52,
-        Background: {
-          w: 348,
-          h: 52,
+        y: index * 58 + (index > 0 ? 2 : 0),
+        w: 356,
+        h: 56,
+        rect: true,
+        clipping: true,
+        color: isSelected ? 0xff2a2a2e : 0xff1e1e20,
+        shader: { type: Lightning.shaders.RoundedRectangle, radius: 10 },
+        // Left accent bar - inside card with rounded ends
+        AccentBar: {
+          x: 1,
+          y: 1,
+          w: 4,
+          h: 54,
           rect: true,
-          color: isSelected ? 0x33ffffff : 0x11ffffff,
-          shader: { type: Lightning.shaders.RoundedRectangle, radius: 12 },
+          color: isSelected ? 0xff00ff88 : 0x00000000,
+          shader: {
+            type: Lightning.shaders.RoundedRectangle,
+            radius: [9, 0, 0, 9],
+          },
         },
+        // Symbol with better styling
         Symbol: {
-          x: 16,
+          x: 20,
           y: 14,
           text: {
             text: result.symbol,
             fontFace: "Arial",
-            fontSize: 18,
+            fontSize: 19,
             fontWeight: 700,
-            textColor: 0xffffffff,
+            textColor: isSelected ? 0xffffffff : 0xffeeeeee,
+            letterSpacing: 0.5,
           },
         },
+        // Company name with better hierarchy
         Name: {
-          x: 16,
-          y: 33,
+          x: 20,
+          y: 36,
+          w: 320,
           text: {
-            text: result.name.substring(0, 40), // Truncate long names
+            text:
+              result.name.length > 38
+                ? `${result.name.substring(0, 38)}...`
+                : result.name,
             fontFace: "Arial",
-            fontSize: 13,
-            textColor: 0xaaffffff,
+            fontSize: 12,
+            textColor: isSelected ? 0xffaaaaaa : 0xff888888,
+            maxLines: 1,
+            wordWrap: false,
+          },
+        },
+        // Subtle arrow indicator for selected
+        Arrow: {
+          x: 330,
+          y: 28,
+          mount: 0.5,
+          alpha: isSelected ? 1 : 0,
+          text: {
+            text: "→",
+            fontSize: 20,
+            textColor: 0xff00ff88,
           },
         },
       });
@@ -696,16 +796,43 @@ export default class Home extends Lightning.Component {
     this.searchResults.forEach((result, index) => {
       const resultItem = resultsList.tag(`Result_${index}`);
       if (resultItem) {
-        const bg = resultItem.tag("Background");
-        if (bg) {
-          bg.setSmooth(
-            "color",
-            index === this.selectedSearchIndex ? 0x44ffffff : 0x00000000,
-            { duration: 0.1 }
-          );
+        const isSelected = index === this.selectedSearchIndex;
+
+        // Update card background color
+        resultItem.setSmooth("color", isSelected ? 0xff2a2a2e : 0xff1e1e20, {
+          duration: 0.15,
+        });
+
+        // Update accent bar
+        const accent = resultItem.tag("AccentBar");
+        if (accent) {
+          accent.setSmooth("color", isSelected ? 0xff00ff88 : 0x00000000, {
+            duration: 0.15,
+          });
+        }
+
+        // Update symbol text color
+        const symbol = resultItem.tag("Symbol");
+        if (symbol && symbol.text) {
+          symbol.text.textColor = isSelected ? 0xffffffff : 0xffeeeeee;
+        }
+
+        // Update name text color
+        const name = resultItem.tag("Name");
+        if (name && name.text) {
+          name.text.textColor = isSelected ? 0xffaaaaaa : 0xff888888;
+        }
+
+        // Update arrow visibility
+        const arrow = resultItem.tag("Arrow");
+        if (arrow) {
+          arrow.setSmooth("alpha", isSelected ? 1 : 0, { duration: 0.15 });
         }
       }
     });
+
+    // Force stage update for smooth rendering
+    this.stage.update();
   }
 
   private _clearSearchResults(): void {
