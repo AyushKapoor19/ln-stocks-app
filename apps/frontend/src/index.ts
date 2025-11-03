@@ -12,6 +12,7 @@ Launch(
       clearColor: 0xff0b0b0c,
       canvas: document.getElementById("app") as HTMLCanvasElement,
       useImageWorker: false,
+      defaultFontFace: "Avenir Next",
     },
     debug: true,
     keys: {
@@ -25,6 +26,9 @@ Launch(
     },
     enablePointer: true,
   },
-  {},
+  {
+    // Platform settings
+    inspector: false,
+  },
   {}
 );

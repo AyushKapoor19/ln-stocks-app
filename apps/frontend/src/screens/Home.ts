@@ -84,7 +84,7 @@ export default class Home extends Lightning.Component {
             fontSize: 24,
             fontWeight: 700,
             textColor: 0xffffffff,
-            fontFace: "Arial",
+            fontFace: "Avenir Next",
           },
         },
       },
@@ -155,7 +155,7 @@ export default class Home extends Lightning.Component {
                 mount: 0.5,
                 text: {
                   text: period.label,
-                  fontFace: "Arial",
+                  fontFace: "Avenir Next",
                   fontSize: 16,
                   textColor: period.id === "1W" ? 0xffffffff : 0x88ffffff,
                   fontWeight: 500,
@@ -175,7 +175,7 @@ export default class Home extends Lightning.Component {
         StockSymbol: {
           text: {
             text: "VOO - Vanguard S&P 500 ETF", // Will be updated dynamically
-            fontFace: "Arial",
+            fontFace: "Avenir Next",
             fontSize: 48,
             fontWeight: 700,
             textColor: 0xffffffff,
@@ -185,7 +185,7 @@ export default class Home extends Lightning.Component {
           y: 75,
           text: {
             text: "$428.75",
-            fontFace: "Arial",
+            fontFace: "Avenir Next",
             fontSize: 72,
             fontWeight: 600,
             textColor: 0xff00ff88, // Green color matching the image
@@ -195,7 +195,7 @@ export default class Home extends Lightning.Component {
           y: 165,
           text: {
             text: "+2.45 (+0.57%)",
-            fontFace: "Arial",
+            fontFace: "Avenir Next",
             fontSize: 26,
             fontWeight: 500,
             textColor: 0xff00ff88, // Same green color
@@ -749,7 +749,7 @@ export default class Home extends Lightning.Component {
           y: 14,
           text: {
             text: result.symbol,
-            fontFace: "Arial",
+            fontFace: "Avenir Next",
             fontSize: 19,
             fontWeight: 700,
             textColor: isSelected ? 0xffffffff : 0xffeeeeee,
@@ -766,7 +766,7 @@ export default class Home extends Lightning.Component {
               result.name.length > 38
                 ? `${result.name.substring(0, 38)}...`
                 : result.name,
-            fontFace: "Arial",
+            fontFace: "Avenir Next",
             fontSize: 12,
             textColor: isSelected ? 0xffaaaaaa : 0xff888888,
             maxLines: 1,
