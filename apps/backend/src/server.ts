@@ -385,6 +385,64 @@ app.get("/v1/series", async (req, reply) => {
   return out;
 });
 
+// Search endpoint - find US stocks by symbol or name
+app.get("/v1/search", async (req, reply) => {
+  const query = String((req.query as any)?.q ?? "").trim();
+
+  if (!query || query.length < 1) {
+    return reply.code(400).send({ error: "query required" });
+  }
+
+  if (!POLYGON_KEY) {
+    return reply.code(503).send({ error: "No POLYGON_KEY configured" });
+  }
+
+  try {
+    console.log(`🔍 Searching for: ${query}`);
+
+    const url = `https://api.polygon.io/v3/reference/tickers?search=${encodeURIComponent(
+      query
+    )}&market=stocks&active=true&limit=10&apiKey=${POLYGON_KEY}`;
+
+    const response = await fetch(url);
+
+    if (response.ok) {
+      const data = (await response.json()) as any;
+
+      if (data && data.results && data.results.length > 0) {
+        const results = data.results.map((ticker: any) => ({
+          symbol: ticker.ticker,
+          name: ticker.name,
+          type: ticker.type,
+          market: ticker.market,
+          active: ticker.active,
+          primaryExchange: ticker.primary_exchange,
+        }));
+
+        console.log(`✅ Found ${results.length} stocks for "${query}"`);
+
+        return {
+          query,
+          results,
+          count: results.length,
+        };
+      } else {
+        return {
+          query,
+          results: [],
+          count: 0,
+        };
+      }
+    } else {
+      console.log(`❌ Polygon search failed: ${response.status}`);
+      return reply.code(response.status).send({ error: "Search failed" });
+    }
+  } catch (error) {
+    console.log(`💥 Search error:`, error);
+    return reply.code(500).send({ error: "Internal server error" });
+  }
+});
+
 const port = Number(process.env.PORT ?? 8787);
 app.listen({ port, host: "0.0.0.0" }).catch((e) => {
   app.log.error(e);

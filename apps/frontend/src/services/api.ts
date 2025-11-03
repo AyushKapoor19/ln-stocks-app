@@ -124,6 +124,25 @@ class StocksApiService {
     // Return closing prices sorted by timestamp
     return series.points.sort((a, b) => a.t - b.t).map((point) => point.c);
   }
+
+  // Search for stocks by symbol or name
+  async searchStocks(query: string): Promise<any[]> {
+    try {
+      const response = await fetch(
+        `${this.baseUrl}/v1/search?q=${encodeURIComponent(query)}`
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      return data.results || [];
+    } catch (error) {
+      console.error(`Failed to search for "${query}":`, error);
+      return [];
+    }
+  }
 }
 
 // Export singleton instance

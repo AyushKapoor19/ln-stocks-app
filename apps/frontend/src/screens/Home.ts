@@ -39,6 +39,13 @@ export default class Home extends Lightning.Component {
   private currentPrice = 428.75; // Default VOO price
   private currentChange = 2.45;
   private currentChangePct = 0.0057;
+  private currentSymbol = "VOO"; // Current stock symbol
+  private currentStockName = "Vanguard S&P 500 ETF";
+  private searchQuery = "";
+  private searchResults: any[] = [];
+  private selectedSearchIndex = 0;
+  private isSearchActive = false;
+  private searchTimeout: any = null; // Debounce search
 
   static _template(): object {
     return {
@@ -46,6 +53,69 @@ export default class Home extends Lightning.Component {
       h: 1080,
       rect: true,
       color: 0xff000000, // Pure black background
+
+      // Professional Search Bar
+      SearchBar: {
+        x: 1920 - 420,
+        y: 40,
+        w: 380,
+        h: 56,
+        Background: {
+          w: 380,
+          h: 56,
+          rect: true,
+          color: 0xee1a1a1a, // Dark professional gray
+          shader: { type: Lightning.shaders.RoundedRectangle, radius: 28 },
+        },
+        SearchIcon: {
+          x: 24,
+          y: 28,
+          mount: 0.5,
+          text: {
+            text: "🔍",
+            fontSize: 22,
+          },
+        },
+        SearchLabel: {
+          x: 60,
+          y: 10,
+          text: {
+            text: "Search stocks...",
+            fontSize: 24,
+            fontWeight: 700,
+            textColor: 0xffffffff,
+            fontFace: "Arial",
+          },
+        },
+      },
+
+      // Professional Search Results Dropdown
+      SearchResults: {
+        x: 1920 - 420,
+        y: 106,
+        w: 380,
+        alpha: 0,
+        Background: {
+          w: 380,
+          h: 280,
+          rect: true,
+          color: 0xff1a1a1a, // Dark background
+          shader: { type: Lightning.shaders.RoundedRectangle, radius: 16 },
+        },
+        Shadow: {
+          w: 380,
+          h: 280,
+          rect: true,
+          color: 0x88000000, // Subtle shadow
+          shader: { type: Lightning.shaders.RoundedRectangle, radius: 16 },
+          y: 4,
+          x: 4,
+        },
+        ResultsList: {
+          x: 16,
+          y: 16,
+        },
+      },
 
       // Time selector buttons (left side, vertical)
       TimeSelectorContainer: Object.assign(
@@ -90,79 +160,82 @@ export default class Home extends Lightning.Component {
       // Main S&P 500 display
       MainDisplay: {
         x: 144,
-        y: 60,
+        y: 50,
         StockSymbol: {
           text: {
-            text: "VOO - Vanguard S&P 500 ETF",
+            text: "VOO - Vanguard S&P 500 ETF", // Will be updated dynamically
             fontFace: "Arial",
-            fontSize: 60,
+            fontSize: 48,
             fontWeight: 700,
             textColor: 0xffffffff,
           },
         },
         StockPrice: {
-          y: 90,
+          y: 75,
           text: {
             text: "$428.75",
             fontFace: "Arial",
-            fontSize: 80,
+            fontSize: 72,
             fontWeight: 600,
             textColor: 0xff00ff88, // Green color matching the image
           },
         },
         StockChange: {
-          y: 190,
+          y: 165,
           text: {
             text: "+2.45 (+0.57%)",
             fontFace: "Arial",
-            fontSize: 28,
+            fontSize: 26,
             fontWeight: 500,
             textColor: 0xff00ff88, // Same green color
           },
         },
       },
 
-      // Large chart area - moved down to avoid overlap
+      // Large chart area - positioned below text with clear gap
       ChartContainer: {
         x: 134,
-        y: 340,
+        y: 380,
         w: 1600,
-        h: 550,
+        h: 520,
         Chart: {
           type: BeautifulChart,
           w: 1600,
-          h: 550,
+          h: 520,
         },
       },
     };
   }
 
   _init(): void {
-    console.log("📊 Initializing VOO Dashboard...");
-    this._loadVooData();
+    console.log("📊 Initializing Stock Dashboard...");
+    this._loadStockData(this.currentSymbol);
   }
 
   async _active(): Promise<void> {
     try {
-      console.log("🚀 VOO Dashboard ready");
+      console.log(`🚀 Stock Dashboard ready (${this.currentSymbol})`);
       // Refresh data when component becomes active
-      this._loadVooData();
+      this._loadStockData(this.currentSymbol);
     } catch (error) {
       console.error("❌ Failed to initialize:", error);
     }
   }
 
-  private async _loadVooData(): Promise<void> {
+  private async _loadStockData(symbol: string): Promise<void> {
     if (this.isLoading) return;
 
     this.isLoading = true;
-    console.log(`📈 Loading VOO data for period: ${this.currentTimePeriod.id}`);
+    console.log(
+      `📈 Loading ${symbol} data for period: ${this.currentTimePeriod.id}`
+    );
 
     try {
-      // Fetch real VOO data from backend
-      const { quote, series } = await stocksApi.getVooData(
-        this.currentTimePeriod.id
-      );
+      // Fetch real stock data from backend (works for any symbol)
+      const [quote, series] = await Promise.all([
+        stocksApi.getQuote(symbol),
+        stocksApi.getSeries(symbol, this.currentTimePeriod.id),
+      ]);
 
       // ALWAYS use the REAL quote price for display (from Finnhub)
       if (quote) {
@@ -325,17 +398,85 @@ export default class Home extends Lightning.Component {
   }
 
   _handleUp(): boolean {
-    if (this.selectedPeriodIndex > 0) {
-      this._selectTimePeriod(this.selectedPeriodIndex - 1);
+    if (this.isSearchActive && this.searchResults.length > 0) {
+      // Navigate search results
+      if (this.selectedSearchIndex > 0) {
+        this.selectedSearchIndex--;
+        this._updateSearchSelection();
+      }
+    } else {
+      // Navigate time periods
+      if (this.selectedPeriodIndex > 0) {
+        this._selectTimePeriod(this.selectedPeriodIndex - 1);
+      }
     }
     return true;
   }
 
   _handleDown(): boolean {
-    if (this.selectedPeriodIndex < TIME_PERIODS.length - 1) {
-      this._selectTimePeriod(this.selectedPeriodIndex + 1);
+    if (this.isSearchActive && this.searchResults.length > 0) {
+      // Navigate search results
+      if (this.selectedSearchIndex < this.searchResults.length - 1) {
+        this.selectedSearchIndex++;
+        this._updateSearchSelection();
+      }
+    } else {
+      // Navigate time periods
+      if (this.selectedPeriodIndex < TIME_PERIODS.length - 1) {
+        this._selectTimePeriod(this.selectedPeriodIndex + 1);
+      }
     }
     return true;
+  }
+
+  _handleEnter(): boolean {
+    if (this.isSearchActive) {
+      if (
+        this.searchResults.length > 0 &&
+        this.searchResults[this.selectedSearchIndex]
+      ) {
+        // Select the stock
+        const selected = this.searchResults[this.selectedSearchIndex];
+        this._selectStock(selected.symbol, selected.name);
+      } else if (this.searchQuery.length >= 1) {
+        // Search with current query
+        this._performSearch();
+      }
+    } else {
+      // Activate search
+      this._activateSearch();
+    }
+    return true;
+  }
+
+  _handleKey(event: any): boolean {
+    const key = event.key;
+
+    // Activate search with 'S' or '/'
+    if (!this.isSearchActive && (key === "s" || key === "S" || key === "/")) {
+      this._activateSearch();
+      return true;
+    }
+
+    // Handle typing when search is active
+    if (this.isSearchActive) {
+      if (key === "Backspace") {
+        this.searchQuery = this.searchQuery.slice(0, -1);
+        this._updateSearchText();
+        this._debouncedSearch();
+        return true;
+      } else if (key === "Escape") {
+        this._deactivateSearch();
+        return true;
+      } else if (key.length === 1 && /[a-zA-Z0-9]/.test(key)) {
+        this.searchQuery += key.toUpperCase();
+        this._updateSearchText();
+        this._debouncedSearch();
+        return true;
+      }
+    }
+
+    return false;
   }
 
   private _selectTimePeriod(newIndex: number): void {
@@ -379,7 +520,220 @@ export default class Home extends Lightning.Component {
     console.log(`🕐 Time period changed to: ${newPeriod.label}`);
 
     // Load new data for the selected time period
-    this._loadVooData();
+    this._loadStockData(this.currentSymbol);
+  }
+
+  private _activateSearch(): void {
+    this.isSearchActive = true;
+    this.searchQuery = "";
+    this.searchResults = [];
+
+    // Update search bar appearance
+    const searchBar = this.tag("SearchBar");
+    if (searchBar) {
+      // Update SearchLabel directly - simplest approach
+      const searchLabel = searchBar.tag("SearchLabel");
+      if (searchLabel && searchLabel.text) {
+        searchLabel.text.text = "_";
+        searchLabel.text.textColor = 0xffffffff;
+        searchLabel.text.fontSize = 24; // Same as placeholder
+        searchLabel.text.fontWeight = 700; // Same as placeholder
+      }
+    }
+
+    console.log("🔍 Search activated - type to search!");
+  }
+
+  private _deactivateSearch(): void {
+    this.isSearchActive = false;
+    this.searchQuery = "";
+    this._clearSearchResults();
+
+    const searchBar = this.tag("SearchBar");
+    if (searchBar) {
+      // Restore SearchLabel to default
+      const searchLabel = searchBar.tag("SearchLabel");
+      if (searchLabel && searchLabel.text) {
+        searchLabel.text.text = "Search stocks...";
+        searchLabel.text.textColor = 0xffffffff; // WHITE
+        searchLabel.text.fontSize = 24;
+        searchLabel.text.fontWeight = 700;
+      }
+    }
+
+    console.log("🔍 Search deactivated");
+  }
+
+  private _updateSearchText(): void {
+    const searchBar = this.tag("SearchBar");
+    if (!searchBar) {
+      console.log("❌ SearchBar not found!");
+      return;
+    }
+
+    if (this.isSearchActive) {
+      // Update SearchLabel text while searching
+      const displayText =
+        this.searchQuery.length > 0 ? `${this.searchQuery}_` : "_";
+
+      const searchLabel = searchBar.tag("SearchLabel");
+      if (searchLabel) {
+        console.log(`🔍 Updating SearchLabel with: "${displayText}"`);
+        console.log(`📝 Current text before:`, searchLabel.text);
+
+        // Direct property assignment
+        searchLabel.text.text = displayText;
+        searchLabel.text.textColor = 0xffffffff;
+        searchLabel.text.fontSize = 24; // Same as placeholder
+        searchLabel.text.fontWeight = 700; // Same as placeholder
+
+        console.log(`📝 Current text after:`, searchLabel.text);
+
+        // Force stage update
+        this.stage.update();
+      } else {
+        console.log("❌ SearchLabel not found!");
+      }
+
+      console.log(`✍️ Search query is now: "${displayText}"`);
+    }
+  }
+
+  private _debouncedSearch(): void {
+    // Clear existing timeout
+    if (this.searchTimeout) {
+      clearTimeout(this.searchTimeout);
+    }
+
+    // Clear results if query is empty
+    if (this.searchQuery.length < 1) {
+      this._clearSearchResults();
+      return;
+    }
+
+    // Wait 500ms after user stops typing before searching
+    this.searchTimeout = setTimeout(() => {
+      this._performSearch();
+    }, 500);
+  }
+
+  private async _performSearch(): Promise<void> {
+    if (!this.searchQuery || this.searchQuery.length < 1) return;
+
+    console.log(`🔍 Searching for: ${this.searchQuery}`);
+
+    try {
+      const results = await stocksApi.searchStocks(this.searchQuery);
+      this.searchResults = results.slice(0, 5); // Show top 5 results
+      this.selectedSearchIndex = 0;
+
+      console.log(`✅ Found ${this.searchResults.length} results`);
+
+      this._showSearchResults();
+    } catch (error) {
+      console.error("❌ Search failed:", error);
+      this.searchResults = [];
+    }
+  }
+
+  private _showSearchResults(): void {
+    const resultsContainer = this.tag("SearchResults");
+    if (!resultsContainer) return;
+
+    resultsContainer.setSmooth("alpha", 1, { duration: 0.2 });
+
+    const resultsList = resultsContainer.tag("ResultsList");
+    if (!resultsList) return;
+
+    // Clear old results
+    resultsList.children = [];
+
+    // Add new results
+    this.searchResults.forEach((result, index) => {
+      const isSelected = index === this.selectedSearchIndex;
+
+      resultsList.childList.add({
+        ref: `Result_${index}`,
+        y: index * 56,
+        w: 348,
+        h: 52,
+        Background: {
+          w: 348,
+          h: 52,
+          rect: true,
+          color: isSelected ? 0x33ffffff : 0x11ffffff,
+          shader: { type: Lightning.shaders.RoundedRectangle, radius: 12 },
+        },
+        Symbol: {
+          x: 16,
+          y: 14,
+          text: {
+            text: result.symbol,
+            fontFace: "Arial",
+            fontSize: 18,
+            fontWeight: 700,
+            textColor: 0xffffffff,
+          },
+        },
+        Name: {
+          x: 16,
+          y: 33,
+          text: {
+            text: result.name.substring(0, 40), // Truncate long names
+            fontFace: "Arial",
+            fontSize: 13,
+            textColor: 0xaaffffff,
+          },
+        },
+      });
+    });
+  }
+
+  private _updateSearchSelection(): void {
+    const resultsList = this.tag("SearchResults")?.tag("ResultsList");
+    if (!resultsList) return;
+
+    this.searchResults.forEach((result, index) => {
+      const resultItem = resultsList.tag(`Result_${index}`);
+      if (resultItem) {
+        const bg = resultItem.tag("Background");
+        if (bg) {
+          bg.setSmooth(
+            "color",
+            index === this.selectedSearchIndex ? 0x44ffffff : 0x00000000,
+            { duration: 0.1 }
+          );
+        }
+      }
+    });
+  }
+
+  private _clearSearchResults(): void {
+    const resultsContainer = this.tag("SearchResults");
+    if (resultsContainer) {
+      resultsContainer.setSmooth("alpha", 0, { duration: 0.2 });
+    }
+    this.searchResults = [];
+  }
+
+  private async _selectStock(symbol: string, name: string): Promise<void> {
+    console.log(`✅ Selected stock: ${symbol} - ${name}`);
+
+    this.currentSymbol = symbol;
+    this.currentStockName = name;
+
+    // Update title
+    const mainDisplay = this.tag("MainDisplay");
+    if (mainDisplay) {
+      const titleElement = mainDisplay.tag("StockSymbol");
+      if (titleElement) {
+        titleElement.text.text = `${symbol} - ${name}`;
+      }
+    }
+
+    // Deactivate search and load new stock data
+    this._deactivateSearch();
+    await this._loadStockData(symbol);
   }
 
   _getFocused(): Lightning.Component {

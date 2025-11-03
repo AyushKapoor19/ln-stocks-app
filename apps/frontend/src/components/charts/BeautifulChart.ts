@@ -19,12 +19,12 @@ export default class BeautifulChart extends Lightning.Component {
 
   // Configurable properties (with defaults)
   private chartWidth = 1600;
-  private chartHeight = 550;
+  private chartHeight = 520;
   private padding = 80;
   private bottomPadding = 120;
   private _lineColor = "#00ff88";
   private canvasLeft = 134;
-  private canvasTop = 340;
+  private canvasTop = 380;
   private currentPeriod = "1W"; // Track current time period
 
   static _template(): object {
