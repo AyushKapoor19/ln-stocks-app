@@ -10,7 +10,7 @@ interface ChartConfiguration {
   canvasTop?: number;
 }
 
-export default class BeautifulChart extends Lightning.Component {
+export default class StockChart extends Lightning.Component {
   private canvas: HTMLCanvasElement | null = null;
   private ctx: CanvasRenderingContext2D | null = null;
   private chartData: number[] = [];
@@ -106,7 +106,7 @@ export default class BeautifulChart extends Lightning.Component {
   }
 
   set points(data: number[]) {
-    console.log("📊 BeautifulChart received points:", data);
+    console.log("📊 StockChart received points:", data);
 
     if (!data || data.length === 0) return;
 
@@ -195,6 +195,9 @@ export default class BeautifulChart extends Lightning.Component {
     const max = Math.max(...this.chartData);
     const range = Math.max(max - min, 1);
 
+    // Draw grid lines FIRST (behind everything else)
+    this.drawGridLines(width, height, padding, bottomPadding, min, max);
+
     // Calculate visible points based on animation progress
     const visiblePoints = Math.floor(
       this.chartData.length * this.animationProgress
@@ -203,17 +206,28 @@ export default class BeautifulChart extends Lightning.Component {
 
     const data = this.chartData.slice(0, visiblePoints);
 
-    // Create gradient for area fill (matching the green from the image)
+    // Create dark gradient for area fill (subtle, professional)
     const gradient = this.ctx.createLinearGradient(
       0,
       padding,
       0,
       height - bottomPadding
     );
-    const [r, g, b] = this.hexToRgb(this._lineColor);
-    gradient.addColorStop(0, `rgba(${r}, ${g}, ${b}, 0.4)`);
-    gradient.addColorStop(0.7, `rgba(${r}, ${g}, ${b}, 0.1)`);
-    gradient.addColorStop(1, `rgba(${r}, ${g}, ${b}, 0.0)`);
+    
+    // Use dark gradient colors based on line color
+    const isPositive = this._lineColor.includes("00ff88"); // Green line
+    
+    if (isPositive) {
+      // Dark green gradient for positive
+      gradient.addColorStop(0, `rgba(0, 100, 80, 0.3)`);
+      gradient.addColorStop(0.5, `rgba(0, 60, 50, 0.15)`);
+      gradient.addColorStop(1, `rgba(0, 30, 25, 0.0)`);
+    } else {
+      // Dark red gradient for negative
+      gradient.addColorStop(0, `rgba(100, 30, 30, 0.3)`);
+      gradient.addColorStop(0.5, `rgba(60, 20, 20, 0.15)`);
+      gradient.addColorStop(1, `rgba(30, 10, 10, 0.0)`);
+    }
 
     // Draw area fill first
     this.ctx.beginPath();
@@ -318,6 +332,35 @@ export default class BeautifulChart extends Lightning.Component {
     // Draw month labels on X-axis and Y-axis price labels
     this.drawMonthLabels(width, height, padding, bottomPadding);
     this.drawPriceLabels(width, height, padding, bottomPadding, min, max);
+  }
+
+  private drawGridLines(
+    width: number,
+    height: number,
+    padding: number,
+    bottomPadding: number,
+    min: number,
+    max: number
+  ): void {
+    if (!this.ctx) return;
+
+    // Draw subtle horizontal grid lines aligned with Y-axis prices
+    const labelCount = 5; // Match the number of Y-axis price labels
+    
+    this.ctx.strokeStyle = "rgba(255, 255, 255, 0.1)"; // Subtle solid lines
+    this.ctx.lineWidth = 1;
+    // No dashes - solid lines for cleaner look
+
+    for (let i = 0; i < labelCount; i++) {
+      const y =
+        padding +
+        (1 - i / (labelCount - 1)) * (height - padding - bottomPadding);
+
+      this.ctx.beginPath();
+      this.ctx.moveTo(padding, y);
+      this.ctx.lineTo(width - padding, y);
+      this.ctx.stroke();
+    }
   }
 
   private drawMonthLabels(
@@ -452,3 +495,4 @@ export default class BeautifulChart extends Lightning.Component {
     }
   }
 }
+

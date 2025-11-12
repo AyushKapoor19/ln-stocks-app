@@ -1,5 +1,5 @@
 import { Lightning } from "@lightningjs/sdk";
-import BeautifulChart from "../components/charts/BeautifulChart";
+import StockChart from "../components/charts/StockChart";
 import { stocksApi } from "../services/api";
 
 interface TimePeriod {
@@ -54,9 +54,9 @@ export default class Home extends Lightning.Component {
       rect: true,
       color: 0xff000000, // Pure black background
 
-      // Professional Search Bar
+      // Professional Search Bar - Aligned with graph end
       SearchBar: {
-        x: 1920 - 420,
+        x: 1434,
         y: 40,
         w: 380,
         h: 56,
@@ -89,9 +89,9 @@ export default class Home extends Lightning.Component {
         },
       },
 
-      // Professional Search Results Dropdown
+      // Professional Search Results Dropdown - Aligned with search bar
       SearchResults: {
-        x: 1920 - 420,
+        x: 1434,
         y: 106,
         w: 380,
         alpha: 0,
@@ -128,11 +128,11 @@ export default class Home extends Lightning.Component {
         },
       },
 
-      // Time selector buttons (left side, vertical) - Centered vertically
+      // Time selector buttons (left side, vertical) - Centered with chart
       TimeSelectorContainer: Object.assign(
         {
           x: 40,
-          y: 370,
+          y: 520,
           w: 70,
           h: 400,
         },
@@ -171,51 +171,55 @@ export default class Home extends Lightning.Component {
         )
       ),
 
-      // Main S&P 500 display - Super compact header
+      // Main S&P 500 display - Large, bold, prominent header
       MainDisplay: {
-        x: 144,
-        y: 30,
+        x: 214,
+        y: 40,
         StockSymbol: {
           text: {
             text: "VOO - Vanguard S&P 500 ETF", // Will be updated dynamically
             fontFace: "Avenir Next",
-            fontSize: 38,
+            fontSize: 50,
             fontWeight: 700,
             textColor: 0xffffffff,
           },
         },
         StockPrice: {
-          y: 50,
+          y: 75,
           text: {
             text: "$428.75",
             fontFace: "Avenir Next",
-            fontSize: 64,
+            fontSize: 84,
             fontWeight: 600,
             textColor: 0xff00ff88, // Green color matching the image
           },
         },
         StockChange: {
-          y: 125,
+          y: 175,
           text: {
             text: "+2.45 (+0.57%)",
             fontFace: "Avenir Next",
-            fontSize: 22,
+            fontSize: 28,
             fontWeight: 500,
             textColor: 0xff00ff88, // Same green color
           },
         },
       },
 
-      // Large chart area - MAXIMUM SIZE to fill entire bottom
+      // Large chart area - Well-proportioned size
       ChartContainer: {
         x: 134,
-        y: 180,
+        y: 250,
         w: 1760,
-        h: 880,
+        h: 750,
         Chart: {
-          type: BeautifulChart,
+          type: StockChart,
           w: 1760,
-          h: 880,
+          h: 750,
+          chartWidth: 1760,
+          chartHeight: 750,
+          canvasLeft: 134,
+          canvasTop: 250,
         },
       },
     };
@@ -280,7 +284,7 @@ export default class Home extends Lightning.Component {
         stocksApi.getSeries(symbol, this.currentTimePeriod.id),
       ]);
 
-      // ALWAYS use the REAL quote price for display (from Finnhub)
+      // ALWAYS use the REAL quote price for display (from Polygon.io)
       if (quote) {
         this.currentPrice = quote.price;
         this.currentChange = quote.change;
@@ -288,7 +292,7 @@ export default class Home extends Lightning.Component {
         this._updatePriceDisplay();
 
         console.log(
-          `✅ Using REAL Finnhub price: $${quote.price} (${
+          `✅ Using REAL Polygon.io price: $${quote.price} (${
             quote.change >= 0 ? "+" : ""
           }${quote.change})`
         );
