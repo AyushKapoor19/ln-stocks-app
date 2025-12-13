@@ -213,10 +213,10 @@ export default class StockChart extends Lightning.Component {
       0,
       height - bottomPadding
     );
-    
+
     // Use dark gradient colors based on line color
     const isPositive = this._lineColor.includes("00ff88"); // Green line
-    
+
     if (isPositive) {
       // Dark green gradient for positive
       gradient.addColorStop(0, `rgba(0, 100, 80, 0.3)`);
@@ -346,7 +346,7 @@ export default class StockChart extends Lightning.Component {
 
     // Draw subtle horizontal grid lines aligned with Y-axis prices
     const labelCount = 5; // Match the number of Y-axis price labels
-    
+
     this.ctx.strokeStyle = "rgba(255, 255, 255, 0.1)"; // Subtle solid lines
     this.ctx.lineWidth = 1;
     // No dashes - solid lines for cleaner look
@@ -381,9 +381,7 @@ export default class StockChart extends Lightning.Component {
     // Draw labels EVENLY SPACED across the chart width
     for (let i = 0; i < labelCount; i++) {
       // Calculate X position - EVENLY distributed across chart width
-      const x =
-        padding +
-        (i / (labelCount - 1)) * (width - 2 * padding);
+      const x = padding + (i / (labelCount - 1)) * (width - 2 * padding);
       const y = height - bottomPadding + 40;
 
       // Calculate corresponding data index for this position
@@ -392,7 +390,10 @@ export default class StockChart extends Lightning.Component {
       );
 
       // Get timestamp for this data point
-      const labelText = this.generateTimeLabel(dataIndex, this.chartData.length);
+      const labelText = this.generateTimeLabel(
+        dataIndex,
+        this.chartData.length
+      );
 
       if (this.ctx && labelText) {
         this.ctx.fillText(labelText, x, y);
@@ -400,7 +401,10 @@ export default class StockChart extends Lightning.Component {
     }
   }
 
-  private generateTimeLabel(dataIndex: number, totalDataPoints: number): string {
+  private generateTimeLabel(
+    dataIndex: number,
+    totalDataPoints: number
+  ): string {
     // dataIndex is the index into the chartData/timestamps arrays
     if (this.timestamps && this.timestamps[dataIndex]) {
       const timestamp = this.timestamps[dataIndex];
@@ -408,8 +412,18 @@ export default class StockChart extends Lightning.Component {
 
       // Month names for formatting
       const monthNames = [
-        "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-        "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+        "Jan",
+        "Feb",
+        "Mar",
+        "Apr",
+        "May",
+        "Jun",
+        "Jul",
+        "Aug",
+        "Sep",
+        "Oct",
+        "Nov",
+        "Dec",
       ];
 
       // Format based on time period
@@ -495,4 +509,3 @@ export default class StockChart extends Lightning.Component {
     }
   }
 }
-
