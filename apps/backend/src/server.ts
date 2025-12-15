@@ -6,10 +6,13 @@ import fetch from "node-fetch";
 const app = Fastify({ logger: true });
 await app.register(cors, { origin: true });
 
-const POLYGON_KEY = process.env.POLYGON_KEY ?? "";
-console.log("🔑 POLYGON_KEY loaded:", POLYGON_KEY ? "✅ EXISTS" : "❌ MISSING");
+const FINNHUB_KEY = process.env.FINNHUB_KEY ?? "";
+const POLYGON_KEY = process.env.POLYGON_KEY ?? ""; // Keep for historical candles (Finnhub free tier doesn't support it)
+console.log("🔑 FINNHUB_KEY loaded:", FINNHUB_KEY ? "✅ EXISTS" : "❌ MISSING");
+console.log("🔑 POLYGON_KEY loaded:", POLYGON_KEY ? "✅ EXISTS (for historical candles)" : "❌ MISSING");
 
-// Simple cache to avoid rate limiting (5 calls/minute on free tier)
+// Simple cache to avoid rate limiting
+// Finnhub: 60 calls/minute (quotes) | Polygon: 5 calls/minute (historical candles)
 const quoteCache = new Map<string, { data: any; timestamp: number }>();
 const seriesCache = new Map<string, { data: any; timestamp: number }>();
 const CACHE_DURATION = 30000; // 30 second cache (fresher data, still avoids rate limits)
@@ -20,7 +23,7 @@ app.get("/", async (req, reply) => {
     name: "LN Stocks API",
     version: "1.0.0",
     status: "running",
-    polygon: POLYGON_KEY ? "connected" : "no_key",
+    finnhub: FINNHUB_KEY ? "connected" : "no_key",
     cache: "enabled",
     endpoints: {
       quotes: "/v1/quotes?symbols=VOO,AAPL,TSLA",
@@ -39,7 +42,7 @@ app.get("/v1/quotes", async (req, reply) => {
 
   const out: Record<string, any> = {};
 
-  // Process each symbol with Polygon.io
+  // Process each symbol with Finnhub
   for (const symbol of symbols) {
     try {
       // Check cache first to avoid rate limiting
@@ -52,38 +55,34 @@ app.get("/v1/quotes", async (req, reply) => {
         continue;
       }
 
-      if (POLYGON_KEY) {
-        console.log(`📊 Fetching quote from Polygon.io for ${symbol}...`);
+      if (FINNHUB_KEY) {
+        console.log(`📊 Fetching quote from Finnhub for ${symbol}...`);
 
-        const url = `https://api.polygon.io/v2/aggs/ticker/${encodeURIComponent(
+        const url = `https://finnhub.io/api/v1/quote?symbol=${encodeURIComponent(
           symbol
-        )}/prev?adjusted=true&apiKey=${POLYGON_KEY}`;
+        )}&token=${FINNHUB_KEY}`;
 
         const response = await fetch(url);
 
         if (response.ok) {
           const data = (await response.json()) as any;
 
-          // Accept both "OK" and "DELAYED" for free tier
-          if (
-            data &&
-            (data.status === "OK" || data.status === "DELAYED") &&
-            data.results &&
-            data.results[0]
-          ) {
-            const result = data.results[0];
-            const change = result.c - result.o;
-            const changePct = change / result.o;
+          // Finnhub quote format: { c: current, h: high, l: low, o: open, pc: previous close, t: timestamp }
+          if (data && data.c !== undefined && data.c !== null) {
+            const currentPrice = data.c;
+            const previousClose = data.pc || data.o || currentPrice;
+            const change = currentPrice - previousClose;
+            const changePct = previousClose !== 0 ? change / previousClose : 0;
 
-            console.log(`✅ Got quote for ${symbol}: $${result.c}`);
+            console.log(`✅ Got quote for ${symbol}: $${currentPrice}`);
 
             const quoteData = {
               symbol: symbol,
-              price: Math.round(result.c * 100) / 100,
+              price: Math.round(currentPrice * 100) / 100,
               change: Math.round(change * 100) / 100,
               changePct: Math.round(changePct * 10000) / 10000,
-              time: result.t,
-              source: "polygon_quote",
+              time: data.t * 1000, // Convert Unix timestamp to milliseconds
+              source: "finnhub_quote",
             };
 
             // Cache the result
@@ -95,13 +94,16 @@ app.get("/v1/quotes", async (req, reply) => {
             out[symbol] = quoteData;
             continue;
           } else {
-            console.log(`⚠️ Polygon.io returned no quote data for ${symbol}`);
+            console.log(`⚠️ Finnhub returned no quote data for ${symbol}: ${JSON.stringify(data)}`);
           }
         } else {
-          console.log(`❌ Polygon.io failed for ${symbol}: ${response.status}`);
+          const errorText = await response.text();
+          console.log(
+            `❌ Finnhub quote failed for ${symbol}: ${response.status} - ${errorText}`
+          );
         }
       } else {
-        console.log(`🔑 No POLYGON_KEY set for ${symbol}`);
+        console.log(`🔑 No FINNHUB_KEY set for ${symbol}`);
       }
 
       // Fallback to calculated price based on symbol (no hardcoded prices)
@@ -147,41 +149,6 @@ app.get("/v1/series", async (req, reply) => {
 
   const out: Record<string, any> = {};
 
-  // Map periods to Polygon.io parameters
-  const now = new Date();
-  const toDate = now.toISOString().split("T")[0];
-
-  // Use DAILY bars for ALL periods (free tier has most current daily data)
-  const polygonParams: Record<
-    string,
-    { multiplier: number; timespan: string; from: string }
-  > = {
-    "1W": {
-      multiplier: 1,
-      timespan: "day",
-      from: new Date(now.getTime() - 7 * 86400000).toISOString().split("T")[0],
-    },
-    "1M": {
-      multiplier: 1,
-      timespan: "day",
-      from: new Date(now.getTime() - 30 * 86400000).toISOString().split("T")[0],
-    },
-    "3M": {
-      multiplier: 1,
-      timespan: "day",
-      from: new Date(now.getTime() - 90 * 86400000).toISOString().split("T")[0],
-    },
-    "1Y": {
-      multiplier: 1,
-      timespan: "day",
-      from: new Date(now.getTime() - 365 * 86400000)
-        .toISOString()
-        .split("T")[0],
-    },
-  };
-
-  const params = polygonParams[period] || polygonParams["1W"];
-
   // Process each symbol
   for (const symbol of symbols) {
     try {
@@ -195,16 +162,49 @@ app.get("/v1/series", async (req, reply) => {
         continue;
       }
 
-      // Try Polygon.io for REAL historical data
+      // Try Polygon.io for historical candles (Finnhub free tier doesn't support this)
+      // Map periods to Polygon.io parameters
+      const now = new Date();
+      const toDate = now.toISOString().split("T")[0];
+      const polygonParams: Record<
+        string,
+        { multiplier: number; timespan: string; from: string }
+      > = {
+        "1W": {
+          multiplier: 1,
+          timespan: "day",
+          from: new Date(now.getTime() - 7 * 86400000).toISOString().split("T")[0],
+        },
+        "1M": {
+          multiplier: 1,
+          timespan: "day",
+          from: new Date(now.getTime() - 30 * 86400000).toISOString().split("T")[0],
+        },
+        "3M": {
+          multiplier: 1,
+          timespan: "day",
+          from: new Date(now.getTime() - 90 * 86400000).toISOString().split("T")[0],
+        },
+        "1Y": {
+          multiplier: 1,
+          timespan: "day",
+          from: new Date(now.getTime() - 365 * 86400000)
+            .toISOString()
+            .split("T")[0],
+        },
+      };
+      const polygonParam = polygonParams[period] || polygonParams["1W"];
+
+      // Try Polygon.io for REAL historical data (Finnhub free tier doesn't support candles)
       if (POLYGON_KEY) {
         console.log(
-          `📊 Fetching REAL data from Polygon.io for ${symbol} (${period})...`
+          `📊 Fetching REAL historical data from Polygon.io for ${symbol} (${period})...`
         );
 
         const url = `https://api.polygon.io/v2/aggs/ticker/${encodeURIComponent(
           symbol
-        )}/range/${params.multiplier}/${params.timespan}/${
-          params.from
+        )}/range/${polygonParam.multiplier}/${polygonParam.timespan}/${
+          polygonParam.from
         }/${toDate}?adjusted=true&sort=asc&apiKey=${POLYGON_KEY}`;
 
         const response = await fetch(url);
@@ -301,7 +301,7 @@ app.get("/v1/series", async (req, reply) => {
         periodSettings[period as keyof typeof periodSettings] ||
         periodSettings["1W"];
       const points = [];
-      const now = Date.now();
+      const currentTime = Date.now();
 
       // Deterministic random for smooth, consistent data
       const seed = symbol.charCodeAt(0) + period.charCodeAt(0);
@@ -313,8 +313,8 @@ app.get("/v1/series", async (req, reply) => {
 
       // Generate Wealthsimple-quality smooth chart data
       for (let i = 0; i < settings.points; i++) {
-        // Calculate timestamp going backwards from now
-        const timestamp = now - (settings.points - 1 - i) * settings.interval;
+        // Calculate timestamp going backwards from currentTime
+        const timestamp = currentTime - (settings.points - 1 - i) * settings.interval;
         const timeProgress = i / settings.points;
 
         // Create SMOOTH price movements (not jagged)
@@ -362,7 +362,7 @@ app.get("/v1/series", async (req, reply) => {
       // Make the LAST point match the current real price exactly
       if (points.length > 0) {
         points[points.length - 1].c = basePrice; // End at real current price
-        points[points.length - 1].t = now; // Current timestamp
+        points[points.length - 1].t = currentTime; // Current timestamp
       }
 
       out[symbol] = {
@@ -393,31 +393,35 @@ app.get("/v1/search", async (req, reply) => {
     return reply.code(400).send({ error: "query required" });
   }
 
-  if (!POLYGON_KEY) {
-    return reply.code(503).send({ error: "No POLYGON_KEY configured" });
+  if (!FINNHUB_KEY) {
+    return reply.code(503).send({ error: "No FINNHUB_KEY configured" });
   }
 
   try {
     console.log(`🔍 Searching for: ${query}`);
 
-    const url = `https://api.polygon.io/v3/reference/tickers?search=${encodeURIComponent(
+    const url = `https://finnhub.io/api/v1/search?q=${encodeURIComponent(
       query
-    )}&market=stocks&active=true&limit=10&apiKey=${POLYGON_KEY}`;
+    )}&token=${FINNHUB_KEY}`;
 
     const response = await fetch(url);
 
     if (response.ok) {
       const data = (await response.json()) as any;
 
-      if (data && data.results && data.results.length > 0) {
-        const results = data.results.map((ticker: any) => ({
-          symbol: ticker.ticker,
-          name: ticker.name,
-          type: ticker.type,
-          market: ticker.market,
-          active: ticker.active,
-          primaryExchange: ticker.primary_exchange,
-        }));
+      // Finnhub search format: { count: number, result: [{ symbol, description, displaySymbol, type }] }
+      if (data && data.result && data.result.length > 0) {
+        const results = data.result
+          .filter((item: any) => item.type === "Common Stock" || item.type === "ETF") // Filter for stocks/ETFs
+          .slice(0, 10) // Limit to 10 results
+          .map((item: any) => ({
+            symbol: item.symbol,
+            name: item.description,
+            type: item.type,
+            market: "stocks",
+            active: true,
+            primaryExchange: item.displaySymbol || item.symbol,
+          }));
 
         console.log(`✅ Found ${results.length} stocks for "${query}"`);
 
@@ -434,7 +438,7 @@ app.get("/v1/search", async (req, reply) => {
         };
       }
     } else {
-      console.log(`❌ Polygon search failed: ${response.status}`);
+      console.log(`❌ Finnhub search failed: ${response.status}`);
       return reply.code(response.status).send({ error: "Search failed" });
     }
   } catch (error) {

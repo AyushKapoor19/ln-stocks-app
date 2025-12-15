@@ -1,6 +1,21 @@
 import { Lightning } from "@lightningjs/sdk";
+import BaseScreen from "./BaseScreen";
 import StockChart from "../components/charts/StockChart";
+import SearchBar from "../components/SearchBar";
+import SearchResults from "../components/SearchResults";
 import { stocksApi } from "../services/api";
+import { Colors } from "../constants/Colors";
+import { FontSize, FontStyle, FontFamily } from "../constants/Fonts";
+import {
+  ISearchResult,
+  ISearchActivatedEvent,
+  ISearchDeactivatedEvent,
+  IShowSearchResultsEvent,
+  IUpdateSearchSelectionEvent,
+  INavigateSearchResultsEvent,
+  ISelectStockEvent,
+  ISeriesData,
+} from "../types/events";
 
 interface TimePeriod {
   id: string;
@@ -21,114 +36,60 @@ interface LightningComponent {
   ): void;
 }
 
-interface ChartComponent extends LightningComponent {
-  points: number[];
-  lineColor: string;
-}
-
 const TIME_PERIODS: TimePeriod[] = [
   { id: "1M", label: "1M", days: 30 },
   { id: "3M", label: "3M", days: 90 },
   { id: "1Y", label: "1Y", days: 365 },
 ];
 
-export default class Home extends Lightning.Component {
+/**
+ * Home Screen
+ *
+ * All coordinates are designed for 1080p (1920x1080).
+ * Lightning.js automatically scales based on actual device resolution.
+ */
+export default class Home extends BaseScreen {
   private currentTimePeriod: TimePeriod = { id: "1M", label: "1M", days: 30 };
-  private selectedPeriodIndex = 0; // Default to 1M (now first in list)
+  private selectedPeriodIndex = 0;
   private isLoading = false;
-  private currentPrice = 428.75; // Default VOO price
+  private currentPrice = 428.75;
   private currentChange = 2.45;
   private currentChangePct = 0.0057;
-  private currentSymbol = "VOO"; // Current stock symbol
+  private currentSymbol = "VOO";
   private currentStockName = "Vanguard S&P 500 ETF";
   private searchQuery = "";
-  private searchResults: any[] = [];
+  private searchResults: ISearchResult[] = [];
   private selectedSearchIndex = 0;
   private isSearchActive = false;
-  private searchTimeout: any = null; // Debounce search
+  private searchTimeout: NodeJS.Timeout | undefined = undefined;
+  private currentFocusIndex = 1;
+  private focusableElements: string[] = [
+    "SearchBar",
+    "TimeButton_1M",
+    "TimeButton_3M",
+    "TimeButton_1Y",
+  ];
 
   static _template(): object {
     return {
-      w: 1920,
-      h: 1080,
+      w: (w: number) => w,
+      h: (h: number) => h,
       rect: true,
-      color: 0xff000000, // Pure black background
+      color: Colors.black,
 
-      // Professional Search Bar - Aligned with graph end
       SearchBar: {
+        type: SearchBar,
         x: 1434,
         y: 40,
-        w: 380,
-        h: 56,
-        Background: {
-          w: 380,
-          h: 56,
-          rect: true,
-          color: 0xee1a1a1a, // Dark professional gray
-          shader: { type: Lightning.shaders.RoundedRectangle, radius: 28 },
-        },
-        SearchIcon: {
-          x: 24,
-          y: 28,
-          mount: 0.5,
-          text: {
-            text: "🔍",
-            fontSize: 22,
-          },
-        },
-        SearchLabel: {
-          x: 60,
-          y: 10,
-          text: {
-            text: "Search stocks...",
-            fontSize: 24,
-            fontWeight: 700,
-            textColor: 0xffffffff,
-            fontFace: "Avenir Next",
-          },
-        },
       },
 
-      // Professional Search Results Dropdown - Aligned with search bar
       SearchResults: {
+        type: SearchResults,
         x: 1434,
         y: 106,
-        w: 380,
         alpha: 0,
-        // Outer shadow for depth
-        OuterShadow: {
-          w: 390,
-          h: 270,
-          x: -5,
-          y: -5,
-          rect: true,
-          color: 0x66000000,
-          shader: { type: Lightning.shaders.RoundedRectangle, radius: 20 },
-        },
-        // Main background with border
-        Background: {
-          w: 380,
-          h: 260,
-          rect: true,
-          color: 0xff1c1c1e, // Slightly lighter dark
-          shader: { type: Lightning.shaders.RoundedRectangle, radius: 16 },
-        },
-        // Subtle border/highlight
-        Border: {
-          w: 380,
-          h: 260,
-          rect: true,
-          color: 0x33ffffff, // Subtle white border
-          shader: { type: Lightning.shaders.RoundedRectangle, radius: 16 },
-        },
-        // Content container
-        ResultsList: {
-          x: 12,
-          y: 12,
-        },
       },
 
-      // Time selector buttons (left side, vertical) - Centered with chart
       TimeSelectorContainer: Object.assign(
         {
           x: 40,
@@ -146,7 +107,7 @@ export default class Home extends Lightning.Component {
                 w: 65,
                 h: 50,
                 rect: true,
-                color: period.id === "1M" ? 0x22ffffff : 0x11ffffff,
+                color: Colors.buttonUnfocused,
                 shader: {
                   type: Lightning.shaders.RoundedRectangle,
                   radius: 10,
@@ -158,10 +119,10 @@ export default class Home extends Lightning.Component {
                 mount: 0.5,
                 text: {
                   text: period.label,
-                  fontFace: "Avenir Next",
-                  fontSize: 20,
-                  textColor: period.id === "1M" ? 0xffffffff : 0xaaffffff,
-                  fontWeight: 700,
+                  fontFace: FontFamily.Default,
+                  fontSize: FontSize.Small,
+                  textColor: Colors.textUnfocused,
+                  fontStyle: FontStyle.Bold,
                 },
               },
             };
@@ -171,42 +132,40 @@ export default class Home extends Lightning.Component {
         )
       ),
 
-      // Main S&P 500 display - Large, bold, prominent header
       MainDisplay: {
         x: 214,
         y: 40,
         StockSymbol: {
           text: {
-            text: "VOO - Vanguard S&P 500 ETF", // Will be updated dynamically
-            fontFace: "Avenir Next",
-            fontSize: 50,
-            fontWeight: 700,
-            textColor: 0xffffffff,
+            text: "VOO - Vanguard S&P 500 ETF",
+            fontFace: FontFamily.Default,
+            fontSize: FontSize.XLarge,
+            fontStyle: FontStyle.Bold,
+            textColor: Colors.textPrimary,
           },
         },
         StockPrice: {
           y: 75,
           text: {
             text: "$428.75",
-            fontFace: "Avenir Next",
-            fontSize: 84,
-            fontWeight: 600,
-            textColor: 0xff00ff88, // Green color matching the image
+            fontFace: FontFamily.Default,
+            fontSize: FontSize.XXLarge,
+            fontStyle: FontStyle.SemiBold,
+            textColor: Colors.stockGreenBright,
           },
         },
         StockChange: {
           y: 175,
           text: {
             text: "+2.45 (+0.57%)",
-            fontFace: "Avenir Next",
-            fontSize: 28,
-            fontWeight: 500,
-            textColor: 0xff00ff88, // Same green color
+            fontFace: FontFamily.Default,
+            fontSize: FontSize.Large,
+            fontStyle: FontStyle.Medium,
+            textColor: Colors.stockGreenBright,
           },
         },
       },
 
-      // Large chart area - Well-proportioned size
       ChartContainer: {
         x: 134,
         y: 250,
@@ -226,47 +185,34 @@ export default class Home extends Lightning.Component {
   }
 
   _init(): void {
+    super._init();
+
     console.log("📊 Initializing Stock Dashboard...");
+    console.log(
+      `📐 Screen dimensions: ${this.coordsWidth}x${this.coordsHeight} (1080p design)`
+    );
+
     this._loadStockData(this.currentSymbol);
-    // Set initial button states
     this._restoreButtonStates();
+    this.currentFocusIndex = 1;
+    setTimeout(() => {
+      this._updateFocus();
+    }, 100);
   }
 
   async _active(): Promise<void> {
     try {
       console.log(`🚀 Stock Dashboard ready (${this.currentSymbol})`);
-      // Refresh data when component becomes active
       this._loadStockData(this.currentSymbol);
-      // Restore proper button selection state
       this._restoreButtonStates();
+      this._updateFocus();
     } catch (error) {
       console.error("❌ Failed to initialize:", error);
     }
   }
 
   private _restoreButtonStates(): void {
-    // Ensure button states are correct when component regains focus
-    const container = this.tag("TimeSelectorContainer");
-    if (container) {
-      TIME_PERIODS.forEach((period, index) => {
-        const button = container.tag(`TimeButton_${period.id}`);
-        if (button) {
-          const label = button.tag("Label");
-          const background = button.tag("Background");
-          const isSelected = index === this.selectedPeriodIndex;
-
-          if (label && label.text) {
-            label.text.textColor = isSelected ? 0xffffffff : 0xaaffffff;
-          }
-          if (background) {
-            background.color = isSelected ? 0x22ffffff : 0x11ffffff;
-          }
-        }
-      });
-
-      // Force stage update to ensure rendering
-      this.stage.update();
-    }
+    this._updateFocus();
   }
 
   private async _loadStockData(symbol: string): Promise<void> {
@@ -278,33 +224,41 @@ export default class Home extends Lightning.Component {
     );
 
     try {
-      // Fetch real stock data from backend (works for any symbol)
       const [quote, series] = await Promise.all([
         stocksApi.getQuote(symbol),
         stocksApi.getSeries(symbol, this.currentTimePeriod.id),
       ]);
 
-      // ALWAYS use the REAL quote price for display (from Polygon.io)
       if (quote) {
         this.currentPrice = quote.price;
-        this.currentChange = quote.change;
-        this.currentChangePct = quote.changePct;
+        console.log(`✅ Using REAL Polygon.io price: $${quote.price}`);
+      }
+
+      if (series && series.points && series.points.length > 0) {
+        const sortedPoints = series.points.slice().sort((a, b) => a.t - b.t);
+        const firstPoint = sortedPoints[0];
+        const lastPoint = sortedPoints[sortedPoints.length - 1];
+        const currentPrice = quote ? quote.price : lastPoint.c;
+        const startingPrice = firstPoint.c;
+
+        this.currentChange =
+          Math.round((currentPrice - startingPrice) * 100) / 100;
+        this.currentChangePct =
+          Math.round((this.currentChange / startingPrice) * 10000) / 10000;
+
         this._updatePriceDisplay();
 
         console.log(
-          `✅ Using REAL Polygon.io price: $${quote.price} (${
-            quote.change >= 0 ? "+" : ""
-          }${quote.change})`
+          `📊 Calculated change for ${
+            this.currentTimePeriod.id
+          }: $${startingPrice} → $${currentPrice} = ${
+            this.currentChange >= 0 ? "+" : ""
+          }${this.currentChange} (${(this.currentChangePct * 100).toFixed(2)}%)`
         );
-      }
 
-      // Update chart if series data is available (for visualization only)
-      if (series) {
         const chartData = stocksApi.formatSeriesForChart(series);
         if (chartData.length > 0) {
-          // Pass full series data with timestamps to chart
           this._updateChartWithTimestamps(series);
-
           console.log(
             `✅ Loaded ${chartData.length} chart points from ${series.source}`
           );
@@ -313,6 +267,11 @@ export default class Home extends Lightning.Component {
           this._loadFallbackData();
         }
       } else {
+        if (quote) {
+          this.currentChange = quote.change;
+          this.currentChangePct = quote.changePct;
+          this._updatePriceDisplay();
+        }
         console.warn("⚠️ No series data available, using fallback");
         this._loadFallbackData();
       }
@@ -327,22 +286,22 @@ export default class Home extends Lightning.Component {
   private _updatePriceDisplay(): void {
     const mainDisplay = this.tag("MainDisplay");
     if (mainDisplay) {
-      // Update price
+      const priceColor =
+        this.currentChange >= 0 ? Colors.stockGreenBright : Colors.stockRed;
+
       const priceElement = mainDisplay.tag("StockPrice");
       if (priceElement) {
         priceElement.text.text = stocksApi.formatPrice(this.currentPrice);
+        priceElement.text.textColor = priceColor;
       }
 
-      // Update change with color
       const changeElement = mainDisplay.tag("StockChange");
       if (changeElement) {
         changeElement.text.text = stocksApi.formatChange(
           this.currentChange,
           this.currentChangePct
         );
-        // Set color based on positive/negative change
-        const changeColor = this.currentChange >= 0 ? 0xff00ff88 : 0xffff4444; // Green or red
-        changeElement.text.textColor = changeColor;
+        changeElement.text.textColor = priceColor;
       }
     }
   }
@@ -350,30 +309,28 @@ export default class Home extends Lightning.Component {
   private _updateChart(data: number[]): void {
     const chartContainer = this.tag("ChartContainer");
     if (chartContainer) {
-      const chartComponent = chartContainer.tag("Chart");
+      const chartComponent = chartContainer.tag("Chart") as StockChart;
       if (chartComponent) {
-        (chartComponent as ChartComponent).points = data;
-        (chartComponent as ChartComponent).lineColor =
-          this.currentChange >= 0 ? "#00ff88" : "#ff4444"; // Green or red based on change
+        chartComponent.points = data;
+        chartComponent.lineColor =
+          this.currentChange >= 0 ? "#00ff88" : "#ff4444";
       }
     }
   }
 
-  private _updateChartWithTimestamps(seriesData: any): void {
+  private _updateChartWithTimestamps(seriesData: ISeriesData): void {
     const chartContainer = this.tag("ChartContainer");
     if (chartContainer) {
-      const chartComponent = chartContainer.tag("Chart");
+      const chartComponent = chartContainer.tag("Chart") as StockChart;
       if (chartComponent) {
-        // Pass full series data with timestamps and period info
-        (chartComponent as any).seriesData = seriesData;
-        (chartComponent as any).lineColor =
-          this.currentChange >= 0 ? "#00ff88" : "#ff4444"; // Green or red based on change
+        chartComponent.seriesData = seriesData;
+        chartComponent.lineColor =
+          this.currentChange >= 0 ? "#00ff88" : "#ff4444";
       }
     }
   }
 
   private _loadFallbackData(): void {
-    // Generate realistic, consistent VOO fallback data matching backend
     const basePrice = 615.3;
     const pointCount =
       this.currentTimePeriod.days === 1
@@ -383,8 +340,6 @@ export default class Home extends Lightning.Component {
         : 200;
 
     const fallbackData: number[] = [];
-
-    // Use deterministic seed for consistency matching backend logic
     const seed = this.currentTimePeriod.id.charCodeAt(0);
     let seededRandom = seed;
     const deterministicRandom = () => {
@@ -394,18 +349,15 @@ export default class Home extends Lightning.Component {
 
     for (let i = 0; i < pointCount; i++) {
       const timeProgress = i / pointCount;
-
-      // Create realistic VOO price movements matching backend logic
       const periodMultiplier =
         {
-          "1D": 0.002, // ±0.2% for intraday
-          "1W": 0.005, // ±0.5% for weekly
-          "1M": 0.015, // ±1.5% for monthly
-          "3M": 0.03, // ±3% for quarterly
-          "1Y": 0.08, // ±8% for yearly
+          "1D": 0.002,
+          "1W": 0.005,
+          "1M": 0.015,
+          "3M": 0.03,
+          "1Y": 0.08,
         }[this.currentTimePeriod.id] || 0.01;
 
-      // Create gradual trend with market-like volatility
       const trendDirection =
         this.currentTimePeriod.id === "1Y"
           ? 1
@@ -414,8 +366,6 @@ export default class Home extends Lightning.Component {
           : -1;
       const overallTrend =
         trendDirection * periodMultiplier * timeProgress * 0.3;
-
-      // Add market cycles and realistic volatility
       const marketCycle =
         Math.sin(timeProgress * Math.PI * 2) * periodMultiplier * 0.4;
       const volatility = (deterministicRandom() - 0.5) * periodMultiplier * 0.8;
@@ -425,13 +375,10 @@ export default class Home extends Lightning.Component {
       let price =
         basePrice *
         (1 + overallTrend + marketCycle + volatility + dailyVariation);
-
-      // Ensure reasonable bounds for VOO
       price = Math.max(580, Math.min(650, price));
       fallbackData.push(Math.round(price * 100) / 100);
     }
 
-    // Update price display with latest fallback data
     const latestPrice = fallbackData[fallbackData.length - 1];
     const previousPrice = fallbackData[fallbackData.length - 2];
 
@@ -445,84 +392,110 @@ export default class Home extends Lightning.Component {
   }
 
   _handleUp(): boolean {
-    if (this.isSearchActive && this.searchResults.length > 0) {
-      // Navigate search results
-      if (this.selectedSearchIndex > 0) {
-        this.selectedSearchIndex--;
-        this._updateSearchSelection();
+    if (this.currentFocusIndex === 0) {
+      const searchBar = this.tag("SearchBar") as SearchBar;
+      const searchResults = this.tag("SearchResults") as SearchResults;
+
+      if (searchBar && searchResults && this.searchResults.length > 0) {
+        if (searchResults._handleUp && searchResults._handleUp()) {
+          this.selectedSearchIndex = searchResults.getSelectedIndex();
+          if (searchBar.setSelectedIndex) {
+            searchBar.setSelectedIndex(this.selectedSearchIndex);
+          }
+          return true;
+        }
       }
+      this.currentFocusIndex = this.focusableElements.length - 1;
+      this._updateFocus();
+      return true;
     } else {
-      // Navigate time periods
-      if (this.selectedPeriodIndex > 0) {
-        this._selectTimePeriod(this.selectedPeriodIndex - 1);
+      const currentButtonIndex = this.currentFocusIndex - 1;
+      if (currentButtonIndex > 0) {
+        this.currentFocusIndex = currentButtonIndex;
+        this._selectTimePeriod(currentButtonIndex - 1);
+      } else {
+        this.currentFocusIndex = 0;
+        this._updateFocus();
       }
+      return true;
     }
-    return true;
   }
 
   _handleDown(): boolean {
-    if (this.isSearchActive && this.searchResults.length > 0) {
-      // Navigate search results
-      if (this.selectedSearchIndex < this.searchResults.length - 1) {
-        this.selectedSearchIndex++;
-        this._updateSearchSelection();
+    if (this.currentFocusIndex === 0) {
+      const searchBar = this.tag("SearchBar") as SearchBar;
+      const searchResults = this.tag("SearchResults") as SearchResults;
+
+      if (searchBar && searchResults && this.searchResults.length > 0) {
+        if (searchResults._handleDown && searchResults._handleDown()) {
+          this.selectedSearchIndex = searchResults.getSelectedIndex();
+          if (searchBar.setSelectedIndex) {
+            searchBar.setSelectedIndex(this.selectedSearchIndex);
+          }
+          return true;
+        }
       }
+      this.currentFocusIndex = 1;
+      this._updateFocus();
+      return true;
     } else {
-      // Navigate time periods
-      if (this.selectedPeriodIndex < TIME_PERIODS.length - 1) {
-        this._selectTimePeriod(this.selectedPeriodIndex + 1);
+      const currentButtonIndex = this.currentFocusIndex - 1;
+      if (currentButtonIndex < TIME_PERIODS.length - 1) {
+        this.currentFocusIndex = currentButtonIndex + 2;
+        this._updateFocus();
       }
+      return true;
     }
-    return true;
+  }
+
+  _handleLeft(): boolean {
+    if (this.currentFocusIndex === 0) {
+      this.currentFocusIndex = 1;
+      this._updateFocus();
+      return true;
+    }
+    return false;
+  }
+
+  _handleRight(): boolean {
+    if (this.currentFocusIndex > 0) {
+      this.currentFocusIndex = 0;
+      this._updateFocus();
+      return true;
+    }
+    return false;
   }
 
   _handleEnter(): boolean {
-    if (this.isSearchActive) {
-      if (
-        this.searchResults.length > 0 &&
-        this.searchResults[this.selectedSearchIndex]
-      ) {
-        // Select the stock
-        const selected = this.searchResults[this.selectedSearchIndex];
-        this._selectStock(selected.symbol, selected.name);
-      } else if (this.searchQuery.length >= 1) {
-        // Search with current query
-        this._performSearch();
+    if (this.currentFocusIndex === 0) {
+      const searchBar = this.tag("SearchBar") as SearchBar;
+      const searchResults = this.tag("SearchResults") as SearchResults;
+
+      if (searchBar && searchResults && this.searchResults.length > 0) {
+        const selectedResult = searchResults.getSelectedResult();
+        if (selectedResult) {
+          this._selectStock(selectedResult.symbol, selectedResult.name);
+          return true;
+        }
       }
+      return false;
     } else {
-      // Activate search
-      this._activateSearch();
+      const buttonIndex = this.currentFocusIndex - 1;
+      if (buttonIndex >= 0 && buttonIndex < TIME_PERIODS.length) {
+        this._selectTimePeriod(buttonIndex);
+        return true;
+      }
     }
-    return true;
+    return false;
   }
 
-  _handleKey(event: any): boolean {
-    const key = event.key;
-
-    // Activate search with 'S' or '/'
-    if (!this.isSearchActive && (key === "s" || key === "S" || key === "/")) {
-      this._activateSearch();
-      return true;
-    }
-
-    // Handle typing when search is active
-    if (this.isSearchActive) {
-      if (key === "Backspace") {
-        this.searchQuery = this.searchQuery.slice(0, -1);
-        this._updateSearchText();
-        this._debouncedSearch();
-        return true;
-      } else if (key === "Escape") {
-        this._deactivateSearch();
-        return true;
-      } else if (key.length === 1 && /[a-zA-Z0-9]/.test(key)) {
-        this.searchQuery += key.toUpperCase();
-        this._updateSearchText();
-        this._debouncedSearch();
-        return true;
+  _handleKey(event: KeyboardEvent): boolean {
+    if (this.currentFocusIndex === 0) {
+      const searchBar = this.tag("SearchBar");
+      if (searchBar) {
+        return false;
       }
     }
-
     return false;
   }
 
@@ -533,347 +506,40 @@ export default class Home extends Lightning.Component {
     this.selectedPeriodIndex = newIndex;
     this.currentTimePeriod = newPeriod;
 
-    // Update button appearances
-    const container = this.tag("TimeSelectorContainer");
-    if (container) {
-      // Update ALL buttons to ensure proper state
-      TIME_PERIODS.forEach((period) => {
-        const button = container.tag(`TimeButton_${period.id}`);
-        if (button) {
-          const label = button.tag("Label");
-          const background = button.tag("Background");
-          const isSelected = period.id === newPeriod.id;
-
-          if (label && label.text) {
-            label.text.textColor = isSelected ? 0xffffffff : 0xaaffffff;
-          }
-          if (background) {
-            background.setSmooth(
-              "color",
-              isSelected ? 0x22ffffff : 0x11ffffff,
-              {
-                duration: 0.2,
-              }
-            );
-          }
-        }
-      });
-
-      // Force stage update
-      this.stage.update();
-    }
+    this._updateFocus();
 
     console.log(`🕐 Time period changed to: ${newPeriod.label}`);
-
-    // Load new data for the selected time period
     this._loadStockData(this.currentSymbol);
   }
 
-  private _activateSearch(): void {
-    this.isSearchActive = true;
-    this.searchQuery = "";
-    this.searchResults = [];
-
-    // Update search bar appearance
-    const searchBar = this.tag("SearchBar");
-    if (searchBar) {
-      // Update SearchLabel directly - simplest approach
-      const searchLabel = searchBar.tag("SearchLabel");
-      if (searchLabel && searchLabel.text) {
-        searchLabel.text.text = "_";
-        searchLabel.text.textColor = 0xffffffff;
-        searchLabel.text.fontSize = 24; // Same as placeholder
-        searchLabel.text.fontWeight = 700; // Same as placeholder
-      }
-    }
-
-    console.log("🔍 Search activated - type to search!");
-  }
-
-  private _deactivateSearch(): void {
-    this.isSearchActive = false;
-    this.searchQuery = "";
-    this._clearSearchResults();
-
-    const searchBar = this.tag("SearchBar");
-    if (searchBar) {
-      // Restore SearchLabel to default
-      const searchLabel = searchBar.tag("SearchLabel");
-      if (searchLabel && searchLabel.text) {
-        searchLabel.text.text = "Search stocks...";
-        searchLabel.text.textColor = 0xffffffff; // WHITE
-        searchLabel.text.fontSize = 24;
-        searchLabel.text.fontWeight = 700;
-      }
-    }
-
-    console.log("🔍 Search deactivated");
-  }
-
-  private _updateSearchText(): void {
-    const searchBar = this.tag("SearchBar");
-    if (!searchBar) {
-      console.log("❌ SearchBar not found!");
-      return;
-    }
-
-    if (this.isSearchActive) {
-      // Update SearchLabel text while searching
-      const displayText =
-        this.searchQuery.length > 0 ? `${this.searchQuery}_` : "_";
-
-      const searchLabel = searchBar.tag("SearchLabel");
-      if (searchLabel) {
-        console.log(`🔍 Updating SearchLabel with: "${displayText}"`);
-        console.log(`📝 Current text before:`, searchLabel.text);
-
-        // Direct property assignment
-        searchLabel.text.text = displayText;
-        searchLabel.text.textColor = 0xffffffff;
-        searchLabel.text.fontSize = 24; // Same as placeholder
-        searchLabel.text.fontWeight = 700; // Same as placeholder
-
-        console.log(`📝 Current text after:`, searchLabel.text);
-
-        // Force stage update
-        this.stage.update();
-      } else {
-        console.log("❌ SearchLabel not found!");
-      }
-
-      console.log(`✍️ Search query is now: "${displayText}"`);
-    }
-  }
-
-  private _debouncedSearch(): void {
-    // Clear existing timeout
-    if (this.searchTimeout) {
-      clearTimeout(this.searchTimeout);
-    }
-
-    // Clear results if query is empty
-    if (this.searchQuery.length < 1) {
-      this._clearSearchResults();
-      return;
-    }
-
-    // Wait 500ms after user stops typing before searching
-    this.searchTimeout = setTimeout(() => {
-      this._performSearch();
-    }, 500);
-  }
-
-  private async _performSearch(): Promise<void> {
-    if (!this.searchQuery || this.searchQuery.length < 1) return;
-
-    console.log(`🔍 Searching for: ${this.searchQuery}`);
-
-    try {
-      const results = await stocksApi.searchStocks(this.searchQuery);
-
-      // Apply intelligent ranking to prioritize better matches
-      const rankedResults = this._rankSearchResults(results, this.searchQuery);
-      this.searchResults = rankedResults.slice(0, 4); // Show top 4 results
-      this.selectedSearchIndex = 0;
-
-      console.log(`✅ Found ${this.searchResults.length} results (ranked)`);
-
-      this._showSearchResults();
-    } catch (error) {
-      console.error("❌ Search failed:", error);
-      this.searchResults = [];
-    }
-  }
-
-  private _rankSearchResults(results: any[], query: string): any[] {
-    const queryUpper = query.toUpperCase();
-
-    // Score each result based on relevance
-    const scored = results.map((result) => {
-      const symbol = (result.symbol || "").toUpperCase();
-      const name = (result.name || "").toUpperCase();
-      let score = 0;
-
-      // PRIORITY 1: Exact symbol match (highest priority)
-      if (symbol === queryUpper) {
-        score += 1000;
-      }
-      // PRIORITY 2: Symbol starts with query
-      else if (symbol.startsWith(queryUpper)) {
-        score += 500;
-        // Bonus: shorter symbols rank higher (AAPL > AAPLD)
-        score += Math.max(0, 10 - symbol.length);
-      }
-      // PRIORITY 3: Symbol contains query
-      else if (symbol.includes(queryUpper)) {
-        score += 100;
-        // Bonus: earlier position in symbol
-        const position = symbol.indexOf(queryUpper);
-        score += Math.max(0, 10 - position);
-      }
-
-      // PRIORITY 4: Name matches (lower priority than symbol)
-      if (name.includes(queryUpper)) {
-        score += 50;
-        // Bonus: starts with query
-        if (name.startsWith(queryUpper)) {
-          score += 25;
-        }
-      }
-
-      // Penalty for very long symbols (likely less relevant)
-      if (symbol.length > 6) {
-        score -= 5;
-      }
-
-      return Object.assign({}, result, { _score: score });
-    });
-
-    // Sort by score (highest first)
-    scored.sort((a, b) => b._score - a._score);
-
-    console.log(
-      `📊 Top results for "${query}":`,
-      scored.slice(0, 4).map((r) => `${r.symbol} (score: ${r._score})`)
-    );
-
-    return scored;
-  }
-
   private _showSearchResults(): void {
-    const resultsContainer = this.tag("SearchResults");
+    const resultsContainer = this.tag("SearchResults") as SearchResults;
     if (!resultsContainer) return;
 
     resultsContainer.setSmooth("alpha", 1, { duration: 0.2 });
 
-    const resultsList = resultsContainer.tag("ResultsList");
-    if (!resultsList) return;
-
-    // Clear old results
-    resultsList.children = [];
-
-    // Add new results
-    this.searchResults.forEach((result, index) => {
-      const isSelected = index === this.selectedSearchIndex;
-
-      resultsList.childList.add({
-        ref: `Result_${index}`,
-        y: index * 58 + (index > 0 ? 2 : 0),
-        w: 356,
-        h: 56,
-        rect: true,
-        clipping: true,
-        color: isSelected ? 0xff2a2a2e : 0xff1e1e20,
-        shader: { type: Lightning.shaders.RoundedRectangle, radius: 10 },
-        // Left accent bar - inside card with rounded ends
-        AccentBar: {
-          x: 1,
-          y: 1,
-          w: 4,
-          h: 54,
-          rect: true,
-          color: isSelected ? 0xff00ff88 : 0x00000000,
-          shader: {
-            type: Lightning.shaders.RoundedRectangle,
-            radius: [9, 0, 0, 9],
-          },
-        },
-        // Symbol with better styling
-        Symbol: {
-          x: 20,
-          y: 14,
-          text: {
-            text: result.symbol,
-            fontFace: "Avenir Next",
-            fontSize: 19,
-            fontWeight: 700,
-            textColor: isSelected ? 0xffffffff : 0xffeeeeee,
-            letterSpacing: 0.5,
-          },
-        },
-        // Company name with better hierarchy
-        Name: {
-          x: 20,
-          y: 36,
-          w: 320,
-          text: {
-            text:
-              result.name.length > 38
-                ? `${result.name.substring(0, 38)}...`
-                : result.name,
-            fontFace: "Avenir Next",
-            fontSize: 12,
-            textColor: isSelected ? 0xffaaaaaa : 0xff888888,
-            maxLines: 1,
-            wordWrap: false,
-          },
-        },
-        // Subtle arrow indicator for selected
-        Arrow: {
-          x: 330,
-          y: 28,
-          mount: 0.5,
-          alpha: isSelected ? 1 : 0,
-          text: {
-            text: "→",
-            fontSize: 20,
-            textColor: 0xff00ff88,
-          },
-        },
-      });
-    });
+    if (resultsContainer.setResults) {
+      resultsContainer.setResults(this.searchResults);
+      resultsContainer.setSelectedIndex(this.selectedSearchIndex);
+    }
   }
 
   private _updateSearchSelection(): void {
-    const resultsList = this.tag("SearchResults")?.tag("ResultsList");
-    if (!resultsList) return;
+    const resultsContainer = this.tag("SearchResults") as SearchResults;
+    if (!resultsContainer) return;
 
-    this.searchResults.forEach((result, index) => {
-      const resultItem = resultsList.tag(`Result_${index}`);
-      if (resultItem) {
-        const isSelected = index === this.selectedSearchIndex;
-
-        // Update card background color
-        resultItem.setSmooth("color", isSelected ? 0xff2a2a2e : 0xff1e1e20, {
-          duration: 0.15,
-        });
-
-        // Update accent bar
-        const accent = resultItem.tag("AccentBar");
-        if (accent) {
-          accent.setSmooth("color", isSelected ? 0xff00ff88 : 0x00000000, {
-            duration: 0.15,
-          });
-        }
-
-        // Update symbol text color
-        const symbol = resultItem.tag("Symbol");
-        if (symbol && symbol.text) {
-          symbol.text.textColor = isSelected ? 0xffffffff : 0xffeeeeee;
-        }
-
-        // Update name text color
-        const name = resultItem.tag("Name");
-        if (name && name.text) {
-          name.text.textColor = isSelected ? 0xffaaaaaa : 0xff888888;
-        }
-
-        // Update arrow visibility
-        const arrow = resultItem.tag("Arrow");
-        if (arrow) {
-          arrow.setSmooth("alpha", isSelected ? 1 : 0, { duration: 0.15 });
-        }
-      }
-    });
-
-    // Force stage update for smooth rendering
-    this.stage.update();
+    if (resultsContainer.setSelectedIndex) {
+      resultsContainer.setSelectedIndex(this.selectedSearchIndex);
+    }
   }
 
   private _clearSearchResults(): void {
-    const resultsContainer = this.tag("SearchResults");
+    const resultsContainer = this.tag("SearchResults") as SearchResults;
     if (resultsContainer) {
       resultsContainer.setSmooth("alpha", 0, { duration: 0.2 });
+      if (resultsContainer.clearResults) {
+        resultsContainer.clearResults();
+      }
     }
     this.searchResults = [];
   }
@@ -884,7 +550,6 @@ export default class Home extends Lightning.Component {
     this.currentSymbol = symbol;
     this.currentStockName = name;
 
-    // Update title
     const mainDisplay = this.tag("MainDisplay");
     if (mainDisplay) {
       const titleElement = mainDisplay.tag("StockSymbol");
@@ -893,12 +558,142 @@ export default class Home extends Lightning.Component {
       }
     }
 
-    // Deactivate search and load new stock data
-    this._deactivateSearch();
+    const searchBar = this.tag("SearchBar") as SearchBar;
+    if (searchBar && searchBar._unfocus) {
+      searchBar._unfocus();
+    }
+
+    this.currentFocusIndex = 1;
+    this._updateFocus();
+
     await this._loadStockData(symbol);
   }
 
   _getFocused(): Lightning.Component {
-    return this; // Keep focus on main component for navigation
+    if (this.currentFocusIndex === 0) {
+      const searchBar = this.tag("SearchBar");
+      if (searchBar) {
+        return searchBar as Lightning.Component;
+      }
+    }
+    return this as Lightning.Component;
+  }
+
+  private _updateFocus(): void {
+    const searchBar = this.tag("SearchBar") as SearchBar;
+    if (searchBar) {
+      if (this.currentFocusIndex === 0) {
+        if (searchBar._focus) searchBar._focus();
+      } else {
+        if (searchBar._unfocus) searchBar._unfocus();
+      }
+    }
+
+    const container = this.tag("TimeSelectorContainer");
+    if (container) {
+      TIME_PERIODS.forEach((period, index) => {
+        const button = container.tag(`TimeButton_${period.id}`);
+        if (button) {
+          const isFocused = this.currentFocusIndex === index + 1;
+          const background = button.tag("Background");
+          const label = button.tag("Label");
+          if (background) {
+            const isSelected = index === this.selectedPeriodIndex;
+            if (isFocused && isSelected) {
+              background.setSmooth("color", Colors.buttonFocused, {
+                duration: 0.2,
+              });
+              if (label && label.text) {
+                label.text.textColor = Colors.textPrimary;
+              }
+            } else if (isFocused && !isSelected) {
+              background.setSmooth("color", Colors.buttonHover, {
+                duration: 0.2,
+              });
+              if (label && label.text) {
+                label.text.textColor = Colors.textUnfocused;
+              }
+            } else {
+              background.setSmooth("color", Colors.buttonUnfocused, {
+                duration: 0.2,
+              });
+              if (label && label.text) {
+                label.text.textColor = Colors.textUnfocused;
+              }
+            }
+          }
+        }
+      });
+    }
+
+    this.stage.update();
+  }
+
+  $searchActivated(event: ISearchActivatedEvent): void {
+    this.isSearchActive = true;
+    console.log("🔍 Search activated from SearchBar component");
+  }
+
+  $searchDeactivated(event: ISearchDeactivatedEvent): void {
+    this.isSearchActive = false;
+    this.searchResults = [];
+    this._clearSearchResults();
+    console.log("🔍 Search deactivated from SearchBar component");
+  }
+
+  $showSearchResults(event: IShowSearchResultsEvent): void {
+    this.searchResults = event.results || [];
+    this.selectedSearchIndex = event.selectedIndex || 0;
+    const searchResults = this.tag("SearchResults") as SearchResults;
+    if (searchResults && searchResults.setResults) {
+      searchResults.setResults(this.searchResults);
+      searchResults.setSelectedIndex(this.selectedSearchIndex);
+    }
+    const resultsContainer = this.tag("SearchResults");
+    if (resultsContainer) {
+      resultsContainer.setSmooth("alpha", 1, { duration: 0.2 });
+    }
+  }
+
+  $updateSearchSelection(event: IUpdateSearchSelectionEvent): void {
+    this.selectedSearchIndex = event.selectedIndex || 0;
+    const searchResults = this.tag("SearchResults") as SearchResults;
+    if (searchResults && searchResults.setSelectedIndex) {
+      searchResults.setSelectedIndex(this.selectedSearchIndex);
+    }
+  }
+
+  $navigateSearchResultsUp(event: INavigateSearchResultsEvent): void {
+    const searchResults = this.tag("SearchResults") as SearchResults;
+    if (searchResults && searchResults._handleUp) {
+      searchResults._handleUp();
+      this.selectedSearchIndex = searchResults.getSelectedIndex();
+      const searchBar = this.tag("SearchBar") as SearchBar;
+      if (searchBar && searchBar.setSelectedIndex) {
+        searchBar.setSelectedIndex(this.selectedSearchIndex);
+      }
+    }
+  }
+
+  $navigateSearchResultsDown(event: INavigateSearchResultsEvent): void {
+    const searchResults = this.tag("SearchResults") as SearchResults;
+    if (searchResults && searchResults._handleDown) {
+      searchResults._handleDown();
+      this.selectedSearchIndex = searchResults.getSelectedIndex();
+      const searchBar = this.tag("SearchBar") as SearchBar;
+      if (searchBar && searchBar.setSelectedIndex) {
+        searchBar.setSelectedIndex(this.selectedSearchIndex);
+      }
+    }
+  }
+
+  $clearSearchResults(): void {
+    this._clearSearchResults();
+  }
+
+  $selectStock(event: ISelectStockEvent): void {
+    if (event && event.symbol && event.name) {
+      this._selectStock(event.symbol, event.name);
+    }
   }
 }

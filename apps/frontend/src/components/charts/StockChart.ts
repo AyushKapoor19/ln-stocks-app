@@ -1,4 +1,7 @@
 import { Lightning } from "@lightningjs/sdk";
+import BaseComponent from "../BaseComponent";
+import { Colors } from "../../constants/Colors";
+import { ISeriesData, ISeriesPoint } from "../../types/events";
 
 interface ChartConfiguration {
   chartWidth?: number;
@@ -10,14 +13,19 @@ interface ChartConfiguration {
   canvasTop?: number;
 }
 
-export default class StockChart extends Lightning.Component {
+/**
+ * StockChart Component
+ *
+ * All dimensions are defined in 1080p coordinates.
+ * Canvas is automatically scaled based on device resolution and precision.
+ */
+export default class StockChart extends BaseComponent {
   private canvas: HTMLCanvasElement | null = null;
   private ctx: CanvasRenderingContext2D | null = null;
   private chartData: number[] = [];
-  private timestamps: number[] = []; // Store timestamps for dynamic labels
+  private timestamps: number[] = [];
   private animationProgress = 0;
 
-  // Configurable properties (with defaults)
   private chartWidth = 1600;
   private chartHeight = 520;
   private padding = 80;
@@ -25,25 +33,23 @@ export default class StockChart extends Lightning.Component {
   private _lineColor = "#00ff88";
   private canvasLeft = 134;
   private canvasTop = 380;
-  private currentPeriod = "1W"; // Track current time period
+  private currentPeriod = "1W";
 
   static _template(): object {
     return {
-      w: (w: number) => w, // Use parent width
-      h: (h: number) => h, // Use parent height
+      w: (w: number) => w,
+      h: (h: number) => h,
       rect: true,
-      color: 0x00000000, // Transparent
+      color: Colors.transparent,
     };
   }
 
   _init(): void {
-    // Read configuration from parent props
     this._readConfiguration();
     this.createCanvasChart();
   }
 
   private _readConfiguration(): void {
-    // Read props passed from parent component (Lightning.js props)
     const config = this as unknown as ChartConfiguration;
     this.chartWidth = config.chartWidth || this.chartWidth;
     this.chartHeight = config.chartHeight || this.chartHeight;
@@ -65,44 +71,54 @@ export default class StockChart extends Lightning.Component {
   }
 
   private createCanvasChart(): void {
-    // Create high-DPI canvas element
-    const dpr = window.devicePixelRatio || 1;
+    const stagePrecision = this.precision;
+    const stageDevicePixelRatio = (this.stage.getOption('devicePixelRatio') as number) || 1;
+    const renderDpr = stageDevicePixelRatio * (window.devicePixelRatio || 1);
+
     this.canvas = document.createElement("canvas");
 
-    // Set actual canvas size for high DPI using configured dimensions
-    this.canvas.width = this.chartWidth * dpr;
-    this.canvas.height = this.chartHeight * dpr;
+    const designWidth = this.chartWidth;
+    const designHeight = this.chartHeight;
 
-    // Set CSS size to maintain visual size using configured dimensions
-    this.canvas.style.width = `${this.chartWidth}px`;
-    this.canvas.style.height = `${this.chartHeight}px`;
+    this.canvas.width = designWidth * renderDpr;
+    this.canvas.height = designHeight * renderDpr;
+
+    this.canvas.style.width = `${designWidth}px`;
+    this.canvas.style.height = `${designHeight}px`;
     this.canvas.style.position = "absolute";
-    this.canvas.style.left = `${this.canvasLeft}px`; // Use configured position
-    this.canvas.style.top = `${this.canvasTop}px`; // Use configured position
+    this.canvas.style.left = `${this.canvasLeft}px`;
+    this.canvas.style.top = `${this.canvasTop}px`;
     this.canvas.style.zIndex = "10";
     this.canvas.style.opacity = "0";
-    this.canvas.style.transform = "translateY(20px)";
+
+    const baseTransform = `scale(${stagePrecision})`;
+    this.canvas.style.transform = `${baseTransform} translateY(20px)`;
+    this.canvas.style.transformOrigin = "0 0";
     this.canvas.style.transition = "all 1.2s cubic-bezier(0.4, 0, 0.2, 1)";
 
     this.ctx = this.canvas.getContext("2d");
 
     if (this.ctx) {
-      // Scale context for high DPI
-      this.ctx.scale(dpr, dpr);
-
-      // Enable better rendering
+      this.ctx.scale(renderDpr, renderDpr);
       this.ctx.imageSmoothingEnabled = true;
       this.ctx.imageSmoothingQuality = "high";
-
-      // Better text rendering
-      (this.ctx as any).textRendering = "optimizeLegibility";
+      // @ts-ignore - textRendering is not in CanvasRenderingContext2D types but works in browsers
+      this.ctx.textRendering = "optimizeLegibility";
     }
 
-    // Add to DOM
     const canvasContainer = document.getElementById("app") as HTMLCanvasElement;
     if (canvasContainer && canvasContainer.parentNode) {
       canvasContainer.parentNode.appendChild(this.canvas);
     }
+
+    console.log(
+      `📊 Canvas created with precision: ${stagePrecision.toFixed(
+        3
+      )}, renderDpr: ${renderDpr.toFixed(3)}`
+    );
+    console.log(
+      `📐 Design size: ${designWidth}x${designHeight}, Canvas pixels: ${this.canvas.width}x${this.canvas.height}`
+    );
   }
 
   set points(data: number[]) {
@@ -112,18 +128,15 @@ export default class StockChart extends Lightning.Component {
 
     this.chartData = data;
     this.animationProgress = 0;
-
-    // Start animation
     this.animateChart();
   }
 
-  // New setter to receive full series data with timestamps
-  set seriesData(data: any) {
+  set seriesData(data: ISeriesData) {
     if (!data || !data.points || data.points.length === 0) return;
 
     this.currentPeriod = data.period || "1W";
-    this.timestamps = data.points.map((p: any) => p.t);
-    this.chartData = data.points.map((p: any) => p.c);
+    this.timestamps = data.points.map((p: ISeriesPoint) => p.t);
+    this.chartData = data.points.map((p: ISeriesPoint) => p.c);
     this.animationProgress = 0;
 
     console.log(
@@ -147,15 +160,16 @@ export default class StockChart extends Lightning.Component {
   private animateChart(): void {
     if (!this.canvas) return;
 
-    // Slide in animation
+    const stagePrecision = this.precision;
+    const baseTransform = `scale(${stagePrecision})`;
+
     setTimeout(() => {
       if (this.canvas) {
         this.canvas.style.opacity = "1";
-        this.canvas.style.transform = "translateY(0)";
+        this.canvas.style.transform = `${baseTransform} translateY(0)`;
       }
     }, 100);
 
-    // Animate drawing
     this.animateDrawing();
   }
 
@@ -179,7 +193,6 @@ export default class StockChart extends Lightning.Component {
   private drawChart(): void {
     if (!this.ctx || !this.chartData.length) return;
 
-    // Use configured dimensions instead of hardcoded values
     const width = this.chartWidth;
     const height = this.chartHeight;
     const padding = this.padding;
@@ -190,15 +203,12 @@ export default class StockChart extends Lightning.Component {
     this.ctx.fillStyle = "#000000";
     this.ctx.fillRect(0, 0, width, height);
 
-    // Calculate data bounds
-    const min = Math.min(...this.chartData);
-    const max = Math.max(...this.chartData);
+    const min = Math.min.apply(null, this.chartData);
+    const max = Math.max.apply(null, this.chartData);
     const range = Math.max(max - min, 1);
 
-    // Draw grid lines FIRST (behind everything else)
     this.drawGridLines(width, height, padding, bottomPadding, min, max);
 
-    // Calculate visible points based on animation progress
     const visiblePoints = Math.floor(
       this.chartData.length * this.animationProgress
     );
@@ -206,7 +216,6 @@ export default class StockChart extends Lightning.Component {
 
     const data = this.chartData.slice(0, visiblePoints);
 
-    // Create dark gradient for area fill (subtle, professional)
     const gradient = this.ctx.createLinearGradient(
       0,
       padding,
@@ -214,22 +223,18 @@ export default class StockChart extends Lightning.Component {
       height - bottomPadding
     );
 
-    // Use dark gradient colors based on line color
-    const isPositive = this._lineColor.includes("00ff88"); // Green line
+    const isPositive = this._lineColor.includes("00ff88");
 
     if (isPositive) {
-      // Dark green gradient for positive
       gradient.addColorStop(0, `rgba(0, 100, 80, 0.3)`);
       gradient.addColorStop(0.5, `rgba(0, 60, 50, 0.15)`);
       gradient.addColorStop(1, `rgba(0, 30, 25, 0.0)`);
     } else {
-      // Dark red gradient for negative
       gradient.addColorStop(0, `rgba(100, 30, 30, 0.3)`);
       gradient.addColorStop(0.5, `rgba(60, 20, 20, 0.15)`);
       gradient.addColorStop(1, `rgba(30, 10, 10, 0.0)`);
     }
 
-    // Draw area fill first
     this.ctx.beginPath();
     data.forEach((point, index) => {
       const x = padding + (index / (data.length - 1)) * (width - 2 * padding);
@@ -248,7 +253,6 @@ export default class StockChart extends Lightning.Component {
       }
     });
 
-    // Complete the area to bottom
     const lastX =
       padding + ((data.length - 1) / (data.length - 1)) * (width - 2 * padding);
     const bottomY = height - bottomPadding;
@@ -258,11 +262,9 @@ export default class StockChart extends Lightning.Component {
     this.ctx.fillStyle = gradient;
     this.ctx.fill();
 
-    // Draw smooth curved line using quadratic curves
     this.ctx.beginPath();
 
     if (data.length > 2) {
-      // Calculate points for smooth curve
       const points = data.map((point, index) => ({
         x: padding + (index / (data.length - 1)) * (width - 2 * padding),
         y:
@@ -270,15 +272,12 @@ export default class StockChart extends Lightning.Component {
           (1 - (point - min) / range) * (height - padding - bottomPadding),
       }));
 
-      // Start the path
       this.ctx.moveTo(points[0].x, points[0].y);
 
-      // Draw smooth curves between points
       for (let i = 1; i < points.length - 1; i++) {
         const currentPoint = points[i];
         const nextPoint = points[i + 1];
 
-        // Calculate control point for smooth curve
         const controlPointX = (currentPoint.x + nextPoint.x) / 2;
         const controlPointY = (currentPoint.y + nextPoint.y) / 2;
 
@@ -290,11 +289,9 @@ export default class StockChart extends Lightning.Component {
         );
       }
 
-      // Draw to the last point
       const lastPoint = points[points.length - 1];
       this.ctx.lineTo(lastPoint.x, lastPoint.y);
     } else {
-      // Fallback for small datasets
       data.forEach((point, index) => {
         const x = padding + (index / (data.length - 1)) * (width - 2 * padding);
         const y =
@@ -318,18 +315,14 @@ export default class StockChart extends Lightning.Component {
     this.ctx.lineCap = "round";
     this.ctx.lineJoin = "round";
 
-    // Add subtle glow effect
     this.ctx.shadowColor = this._lineColor;
     this.ctx.shadowBlur = 3;
     this.ctx.shadowOffsetX = 0;
     this.ctx.shadowOffsetY = 0;
 
     this.ctx.stroke();
-
-    // Reset shadow for other drawings
     this.ctx.shadowBlur = 0;
 
-    // Draw month labels on X-axis and Y-axis price labels
     this.drawMonthLabels(width, height, padding, bottomPadding);
     this.drawPriceLabels(width, height, padding, bottomPadding, min, max);
   }
@@ -344,12 +337,10 @@ export default class StockChart extends Lightning.Component {
   ): void {
     if (!this.ctx) return;
 
-    // Draw subtle horizontal grid lines aligned with Y-axis prices
-    const labelCount = 5; // Match the number of Y-axis price labels
+    const labelCount = 5;
 
-    this.ctx.strokeStyle = "rgba(255, 255, 255, 0.1)"; // Subtle solid lines
+    this.ctx.strokeStyle = "rgba(255, 255, 255, 0.1)";
     this.ctx.lineWidth = 1;
-    // No dashes - solid lines for cleaner look
 
     for (let i = 0; i < labelCount; i++) {
       const y =
@@ -375,21 +366,16 @@ export default class StockChart extends Lightning.Component {
     this.ctx.font = "16px Arial";
     this.ctx.textAlign = "center";
 
-    // Number of labels to show
     const labelCount = 8;
 
-    // Draw labels EVENLY SPACED across the chart width
     for (let i = 0; i < labelCount; i++) {
-      // Calculate X position - EVENLY distributed across chart width
       const x = padding + (i / (labelCount - 1)) * (width - 2 * padding);
       const y = height - bottomPadding + 40;
 
-      // Calculate corresponding data index for this position
       const dataIndex = Math.floor(
         (i / (labelCount - 1)) * (this.chartData.length - 1)
       );
 
-      // Get timestamp for this data point
       const labelText = this.generateTimeLabel(
         dataIndex,
         this.chartData.length
@@ -405,12 +391,10 @@ export default class StockChart extends Lightning.Component {
     dataIndex: number,
     totalDataPoints: number
   ): string {
-    // dataIndex is the index into the chartData/timestamps arrays
     if (this.timestamps && this.timestamps[dataIndex]) {
       const timestamp = this.timestamps[dataIndex];
       const date = new Date(timestamp);
 
-      // Month names for formatting
       const monthNames = [
         "Jan",
         "Feb",
@@ -426,17 +410,14 @@ export default class StockChart extends Lightning.Component {
         "Dec",
       ];
 
-      // Format based on time period
       switch (this.currentPeriod) {
         case "1D":
-          // Show times (e.g., "12:00", "15:00")
           const hours = date.getHours();
           const minutes = date.getMinutes();
           return `${hours}:${minutes.toString().padStart(2, "0")}`;
 
         case "1W":
         case "1M":
-          // Show day/month (e.g., "Oct 06")
           return `${monthNames[date.getMonth()]} ${date
             .getDate()
             .toString()
@@ -444,7 +425,6 @@ export default class StockChart extends Lightning.Component {
 
         case "3M":
         case "1Y":
-          // Show months only (e.g., "Oct", "Nov", "Dec")
           return monthNames[date.getMonth()];
 
         default:
@@ -452,7 +432,6 @@ export default class StockChart extends Lightning.Component {
       }
     }
 
-    // Fallback if no timestamps
     return "";
   }
 
@@ -466,40 +445,26 @@ export default class StockChart extends Lightning.Component {
   ): void {
     if (!this.ctx) return;
 
-    // Calculate nice price intervals for Y-axis
     const range = max - min;
-    const labelCount = 5; // Show 5 price levels
+    const labelCount = 5;
     const step = range / (labelCount - 1);
 
     this.ctx.fillStyle = "#888888";
     this.ctx.font = "14px Arial";
     this.ctx.textAlign = "right";
 
-    // Draw price labels on the right side of the chart
     for (let i = 0; i < labelCount; i++) {
       const price = min + i * step;
       const y =
         padding +
         (1 - i / (labelCount - 1)) * (height - padding - bottomPadding);
 
-      // Format price to 2 decimal places
       const formattedPrice = price.toFixed(2);
 
       if (this.ctx) {
-        this.ctx.fillText(formattedPrice, width - 20, y + 5); // Position on right side
+        this.ctx.fillText(formattedPrice, width - 20, y + 5);
       }
     }
-  }
-
-  private hexToRgb(hex: string): [number, number, number] {
-    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-    return result
-      ? [
-          parseInt(result[1], 16),
-          parseInt(result[2], 16),
-          parseInt(result[3], 16),
-        ]
-      : [255, 255, 255];
   }
 
   _detach(): void {
