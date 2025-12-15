@@ -168,3 +168,4 @@ export function logResolutionInfo(config: StageConfig): void {
     `   All UI is designed for ${DESIGN_WIDTH}x${DESIGN_HEIGHT} and auto-scales`
   );
 }
+

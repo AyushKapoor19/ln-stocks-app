@@ -20,3 +20,4 @@ export default class BaseScreen extends BaseComponent {
     this.h = this.coordsHeight; // Always 1080
   }
 }
+

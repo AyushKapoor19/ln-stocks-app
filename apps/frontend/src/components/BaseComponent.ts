@@ -90,3 +90,4 @@ export default class BaseComponent extends Lightning.Component {
     return (this.constructor as unknown as Record<string, T>)[attribute];
   }
 }
+
