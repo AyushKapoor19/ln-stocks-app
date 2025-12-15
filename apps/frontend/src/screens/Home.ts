@@ -227,6 +227,26 @@ export default class Home extends BaseScreen {
     }, 100);
   }
 
+  _attach(): void {
+    const chartContainer = this.tag("ChartContainer");
+    if (chartContainer) {
+      const chart = chartContainer.tag("Chart") as StockChart;
+      if (chart && chart.showCanvas) {
+        chart.showCanvas();
+      }
+    }
+  }
+
+  _detach(): void {
+    const chartContainer = this.tag("ChartContainer");
+    if (chartContainer) {
+      const chart = chartContainer.tag("Chart") as StockChart;
+      if (chart && chart.hideCanvas) {
+        chart.hideCanvas();
+      }
+    }
+  }
+
   async _active(): Promise<void> {
     try {
       console.log(`🚀 Stock Dashboard ready (${this.currentSymbol})`);

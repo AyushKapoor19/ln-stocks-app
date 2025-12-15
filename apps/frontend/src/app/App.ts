@@ -1,5 +1,6 @@
 import { Lightning } from "@lightningjs/sdk";
 import Home from "../screens/Home";
+import SignIn from "../screens/SignIn";
 import { ImageUtils } from "../utils/imageUtils";
 import { Colors } from "../constants/Colors";
 
@@ -10,6 +11,8 @@ import { Colors } from "../constants/Colors";
  * Lightning.js automatically scales everything based on the detected resolution.
  */
 export default class App extends Lightning.Component {
+  private currentScreen: string = "Home";
+
   static getFonts(): object[] {
     return [];
   }
@@ -23,6 +26,13 @@ export default class App extends Lightning.Component {
       color: Colors.background,
       Home: {
         type: Home,
+        alpha: 1,
+        zIndex: 1,
+      },
+      SignIn: {
+        type: SignIn,
+        alpha: 0,
+        zIndex: 2,
       },
     };
   }
@@ -43,6 +53,53 @@ export default class App extends Lightning.Component {
   }
 
   _getFocused(): Lightning.Component | null {
-    return this.tag("Home");
+    return this.tag(this.currentScreen);
+  }
+
+  $navigateToSignIn(): void {
+    console.log("📱 Navigating to SignIn screen");
+    this._showScreen("SignIn");
+  }
+
+  $navigateBack(): void {
+    console.log("📱 Navigating back to Home");
+    this._showScreen("Home");
+  }
+
+  $authenticationSuccess(data: { user: unknown; token: string }): void {
+    console.log("✅ Authentication successful!");
+    this._showScreen("Home");
+  }
+
+  private _showScreen(screenName: string): void {
+    const screens = ["Home", "SignIn"];
+    
+    screens.forEach((screen) => {
+      const screenComponent = this.tag(screen);
+      if (screenComponent) {
+        if (screen === screenName) {
+          screenComponent.visible = true;
+          screenComponent.setSmooth("alpha", 1, { duration: 0.3 });
+          screenComponent.zIndex = 10;
+          if (screenComponent._attach) {
+            screenComponent._attach();
+          }
+        } else {
+          if (screenComponent._detach) {
+            screenComponent._detach();
+          }
+          screenComponent.setSmooth("alpha", 0, { duration: 0.3 });
+          screenComponent.zIndex = 1;
+          setTimeout(() => {
+            if (this.currentScreen !== screen) {
+              screenComponent.visible = false;
+            }
+          }, 300);
+        }
+      }
+    });
+
+    this.currentScreen = screenName;
+    this.stage.update();
   }
 }

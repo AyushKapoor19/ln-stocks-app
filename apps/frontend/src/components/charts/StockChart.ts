@@ -49,6 +49,18 @@ export default class StockChart extends BaseComponent {
     this.createCanvasChart();
   }
 
+  showCanvas(): void {
+    if (this.canvas) {
+      this.canvas.style.display = "block";
+    }
+  }
+
+  hideCanvas(): void {
+    if (this.canvas) {
+      this.canvas.style.display = "none";
+    }
+  }
+
   private _readConfiguration(): void {
     const config = this as unknown as ChartConfiguration;
     this.chartWidth = config.chartWidth || this.chartWidth;
@@ -468,9 +480,11 @@ export default class StockChart extends BaseComponent {
   }
 
   _detach(): void {
+    this.hideCanvas();
     if (this.canvas && this.canvas.parentNode) {
       this.canvas.parentNode.removeChild(this.canvas);
       this.canvas = null;
+      this.ctx = null;
     }
   }
 }
