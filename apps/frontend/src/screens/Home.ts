@@ -65,6 +65,7 @@ export default class Home extends BaseScreen {
   private currentFocusIndex = 1;
   private focusableElements: string[] = [
     "SearchBar",
+    "SignInButton",
     "TimeButton_1M",
     "TimeButton_3M",
     "TimeButton_1Y",
@@ -79,13 +80,39 @@ export default class Home extends BaseScreen {
 
       SearchBar: {
         type: SearchBar,
-        x: 1434,
+        x: 1280,
         y: 40,
+      },
+
+      SignInButton: {
+        x: 1700,
+        y: 40,
+        w: 80,
+        h: 56,
+        rect: true,
+        color: Colors.transparent,
+        Background: {
+          w: 80,
+          h: 56,
+          rect: true,
+          color: Colors.buttonUnfocused,
+          shader: { type: Lightning.shaders.RoundedRectangle, radius: 28 },
+        },
+        Icon: {
+          x: 40,
+          y: 28,
+          mount: 0.5,
+          text: {
+            text: "👤",
+            fontSize: FontSize.Medium,
+            textColor: Colors.textPrimary,
+          },
+        },
       },
 
       SearchResults: {
         type: SearchResults,
-        x: 1434,
+        x: 1280,
         y: 106,
         alpha: 0,
       },
@@ -408,13 +435,17 @@ export default class Home extends BaseScreen {
       this.currentFocusIndex = this.focusableElements.length - 1;
       this._updateFocus();
       return true;
+    } else if (this.currentFocusIndex === 1) {
+      this.currentFocusIndex = 0;
+      this._updateFocus();
+      return true;
     } else {
-      const currentButtonIndex = this.currentFocusIndex - 1;
+      const currentButtonIndex = this.currentFocusIndex - 2;
       if (currentButtonIndex > 0) {
-        this.currentFocusIndex = currentButtonIndex;
+        this.currentFocusIndex = currentButtonIndex + 1;
         this._selectTimePeriod(currentButtonIndex - 1);
       } else {
-        this.currentFocusIndex = 0;
+        this.currentFocusIndex = 1;
         this._updateFocus();
       }
       return true;
@@ -438,10 +469,14 @@ export default class Home extends BaseScreen {
       this.currentFocusIndex = 1;
       this._updateFocus();
       return true;
+    } else if (this.currentFocusIndex === 1) {
+      this.currentFocusIndex = 2;
+      this._updateFocus();
+      return true;
     } else {
-      const currentButtonIndex = this.currentFocusIndex - 1;
+      const currentButtonIndex = this.currentFocusIndex - 2;
       if (currentButtonIndex < TIME_PERIODS.length - 1) {
-        this.currentFocusIndex = currentButtonIndex + 2;
+        this.currentFocusIndex = currentButtonIndex + 3;
         this._selectTimePeriod(currentButtonIndex + 1);
       }
       return true;
@@ -449,8 +484,12 @@ export default class Home extends BaseScreen {
   }
 
   _handleLeft(): boolean {
-    if (this.currentFocusIndex === 0) {
-      this.currentFocusIndex = 1;
+    if (this.currentFocusIndex === 1) {
+      this.currentFocusIndex = 0;
+      this._updateFocus();
+      return true;
+    } else if (this.currentFocusIndex === 0) {
+      this.currentFocusIndex = 2;
       this._updateFocus();
       return true;
     }
@@ -458,7 +497,11 @@ export default class Home extends BaseScreen {
   }
 
   _handleRight(): boolean {
-    if (this.currentFocusIndex > 0) {
+    if (this.currentFocusIndex === 0) {
+      this.currentFocusIndex = 1;
+      this._updateFocus();
+      return true;
+    } else if (this.currentFocusIndex > 1) {
       this.currentFocusIndex = 0;
       this._updateFocus();
       return true;
@@ -479,8 +522,12 @@ export default class Home extends BaseScreen {
         }
       }
       return false;
+    } else if (this.currentFocusIndex === 1) {
+      console.log("🔐 Opening Sign In screen");
+      this.fireAncestors("$navigateToSignIn");
+      return true;
     } else {
-      const buttonIndex = this.currentFocusIndex - 1;
+      const buttonIndex = this.currentFocusIndex - 2;
       if (buttonIndex >= 0 && buttonIndex < TIME_PERIODS.length) {
         this._selectTimePeriod(buttonIndex);
         return true;
@@ -575,6 +622,8 @@ export default class Home extends BaseScreen {
       if (searchBar) {
         return searchBar as Lightning.Component;
       }
+    } else if (this.currentFocusIndex === 1) {
+      return this as Lightning.Component;
     }
     return this as Lightning.Component;
   }
@@ -589,12 +638,24 @@ export default class Home extends BaseScreen {
       }
     }
 
+    const signInButton = this.tag("SignInButton");
+    if (signInButton) {
+      const background = signInButton.tag("Background");
+      if (background) {
+        if (this.currentFocusIndex === 1) {
+          background.setSmooth("color", Colors.buttonFocused, { duration: 0.2 });
+        } else {
+          background.setSmooth("color", Colors.buttonUnfocused, { duration: 0.2 });
+        }
+      }
+    }
+
     const container = this.tag("TimeSelectorContainer");
     if (container) {
       TIME_PERIODS.forEach((period, index) => {
         const button = container.tag(`TimeButton_${period.id}`);
         if (button) {
-          const isFocused = this.currentFocusIndex === index + 1;
+          const isFocused = this.currentFocusIndex === index + 2;
           const background = button.tag("Background");
           const label = button.tag("Label");
           if (background) {
