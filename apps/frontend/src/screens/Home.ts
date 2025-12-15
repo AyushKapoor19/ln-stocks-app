@@ -442,7 +442,7 @@ export default class Home extends BaseScreen {
       const currentButtonIndex = this.currentFocusIndex - 1;
       if (currentButtonIndex < TIME_PERIODS.length - 1) {
         this.currentFocusIndex = currentButtonIndex + 2;
-        this._updateFocus();
+        this._selectTimePeriod(currentButtonIndex + 1);
       }
       return true;
     }

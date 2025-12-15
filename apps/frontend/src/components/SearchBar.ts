@@ -138,7 +138,7 @@ export default class SearchBar extends BaseComponent {
           symbol: selected.symbol,
           name: selected.name,
         };
-        this.signal("$selectStock", event);
+        this.fireAncestors("$selectStock", event);
         return true;
       }
     } else if (this.searchQuery.length === 0) {
@@ -180,7 +180,7 @@ export default class SearchBar extends BaseComponent {
       const event: INavigateSearchResultsEvent = {
         currentIndex: this.selectedSearchIndex,
       };
-      this.signal("$navigateSearchResultsUp", event);
+      this.fireAncestors("$navigateSearchResultsUp", event);
       return true;
     }
     return false;
@@ -191,7 +191,7 @@ export default class SearchBar extends BaseComponent {
       const event: INavigateSearchResultsEvent = {
         currentIndex: this.selectedSearchIndex,
       };
-      this.signal("$navigateSearchResultsDown", event);
+      this.fireAncestors("$navigateSearchResultsDown", event);
       return true;
     }
     return false;
@@ -219,7 +219,7 @@ export default class SearchBar extends BaseComponent {
     this._stopCursorBlink();
 
     const event: ISearchActivatedEvent = { component: this };
-    this.signal("$searchActivated", event);
+    this.fireAncestors("$searchActivated", event);
 
     console.log("🔍 Search activated - type to search!");
   }
@@ -251,7 +251,7 @@ export default class SearchBar extends BaseComponent {
     }
 
     const event: ISearchDeactivatedEvent = { component: this };
-    this.signal("$searchDeactivated", event);
+    this.fireAncestors("$searchDeactivated", event);
     console.log("🔍 Search deactivated");
   }
 
@@ -355,7 +355,7 @@ export default class SearchBar extends BaseComponent {
       results: this.searchResults,
       selectedIndex: this.selectedSearchIndex,
     };
-    this.signal("$showSearchResults", event);
+    this.fireAncestors("$showSearchResults", event);
   }
 
   setSelectedIndex(index: number): void {
@@ -364,13 +364,13 @@ export default class SearchBar extends BaseComponent {
       const event: IUpdateSearchSelectionEvent = {
         selectedIndex: this.selectedSearchIndex,
       };
-      this.signal("$updateSearchSelection", event);
+      this.fireAncestors("$updateSearchSelection", event);
     }
   }
 
   private _clearSearchResults(): void {
     const event: IClearSearchResultsEvent = {};
-    this.signal("$clearSearchResults", event);
+    this.fireAncestors("$clearSearchResults", event);
   }
 
   getSearchQuery(): string {
