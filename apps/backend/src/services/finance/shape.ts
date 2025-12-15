@@ -1,1 +1,0 @@
-// placeholder for apps/backend/src/services/finance/shape.ts

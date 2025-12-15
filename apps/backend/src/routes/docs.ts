@@ -1,1 +1,0 @@
-// placeholder for apps/backend/src/routes/docs.ts

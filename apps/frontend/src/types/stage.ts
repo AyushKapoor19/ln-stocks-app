@@ -24,3 +24,5 @@ export interface ResolutionInfo {
   devicePixelRatio: number;
 }
 
+
+
