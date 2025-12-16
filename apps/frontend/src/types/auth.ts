@@ -26,7 +26,7 @@ export interface IDeviceCodeResponse {
 }
 
 export interface IDeviceCodeStatusResponse {
-  status: 'pending' | 'approved' | 'expired';
+  status: "pending" | "approved" | "expired";
   token?: string;
   user?: IUser;
 }
@@ -35,4 +35,3 @@ export interface ISignInData {
   email: string;
   password: string;
 }
-

@@ -1,6 +1,6 @@
 /**
  * Stage Type Definitions
- * 
+ *
  * Proper typing for Lightning.js Stage to avoid 'any' usage
  */
 
@@ -23,6 +23,3 @@ export interface ResolutionInfo {
   precision: number;
   devicePixelRatio: number;
 }
-
-
-

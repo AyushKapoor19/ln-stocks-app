@@ -1,6 +1,6 @@
 /**
  * Search Types
- * 
+ *
  * Interfaces for stock symbol search functionality
  */
 
@@ -30,6 +30,3 @@ export interface ISearchResponse {
   results: ISearchResult[];
   count: number;
 }
-
-
-

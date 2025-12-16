@@ -675,9 +675,13 @@ export default class Home extends BaseScreen {
       const background = signInButton.tag("Background");
       if (background) {
         if (this.currentFocusIndex === 1) {
-          background.setSmooth("color", Colors.buttonFocused, { duration: 0.2 });
+          background.setSmooth("color", Colors.buttonFocused, {
+            duration: 0.2,
+          });
         } else {
-          background.setSmooth("color", Colors.buttonUnfocused, { duration: 0.2 });
+          background.setSmooth("color", Colors.buttonUnfocused, {
+            duration: 0.2,
+          });
         }
       }
     }

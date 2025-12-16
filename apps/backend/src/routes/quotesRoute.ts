@@ -1,16 +1,16 @@
 /**
  * Quotes Route Handler
- * 
+ *
  * Handles /v1/quotes endpoint for real-time stock quotes
  */
 
-import type { FastifyRequest, FastifyReply } from 'fastify';
-import { cacheService } from '../services/cacheService';
-import { finnhubService } from '../services/finnhubService';
-import { generateFallbackQuote } from '../utils/fallbackData';
-import { parseSymbols } from '../utils/validation';
-import type { IQuotesResponse, IQuoteData } from '../types/quote';
-import type { IQueryParams } from '../types/api';
+import type { FastifyRequest, FastifyReply } from "fastify";
+import { cacheService } from "../services/cacheService";
+import { finnhubService } from "../services/finnhubService";
+import { generateFallbackQuote } from "../utils/fallbackData";
+import { parseSymbols } from "../utils/validation";
+import type { IQuotesResponse, IQuoteData } from "../types/quote";
+import type { IQueryParams } from "../types/api";
 
 export async function quotesRoute(
   request: FastifyRequest<{ Querystring: IQueryParams }>,
@@ -20,7 +20,7 @@ export async function quotesRoute(
 
   if (symbols.length === 0) {
     reply.code(400);
-    return { error: 'symbols required' } as unknown as IQuotesResponse;
+    return { error: "symbols required" } as unknown as IQuotesResponse;
   }
 
   const out: IQuotesResponse = {};
@@ -54,13 +54,10 @@ export async function quotesRoute(
         change: 0,
         changePct: 0,
         time: Date.now(),
-        source: 'error',
+        source: "error",
       };
     }
   }
 
   return out;
 }
-
-
-

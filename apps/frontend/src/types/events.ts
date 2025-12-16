@@ -1,6 +1,6 @@
 /**
  * Event Type Definitions
- * 
+ *
  * Defines proper interfaces for all event data instead of using 'any' types.
  */
 
@@ -57,4 +57,3 @@ export interface ISeriesData {
   points: ISeriesPoint[];
   source?: string;
 }
-

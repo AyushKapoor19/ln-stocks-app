@@ -369,15 +369,13 @@ export default class AccountScreen extends BaseScreen {
 
     if (backButton) {
       backButton.patch({
-        color:
-          this.focusedButton === "back" ? Colors.authAccent : 0x20ffffff,
+        color: this.focusedButton === "back" ? Colors.authAccent : 0x20ffffff,
       });
     }
 
     if (signOutButton) {
       signOutButton.patch({
-        color:
-          this.focusedButton === "signout" ? 0xff553333 : 0x20ffffff,
+        color: this.focusedButton === "signout" ? 0xff553333 : 0x20ffffff,
       });
     }
   }
@@ -438,4 +436,3 @@ export default class AccountScreen extends BaseScreen {
     this._updateFocus();
   }
 }
-

@@ -217,4 +217,3 @@ export default class MobileAuthTab extends Lightning.Component {
     this.qrCodeUrl = "";
   }
 }
-

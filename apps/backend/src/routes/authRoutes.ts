@@ -1,12 +1,16 @@
 /**
  * Authentication Routes
- * 
+ *
  * Handles /auth endpoints for signup, login, and token verification
  */
 
-import type { FastifyRequest, FastifyReply } from 'fastify';
-import { authService } from '../services/authService';
-import type { ISignupRequest, ILoginRequest, IAuthResponse } from '../types/auth';
+import type { FastifyRequest, FastifyReply } from "fastify";
+import { authService } from "../services/authService";
+import type {
+  ISignupRequest,
+  ILoginRequest,
+  IAuthResponse,
+} from "../types/auth";
 
 interface ISignupBody {
   email: string;
@@ -61,9 +65,9 @@ export async function verifyTokenRoute(
 ): Promise<IAuthResponse> {
   const authHeader = request.headers.authorization;
 
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
     reply.code(401);
-    return { success: false, error: 'No token provided' };
+    return { success: false, error: "No token provided" };
   }
 
   const token = authHeader.substring(7);
@@ -71,14 +75,14 @@ export async function verifyTokenRoute(
 
   if (!payload) {
     reply.code(401);
-    return { success: false, error: 'Invalid token' };
+    return { success: false, error: "Invalid token" };
   }
 
   const user = await authService.findUserById(payload.userId);
 
   if (!user) {
     reply.code(401);
-    return { success: false, error: 'User not found' };
+    return { success: false, error: "User not found" };
   }
 
   return {
@@ -87,4 +91,3 @@ export async function verifyTokenRoute(
     token,
   };
 }
-

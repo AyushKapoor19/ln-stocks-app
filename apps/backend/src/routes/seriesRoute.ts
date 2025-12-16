@@ -1,16 +1,16 @@
 /**
  * Series Route Handler
- * 
+ *
  * Handles /v1/series endpoint for historical candlestick data
  */
 
-import type { FastifyRequest, FastifyReply } from 'fastify';
-import { cacheService } from '../services/cacheService';
-import { polygonService } from '../services/polygonService';
-import { generateFallbackSeries } from '../utils/fallbackData';
-import { parseSymbols, validatePeriod } from '../utils/validation';
-import type { ISeriesResponse } from '../types/series';
-import type { IQueryParams } from '../types/api';
+import type { FastifyRequest, FastifyReply } from "fastify";
+import { cacheService } from "../services/cacheService";
+import { polygonService } from "../services/polygonService";
+import { generateFallbackSeries } from "../utils/fallbackData";
+import { parseSymbols, validatePeriod } from "../utils/validation";
+import type { ISeriesResponse } from "../types/series";
+import type { IQueryParams } from "../types/api";
 
 export async function seriesRoute(
   request: FastifyRequest<{ Querystring: IQueryParams }>,
@@ -21,7 +21,7 @@ export async function seriesRoute(
 
   if (symbols.length === 0) {
     reply.code(400);
-    return { error: 'symbols required' } as unknown as ISeriesResponse;
+    return { error: "symbols required" } as unknown as ISeriesResponse;
   }
 
   const out: ISeriesResponse = {};
@@ -61,13 +61,10 @@ export async function seriesRoute(
         symbol,
         period,
         points: [],
-        source: 'error',
+        source: "error",
       };
     }
   }
 
   return out;
 }
-
-
-

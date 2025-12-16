@@ -126,7 +126,9 @@ class StocksApiService {
   }
 
   // Search for stocks by symbol or name
-  async searchStocks(query: string): Promise<Array<{symbol: string; name: string}>> {
+  async searchStocks(
+    query: string
+  ): Promise<Array<{ symbol: string; name: string }>> {
     try {
       const response = await fetch(
         `${this.baseUrl}/v1/search?q=${encodeURIComponent(query)}`

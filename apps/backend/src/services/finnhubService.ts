@@ -1,16 +1,16 @@
 /**
  * Finnhub API Service
- * 
+ *
  * Client for fetching real-time quote data and search from Finnhub
  */
 
-import fetch from 'node-fetch';
-import { FINNHUB_KEY } from '../constants/config';
-import type { IQuoteData, IFinnhubQuoteResponse } from '../types/quote';
-import type { IFinnhubSearchResponse, ISearchResult } from '../types/search';
+import fetch from "node-fetch";
+import { FINNHUB_KEY } from "../constants/config";
+import type { IQuoteData, IFinnhubQuoteResponse } from "../types/quote";
+import type { IFinnhubSearchResponse, ISearchResult } from "../types/search";
 
 class FinnhubService {
-  private baseUrl = 'https://finnhub.io/api/v1';
+  private baseUrl = "https://finnhub.io/api/v1";
 
   async fetchQuote(symbol: string): Promise<IQuoteData | null> {
     if (!FINNHUB_KEY) {
@@ -21,16 +21,20 @@ class FinnhubService {
     try {
       console.log(`📊 Fetching quote from Finnhub for ${symbol}...`);
 
-      const url = `${this.baseUrl}/quote?symbol=${encodeURIComponent(symbol)}&token=${FINNHUB_KEY}`;
+      const url = `${this.baseUrl}/quote?symbol=${encodeURIComponent(
+        symbol
+      )}&token=${FINNHUB_KEY}`;
       const response = await fetch(url);
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.log(`❌ Finnhub quote failed for ${symbol}: ${response.status} - ${errorText}`);
+        console.log(
+          `❌ Finnhub quote failed for ${symbol}: ${response.status} - ${errorText}`
+        );
         return null;
       }
 
-      const data = await response.json() as IFinnhubQuoteResponse;
+      const data = (await response.json()) as IFinnhubQuoteResponse;
 
       if (data && data.c !== undefined && data.c !== null) {
         const currentPrice = data.c;
@@ -46,11 +50,15 @@ class FinnhubService {
           change: Math.round(change * 100) / 100,
           changePct: Math.round(changePct * 10000) / 10000,
           time: data.t * 1000,
-          source: 'finnhub_quote',
+          source: "finnhub_quote",
         };
       }
 
-      console.log(`⚠️ Finnhub returned no quote data for ${symbol}: ${JSON.stringify(data)}`);
+      console.log(
+        `⚠️ Finnhub returned no quote data for ${symbol}: ${JSON.stringify(
+          data
+        )}`
+      );
       return null;
     } catch (error) {
       console.log(`💥 Error fetching quote for ${symbol}:`, error);
@@ -60,13 +68,15 @@ class FinnhubService {
 
   async searchSymbols(query: string): Promise<ISearchResult[]> {
     if (!FINNHUB_KEY) {
-      throw new Error('No FINNHUB_KEY configured');
+      throw new Error("No FINNHUB_KEY configured");
     }
 
     try {
       console.log(`🔍 Searching for: ${query}`);
 
-      const url = `${this.baseUrl}/search?q=${encodeURIComponent(query)}&token=${FINNHUB_KEY}`;
+      const url = `${this.baseUrl}/search?q=${encodeURIComponent(
+        query
+      )}&token=${FINNHUB_KEY}`;
       const response = await fetch(url);
 
       if (!response.ok) {
@@ -74,17 +84,17 @@ class FinnhubService {
         return [];
       }
 
-      const data = await response.json() as IFinnhubSearchResponse;
+      const data = (await response.json()) as IFinnhubSearchResponse;
 
       if (data && data.result && data.result.length > 0) {
         const results = data.result
-          .filter((item) => item.type === 'Common Stock' || item.type === 'ETF')
+          .filter((item) => item.type === "Common Stock" || item.type === "ETF")
           .slice(0, 10)
           .map((item) => ({
             symbol: item.symbol,
             name: item.description,
             type: item.type,
-            market: 'stocks',
+            market: "stocks",
             active: true,
             primaryExchange: item.displaySymbol || item.symbol,
           }));
@@ -102,6 +112,3 @@ class FinnhubService {
 }
 
 export const finnhubService = new FinnhubService();
-
-
-

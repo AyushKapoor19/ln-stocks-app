@@ -84,7 +84,8 @@ export default class StockChart extends BaseComponent {
 
   private createCanvasChart(): void {
     const stagePrecision = this.precision;
-    const stageDevicePixelRatio = (this.stage.getOption('devicePixelRatio') as number) || 1;
+    const stageDevicePixelRatio =
+      (this.stage.getOption("devicePixelRatio") as number) || 1;
     const renderDpr = stageDevicePixelRatio * (window.devicePixelRatio || 1);
 
     this.canvas = document.createElement("canvas");

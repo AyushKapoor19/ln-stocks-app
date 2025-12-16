@@ -1,6 +1,6 @@
 /**
  * QR Code Screen
- * 
+ *
  * Displays device code and QR code for mobile authentication
  * Polls backend until user approves on mobile
  */
@@ -267,7 +267,8 @@ export default class QRCodeScreen extends BaseScreen {
   private async _generateDeviceCode(): Promise<void> {
     console.log("🔄 Generating device code...");
 
-    const response: IDeviceCodeResponse | null = await authApi.generateDeviceCode();
+    const response: IDeviceCodeResponse | null =
+      await authApi.generateDeviceCode();
 
     if (!response) {
       console.error("❌ Failed to generate device code");
@@ -340,15 +341,17 @@ export default class QRCodeScreen extends BaseScreen {
 
     if (!status) return;
 
-    if (status.status === 'approved' && status.token && status.user) {
+    if (status.status === "approved" && status.token && status.user) {
       console.log("✅ Authentication approved!");
       this._stopPolling();
       authApi.saveToken(status.token);
-      this.signal("$authenticationSuccess", { user: status.user, token: status.token });
-    } else if (status.status === 'expired') {
+      this.signal("$authenticationSuccess", {
+        user: status.user,
+        token: status.token,
+      });
+    } else if (status.status === "expired") {
       console.log("⏰ Device code expired");
       this._stopPolling();
     }
   }
 }
-

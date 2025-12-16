@@ -30,7 +30,11 @@ export default class EmailSignInTab extends Lightning.Component {
         h: 640,
 
         EmailField: this._createInputField(0, "Email", "yourname@example.com"),
-        PasswordField: this._createInputField(110, "Password", "Enter your password"),
+        PasswordField: this._createInputField(
+          110,
+          "Password",
+          "Enter your password"
+        ),
 
         SignInButton: {
           x: 0,
@@ -191,7 +195,11 @@ export default class EmailSignInTab extends Lightning.Component {
     };
   }
 
-  private static _createInputField(yPos: number, label: string, placeholder: string): object {
+  private static _createInputField(
+    yPos: number,
+    label: string,
+    placeholder: string
+  ): object {
     return {
       x: 0,
       y: yPos,
@@ -253,7 +261,12 @@ export default class EmailSignInTab extends Lightning.Component {
   _handleUp(): boolean {
     if (this.showKeyboard) return false;
 
-    const focusOrder: FocusedElement[] = ["email", "password", "signin", "signup"];
+    const focusOrder: FocusedElement[] = [
+      "email",
+      "password",
+      "signin",
+      "signup",
+    ];
     const currentIndex = focusOrder.indexOf(this.focusedElement);
     if (currentIndex > 0) {
       this.focusedElement = focusOrder[currentIndex - 1];
@@ -269,7 +282,12 @@ export default class EmailSignInTab extends Lightning.Component {
   _handleDown(): boolean {
     if (this.showKeyboard) return false;
 
-    const focusOrder: FocusedElement[] = ["email", "password", "signin", "signup"];
+    const focusOrder: FocusedElement[] = [
+      "email",
+      "password",
+      "signin",
+      "signup",
+    ];
     const currentIndex = focusOrder.indexOf(this.focusedElement);
     if (currentIndex < focusOrder.length - 1) {
       this.focusedElement = focusOrder[currentIndex + 1];
@@ -441,7 +459,7 @@ export default class EmailSignInTab extends Lightning.Component {
 
     let displayValue = "";
     let titleText = "";
-    
+
     if (this.focusedElement === "email") {
       displayValue = this.emailValue;
       titleText = "Email";
@@ -484,7 +502,9 @@ export default class EmailSignInTab extends Lightning.Component {
         emailValue.patch({
           text: {
             text: this.emailValue || "yourname@example.com",
-            textColor: this.emailValue ? Colors.textPrimary : Colors.textQuaternary,
+            textColor: this.emailValue
+              ? Colors.textPrimary
+              : Colors.textQuaternary,
           },
         });
       }
@@ -498,7 +518,9 @@ export default class EmailSignInTab extends Lightning.Component {
             text: this.passwordValue
               ? "\u2022".repeat(this.passwordValue.length)
               : "Enter your password",
-            textColor: this.passwordValue ? Colors.textPrimary : Colors.textQuaternary,
+            textColor: this.passwordValue
+              ? Colors.textPrimary
+              : Colors.textQuaternary,
           },
         });
       }
@@ -548,7 +570,7 @@ export default class EmailSignInTab extends Lightning.Component {
     } else if (this.focusedElement === "password") {
       this.passwordValue += char;
     }
-    
+
     // Update both keyboard display (if shown) and field display
     if (this.showKeyboard) {
       this._updateKeyboardDisplay();
@@ -560,10 +582,13 @@ export default class EmailSignInTab extends Lightning.Component {
   private _deleteCharacter(): void {
     if (this.focusedElement === "email" && this.emailValue.length > 0) {
       this.emailValue = this.emailValue.slice(0, -1);
-    } else if (this.focusedElement === "password" && this.passwordValue.length > 0) {
+    } else if (
+      this.focusedElement === "password" &&
+      this.passwordValue.length > 0
+    ) {
       this.passwordValue = this.passwordValue.slice(0, -1);
     }
-    
+
     // Update both keyboard display (if shown) and field display
     if (this.showKeyboard) {
       this._updateKeyboardDisplay();
@@ -652,4 +677,3 @@ export default class EmailSignInTab extends Lightning.Component {
     this.stage.update();
   }
 }
-

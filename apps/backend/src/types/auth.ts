@@ -37,7 +37,7 @@ export interface IDeviceCode {
   id: number;
   code: string;
   user_id: number | null;
-  status: 'pending' | 'approved' | 'expired';
+  status: "pending" | "approved" | "expired";
   created_at: Date;
   expires_at: Date;
   used_at: Date | null;
@@ -51,7 +51,7 @@ export interface IDeviceCodeResponse {
 }
 
 export interface IDeviceCodeStatusResponse {
-  status: 'pending' | 'approved' | 'expired';
+  status: "pending" | "approved" | "expired";
   token?: string;
   user?: IUser;
 }
@@ -62,4 +62,3 @@ export interface IJwtPayload {
   iat?: number;
   exp?: number;
 }
-

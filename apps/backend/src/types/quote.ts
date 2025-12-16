@@ -1,6 +1,6 @@
 /**
  * Quote Data Types
- * 
+ *
  * Interfaces for stock quote data from various sources
  */
 
@@ -10,16 +10,16 @@ export interface IQuoteData {
   change: number;
   changePct: number;
   time: number;
-  source: 'finnhub_quote' | 'calculated_fallback' | 'error';
+  source: "finnhub_quote" | "calculated_fallback" | "error";
 }
 
 export interface IFinnhubQuoteResponse {
-  c: number;  // Current price
-  h: number;  // High price of the day
-  l: number;  // Low price of the day
-  o: number;  // Open price of the day
+  c: number; // Current price
+  h: number; // High price of the day
+  l: number; // Low price of the day
+  o: number; // Open price of the day
   pc: number; // Previous close price
-  t: number;  // Timestamp
+  t: number; // Timestamp
 }
 
 export interface IQuoteCache {
@@ -30,6 +30,3 @@ export interface IQuoteCache {
 export interface IQuotesResponse {
   [symbol: string]: IQuoteData;
 }
-
-
-

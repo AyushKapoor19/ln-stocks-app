@@ -69,7 +69,7 @@ export default class App extends Lightning.Component {
     this.w = this.stage.coordsWidth;
 
     // Initialize ImageUtils with current precision
-    const precision = this.stage.getOption('precision') as number || 1;
+    const precision = (this.stage.getOption("precision") as number) || 1;
     ImageUtils.setScaleFactor(precision);
 
     console.log(
@@ -84,26 +84,26 @@ export default class App extends Lightning.Component {
 
   private async _checkStoredAuth(): Promise<void> {
     const token = authApi.getToken();
-    
+
     if (!token) {
       console.log("📭 No stored auth token found");
       return;
     }
 
     console.log("🔑 Found stored token, verifying...");
-    
+
     const response = await authApi.verifyToken(token);
-    
+
     if (response.success && response.user) {
       console.log("✅ Auto-login successful!", response.user);
       this.currentUser = response.user as IUser;
-      
+
       // Update AccountScreen with user data
       const accountScreen = this.tag("AccountScreen") as AccountScreen;
       if (accountScreen && accountScreen.setUser) {
         accountScreen.setUser(this.currentUser);
       }
-      
+
       // Update Home screen to show "Account" instead of "Sign In"
       const homeScreen = this.tag("Home");
       if (homeScreen && (homeScreen as any).updateAuthButton) {
@@ -153,22 +153,22 @@ export default class App extends Lightning.Component {
   $authSuccess(data: { user: IUser; token: string }): void {
     console.log("✅ Authentication successful!", data.user);
     this.currentUser = data.user;
-    
+
     // Save token for persistence
     authApi.saveToken(data.token);
-    
+
     // Update AccountScreen with user data
     const accountScreen = this.tag("AccountScreen") as AccountScreen;
     if (accountScreen && accountScreen.setUser) {
       accountScreen.setUser(data.user);
     }
-    
+
     // Update Home screen to show "Account" button
     const homeScreen = this.tag("Home");
     if (homeScreen && (homeScreen as any).updateAuthButton) {
       (homeScreen as any).updateAuthButton(true);
     }
-    
+
     // Navigate to Account screen
     this._showScreen("AccountScreen");
   }
@@ -177,19 +177,19 @@ export default class App extends Lightning.Component {
     console.log("🚪 User signed out");
     this.currentUser = null;
     authApi.clearToken();
-    
+
     // Update Home screen to show "Sign In" instead of "Account"
     const homeScreen = this.tag("Home");
     if (homeScreen && (homeScreen as any).updateAuthButton) {
       (homeScreen as any).updateAuthButton(false);
     }
-    
+
     this._showScreen("Home");
   }
 
   private _showScreen(screenName: string): void {
     const screens = ["Home", "SignUpScreen", "SignInScreen", "AccountScreen"];
-    
+
     screens.forEach((screen) => {
       const screenComponent = this.tag(screen);
       if (screenComponent) {

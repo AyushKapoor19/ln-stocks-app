@@ -1,6 +1,6 @@
 /**
  * API Request/Response Types
- * 
+ *
  * Common interfaces for API endpoints
  */
 
@@ -27,6 +27,3 @@ export interface IQueryParams {
   period?: string;
   q?: string;
 }
-
-
-

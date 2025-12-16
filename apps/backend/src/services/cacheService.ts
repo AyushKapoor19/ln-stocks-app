@@ -1,12 +1,12 @@
 /**
  * Cache Service
- * 
+ *
  * Simple in-memory cache to avoid rate limiting
  */
 
-import { CACHE_DURATION } from '../constants/config';
-import type { IQuoteCache, IQuoteData } from '../types/quote';
-import type { ISeriesCache, ISeriesData } from '../types/series';
+import { CACHE_DURATION } from "../constants/config";
+import type { IQuoteCache, IQuoteData } from "../types/quote";
+import type { ISeriesCache, ISeriesData } from "../types/series";
 
 class CacheService {
   private quoteCache = new Map<string, IQuoteCache>();
@@ -55,11 +55,8 @@ class CacheService {
   clearAll(): void {
     this.quoteCache.clear();
     this.seriesCache.clear();
-    console.log('🗑️  Cache cleared');
+    console.log("🗑️  Cache cleared");
   }
 }
 
 export const cacheService = new CacheService();
-
-
-

@@ -1,24 +1,24 @@
 /**
  * LN Stocks API Server
- * 
+ *
  * Main entry point - clean and minimal
  */
 
-import 'dotenv/config';
-import Fastify from 'fastify';
-import cors from '@fastify/cors';
-import { PORT, HOST, logApiKeysStatus } from './constants/config';
-import { testConnection } from './utils/db';
-import { healthRoute } from './routes/healthRoute';
-import { quotesRoute } from './routes/quotesRoute';
-import { seriesRoute } from './routes/seriesRoute';
-import { searchRoute } from './routes/searchRoute';
-import { signupRoute, loginRoute, verifyTokenRoute } from './routes/authRoutes';
+import "dotenv/config";
+import Fastify from "fastify";
+import cors from "@fastify/cors";
+import { PORT, HOST, logApiKeysStatus } from "./constants/config";
+import { testConnection } from "./utils/db";
+import { healthRoute } from "./routes/healthRoute";
+import { quotesRoute } from "./routes/quotesRoute";
+import { seriesRoute } from "./routes/seriesRoute";
+import { searchRoute } from "./routes/searchRoute";
+import { signupRoute, loginRoute, verifyTokenRoute } from "./routes/authRoutes";
 import {
   generateDeviceCodeRoute,
   checkDeviceCodeStatusRoute,
   approveDeviceCodeRoute,
-} from './routes/deviceCodeRoutes';
+} from "./routes/deviceCodeRoutes";
 
 // Initialize server
 const app = Fastify({ logger: true });
@@ -33,20 +33,20 @@ logApiKeysStatus();
 await testConnection();
 
 // Register stock data routes
-app.get('/', healthRoute);
-app.get('/v1/quotes', quotesRoute);
-app.get('/v1/series', seriesRoute);
-app.get('/v1/search', searchRoute);
+app.get("/", healthRoute);
+app.get("/v1/quotes", quotesRoute);
+app.get("/v1/series", seriesRoute);
+app.get("/v1/search", searchRoute);
 
 // Register auth routes
-app.post('/auth/signup', signupRoute);
-app.post('/auth/login', loginRoute);
-app.get('/auth/verify', verifyTokenRoute);
+app.post("/auth/signup", signupRoute);
+app.post("/auth/login", loginRoute);
+app.get("/auth/verify", verifyTokenRoute);
 
 // Register device code routes (for TV authentication)
-app.post('/auth/device-code/generate', generateDeviceCodeRoute);
-app.get('/auth/device-code/status', checkDeviceCodeStatusRoute);
-app.post('/auth/device-code/approve', approveDeviceCodeRoute);
+app.post("/auth/device-code/generate", generateDeviceCodeRoute);
+app.get("/auth/device-code/status", checkDeviceCodeStatusRoute);
+app.post("/auth/device-code/approve", approveDeviceCodeRoute);
 
 // Start server
 app.listen({ port: PORT, host: HOST }).catch((error) => {
