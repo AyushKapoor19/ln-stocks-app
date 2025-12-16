@@ -218,6 +218,47 @@ export default class SignUpScreen extends BaseScreen {
     return false;
   }
 
+  _captureKey(event: KeyboardEvent): boolean {
+    console.log("🎯 SignUpScreen _captureKey - key:", event.key, "focusOnTab:", this.focusOnTab, "currentTab:", this.currentTab);
+    
+    // Delegate keyboard capture to the active content component
+    if (!this.focusOnTab) {
+      const tabContent = this.tag("TabContent");
+      if (tabContent) {
+        const activeContent = this.currentTab === "mobile" 
+          ? tabContent.tag("MobileContent")
+          : tabContent.tag("EmailContent");
+        
+        console.log("🔄 Delegating to child component:", activeContent ? "found" : "not found");
+        
+        if (activeContent && typeof (activeContent as any)._captureKey === "function") {
+          const result = (activeContent as any)._captureKey(event);
+          console.log("🔄 Child returned:", result);
+          return result;
+        }
+      }
+    }
+    console.log("❌ SignUpScreen: Not delegating (focusOnTab is true or no active content)");
+    return false;
+  }
+
+  _handleKey(event: KeyboardEvent): boolean {
+    // Delegate keyboard events to the active content component
+    if (!this.focusOnTab) {
+      const tabContent = this.tag("TabContent");
+      if (tabContent) {
+        const activeContent = this.currentTab === "mobile" 
+          ? tabContent.tag("MobileContent")
+          : tabContent.tag("EmailContent");
+        
+        if (activeContent && typeof (activeContent as any)._handleKey === "function") {
+          return (activeContent as any)._handleKey(event);
+        }
+      }
+    }
+    return false;
+  }
+
   $focusBackToTab(): void {
     this.focusOnTab = true;
     this._clearFieldFocus();

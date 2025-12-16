@@ -119,15 +119,20 @@ export default class App extends Lightning.Component {
     return this.tag(this.currentScreen);
   }
 
-  $navigateToSignIn(): void {
-    // Check if user is already logged in
+  $showAuthFlow(): void {
+    // Called from Home button - decides between SignUp/SignIn/Account
     if (this.currentUser) {
       console.log("📱 Navigating to Account screen (user logged in)");
       this._showScreen("AccountScreen");
     } else {
-      console.log("📱 Navigating to Sign Up screen (regular flow for new users)");
+      console.log("📱 Navigating to Sign Up screen (default for new users)");
       this._showScreen("SignUpScreen");
     }
+  }
+
+  $navigateToSignIn(): void {
+    console.log("📱 Navigating to Sign In screen");
+    this._showScreen("SignInScreen");
   }
 
   $navigateToSignUp(): void {

@@ -307,6 +307,42 @@ export default class EmailSignInTab extends Lightning.Component {
     return false;
   }
 
+  _captureKey(event: KeyboardEvent): boolean {
+    // Only capture typing when in email or password fields (not on buttons)
+    if (this.focusedElement !== "email" && this.focusedElement !== "password") {
+      return false;
+    }
+
+    const key = event.key;
+    console.log("📝 Key captured:", key);
+
+    // Capture printable characters (single character keys)
+    // This includes letters, numbers, symbols
+    if (key.length === 1 && !event.ctrlKey && !event.altKey && !event.metaKey) {
+      this._addCharacter(key);
+      return true; // Return true to prevent further processing
+    }
+
+    return false; // Let other keys pass through to _handleKey
+  }
+
+  _handleKey(event: KeyboardEvent): boolean {
+    // Only handle special keys when in email or password fields
+    if (this.focusedElement !== "email" && this.focusedElement !== "password") {
+      return false;
+    }
+
+    const key = event.key;
+
+    // Handle backspace
+    if (key === "Backspace") {
+      this._deleteCharacter();
+      return true;
+    }
+
+    return false;
+  }
+
   $onKeyPress(event: { key: string }): void {
     const key = event.key;
 
@@ -512,7 +548,13 @@ export default class EmailSignInTab extends Lightning.Component {
     } else if (this.focusedElement === "password") {
       this.passwordValue += char;
     }
-    this._updateKeyboardDisplay();
+    
+    // Update both keyboard display (if shown) and field display
+    if (this.showKeyboard) {
+      this._updateKeyboardDisplay();
+    } else {
+      this._updateFieldDisplay();
+    }
   }
 
   private _deleteCharacter(): void {
@@ -521,7 +563,13 @@ export default class EmailSignInTab extends Lightning.Component {
     } else if (this.focusedElement === "password" && this.passwordValue.length > 0) {
       this.passwordValue = this.passwordValue.slice(0, -1);
     }
-    this._updateKeyboardDisplay();
+    
+    // Update both keyboard display (if shown) and field display
+    if (this.showKeyboard) {
+      this._updateKeyboardDisplay();
+    } else {
+      this._updateFieldDisplay();
+    }
   }
 
   private _clearField(): void {

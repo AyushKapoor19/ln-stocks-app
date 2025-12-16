@@ -48,15 +48,6 @@ const applicationOptions = {
     defaultFontFace: "Avenir Next",
   },
   debug: true,
-  keys: {
-    8: "Back",
-    13: "Enter",
-    27: "Menu",
-    37: "Left",
-    38: "Up",
-    39: "Right",
-    40: "Down",
-  },
   enablePointer: true,
 };
 

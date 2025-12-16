@@ -434,6 +434,65 @@ export default class EmailSignUpTab extends Lightning.Component {
     return false;
   }
 
+  _captureKey(event: KeyboardEvent): boolean {
+    console.log(
+      "🔍 _captureKey called - key:",
+      event.key,
+      "keyCode:",
+      event.keyCode,
+      "focusedElement:",
+      this.focusedElement
+    );
+
+    // Only capture typing when in name, email, or password fields (not on buttons)
+    if (
+      this.focusedElement !== "name" &&
+      this.focusedElement !== "email" &&
+      this.focusedElement !== "password"
+    ) {
+      console.log(
+        "❌ Blocked: Not in a field, focusedElement:",
+        this.focusedElement
+      );
+      return false;
+    }
+
+    const key = event.key;
+    console.log("✅ Processing key:", key, "length:", key.length);
+
+    // Capture printable characters (single character keys)
+    // This includes letters, numbers, symbols
+    if (key.length === 1 && !event.ctrlKey && !event.altKey && !event.metaKey) {
+      console.log("✅ Adding character:", key);
+      this._addCharacter(key);
+      return true; // Return true to prevent further processing
+    }
+
+    console.log("❌ Key not captured, passing through");
+    return false; // Let other keys pass through to _handleKey
+  }
+
+  _handleKey(event: KeyboardEvent): boolean {
+    // Only handle special keys when in name, email, or password fields
+    if (
+      this.focusedElement !== "name" &&
+      this.focusedElement !== "email" &&
+      this.focusedElement !== "password"
+    ) {
+      return false;
+    }
+
+    const key = event.key;
+
+    // Handle backspace
+    if (key === "Backspace") {
+      this._deleteCharacter();
+      return true;
+    }
+
+    return false;
+  }
+
   $onKeyPress(event: { key: string }): void {
     const key = event.key;
 
@@ -667,7 +726,13 @@ export default class EmailSignUpTab extends Lightning.Component {
       this.passwordValue += char;
       this._validatePassword();
     }
-    this._updateKeyboardDisplay();
+
+    // Update both keyboard display (if shown) and field display
+    if (this.showKeyboard) {
+      this._updateKeyboardDisplay();
+    } else {
+      this._updateFieldDisplay();
+    }
   }
 
   private _deleteCharacter(): void {
@@ -682,7 +747,13 @@ export default class EmailSignUpTab extends Lightning.Component {
       this.passwordValue = this.passwordValue.slice(0, -1);
       this._validatePassword();
     }
-    this._updateKeyboardDisplay();
+
+    // Update both keyboard display (if shown) and field display
+    if (this.showKeyboard) {
+      this._updateKeyboardDisplay();
+    } else {
+      this._updateFieldDisplay();
+    }
   }
 
   private _clearField(): void {

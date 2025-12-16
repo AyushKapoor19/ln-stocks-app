@@ -543,8 +543,8 @@ export default class Home extends BaseScreen {
       }
       return false;
     } else if (this.currentFocusIndex === 1) {
-      console.log("🔐 Opening Account/Sign In screen");
-      this.fireAncestors("$navigateToSignIn");
+      console.log("🔐 Opening Account/Auth screen");
+      this.fireAncestors("$showAuthFlow");
       return true;
     } else {
       const buttonIndex = this.currentFocusIndex - 2;
