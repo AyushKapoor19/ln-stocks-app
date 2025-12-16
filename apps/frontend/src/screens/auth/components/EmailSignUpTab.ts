@@ -11,12 +11,23 @@ import { authApi } from "../../../services/authApi";
 
 type FocusedElement = "name" | "email" | "password" | "signup" | "signin";
 
+interface IPasswordRules {
+  minLength: boolean;
+  hasLetter: boolean;
+  hasNumber: boolean;
+}
+
 export default class EmailSignUpTab extends Lightning.Component {
   private focusedElement: FocusedElement = "name";
   private showKeyboard: boolean = false;
   private nameValue: string = "";
   private emailValue: string = "";
   private passwordValue: string = "";
+  private passwordRules: IPasswordRules = {
+    minLength: false,
+    hasLetter: false,
+    hasNumber: false,
+  };
 
   static _template(): object {
     return {
@@ -39,7 +50,7 @@ export default class EmailSignUpTab extends Lightning.Component {
         PasswordField: this._createInputField(
           220,
           "Password",
-          "At least 8 characters"
+          "Create a secure password"
         ),
 
         SignUpButton: {
@@ -113,6 +124,39 @@ export default class EmailSignUpTab extends Lightning.Component {
             alpha: 0,
           },
         },
+      },
+
+      // Password Requirements Section
+      PasswordRequirements: {
+        x: 1200,
+        y: 0,
+        w: 580,
+        h: 310,
+
+        Title: {
+          x: 0,
+          y: 20,
+          text: {
+            text: "Security Requirements",
+            fontSize: 32,
+            fontStyle: FontStyle.Bold,
+            textColor: Colors.textPrimary,
+            fontFace: FontFamily.Default,
+          },
+        },
+
+        Divider: {
+          x: 0,
+          y: 70,
+          w: 480,
+          h: 2,
+          rect: true,
+          color: 0x40ffffff,
+        },
+
+        Rule1: this._createPasswordRule(110, "Minimum 8 characters"),
+        Rule2: this._createPasswordRule(175, "At least one letter"),
+        Rule3: this._createPasswordRule(240, "At least one number"),
       },
 
       // Keyboard Overlay (cover entire screen from TabContent position)
@@ -240,12 +284,64 @@ export default class EmailSignUpTab extends Lightning.Component {
 
       Value: {
         x: 30,
-        y: 58,
-        mount: { x: 0, y: 0.5 },
+        y: 50,
         text: {
           text: placeholder,
           fontSize: 28,
           textColor: Colors.textQuaternary,
+          fontFace: FontFamily.Default,
+        },
+      },
+    };
+  }
+
+  private static _createPasswordRule(yPos: number, ruleText: string): object {
+    return {
+      x: 0,
+      y: yPos,
+      w: 520,
+      h: 42,
+
+      CheckmarkContainer: {
+        x: 0,
+        y: 0,
+        w: 38,
+        h: 38,
+        rect: true,
+        color: 0x30ffffff,
+        shader: { type: Lightning.shaders.RoundedRectangle, radius: 19 },
+
+        CheckmarkInner: {
+          x: 4,
+          y: 4,
+          w: 30,
+          h: 30,
+          rect: true,
+          color: 0x25ffffff,
+          shader: { type: Lightning.shaders.RoundedRectangle, radius: 15 },
+
+          Icon: {
+            x: 19,
+            y: 15,
+            mount: 0.5,
+            text: {
+              text: "✓",
+              fontSize: 22,
+              fontStyle: FontStyle.Bold,
+              textColor: 0x40ffffff,
+              fontFace: FontFamily.Default,
+            },
+          },
+        },
+      },
+
+      Text: {
+        x: 52,
+        y: 8,
+        text: {
+          text: ruleText,
+          fontSize: 28,
+          textColor: 0x60ffffff,
           fontFace: FontFamily.Default,
         },
       },
@@ -475,31 +571,52 @@ export default class EmailSignUpTab extends Lightning.Component {
     const formContainer = this.tag("FormContainer");
     if (!formContainer) return;
 
-    const nameValue = formContainer.tag("NameField")?.tag("Value");
-    const emailValue = formContainer.tag("EmailField")?.tag("Value");
-    const passwordValue = formContainer.tag("PasswordField")?.tag("Value");
+    const nameField = formContainer.tag("NameField");
+    const emailField = formContainer.tag("EmailField");
+    const passwordField = formContainer.tag("PasswordField");
 
-    if (nameValue && nameValue.text) {
-      nameValue.text.text = this.nameValue || "Full name";
-      nameValue.text.textColor = this.nameValue
-        ? Colors.textPrimary
-        : Colors.textQuaternary;
+    if (nameField) {
+      const nameValue = nameField.tag("Value");
+      if (nameValue) {
+        nameValue.patch({
+          text: {
+            text: this.nameValue || "Full name",
+            textColor: this.nameValue
+              ? Colors.textPrimary
+              : Colors.textQuaternary,
+          },
+        });
+      }
     }
 
-    if (emailValue && emailValue.text) {
-      emailValue.text.text = this.emailValue || "yourname@example.com";
-      emailValue.text.textColor = this.emailValue
-        ? Colors.textPrimary
-        : Colors.textQuaternary;
+    if (emailField) {
+      const emailValue = emailField.tag("Value");
+      if (emailValue) {
+        emailValue.patch({
+          text: {
+            text: this.emailValue || "yourname@example.com",
+            textColor: this.emailValue
+              ? Colors.textPrimary
+              : Colors.textQuaternary,
+          },
+        });
+      }
     }
 
-    if (passwordValue && passwordValue.text) {
-      passwordValue.text.text = this.passwordValue
-        ? "\u2022".repeat(this.passwordValue.length)
-        : "At least 8 characters";
-      passwordValue.text.textColor = this.passwordValue
-        ? Colors.textPrimary
-        : Colors.textQuaternary;
+    if (passwordField) {
+      const passwordValue = passwordField.tag("Value");
+      if (passwordValue) {
+        passwordValue.patch({
+          text: {
+            text: this.passwordValue
+              ? "\u2022".repeat(this.passwordValue.length)
+              : "At least 8 characters",
+            textColor: this.passwordValue
+              ? Colors.textPrimary
+              : Colors.textQuaternary,
+          },
+        });
+      }
     }
 
     this.stage.update();
@@ -548,6 +665,7 @@ export default class EmailSignUpTab extends Lightning.Component {
       this.emailValue += char;
     } else if (this.focusedElement === "password") {
       this.passwordValue += char;
+      this._validatePassword();
     }
     this._updateKeyboardDisplay();
   }
@@ -562,6 +680,7 @@ export default class EmailSignUpTab extends Lightning.Component {
       this.passwordValue.length > 0
     ) {
       this.passwordValue = this.passwordValue.slice(0, -1);
+      this._validatePassword();
     }
     this._updateKeyboardDisplay();
   }
@@ -573,13 +692,79 @@ export default class EmailSignUpTab extends Lightning.Component {
       this.emailValue = "";
     } else if (this.focusedElement === "password") {
       this.passwordValue = "";
+      this._validatePassword();
     }
     this._updateKeyboardDisplay();
+  }
+
+  private _validatePassword(): void {
+    const password = this.passwordValue;
+
+    this.passwordRules = {
+      minLength: password.length >= 8,
+      hasLetter: /[a-zA-Z]/.test(password),
+      hasNumber: /\d/.test(password),
+    };
+
+    this._updatePasswordRulesDisplay();
+  }
+
+  private _updatePasswordRulesDisplay(): void {
+    const requirements = this.tag("PasswordRequirements");
+    if (!requirements) return;
+
+    const rules = [
+      { tag: "Rule1", valid: this.passwordRules.minLength },
+      { tag: "Rule2", valid: this.passwordRules.hasLetter },
+      { tag: "Rule3", valid: this.passwordRules.hasNumber },
+    ];
+
+    rules.forEach(({ tag, valid }) => {
+      const rule = requirements.tag(tag);
+      if (!rule) return;
+
+      const checkmarkContainer = rule.tag("CheckmarkContainer");
+      const text = rule.tag("Text");
+
+      if (checkmarkContainer) {
+        const checkmarkInner = checkmarkContainer.tag("CheckmarkInner");
+
+        checkmarkContainer.patch({
+          color: valid ? Colors.authAccent : 0x30ffffff,
+        });
+
+        if (checkmarkInner) {
+          checkmarkInner.patch({
+            color: valid ? Colors.authAccentHover : 0x25ffffff,
+          });
+
+          const icon = checkmarkInner.tag("Icon");
+          if (icon && icon.text) {
+            icon.text.textColor = valid ? 0xff000000 : 0x40ffffff;
+          }
+        }
+      }
+
+      if (text && text.text) {
+        text.text.textColor = valid ? Colors.authAccent : 0x60ffffff;
+      }
+    });
+
+    this.stage.update();
   }
 
   private async _handleSignUp(): Promise<void> {
     if (!this.nameValue || !this.emailValue || !this.passwordValue) {
       console.error("❌ All fields are required");
+      return;
+    }
+
+    if (
+      !this.passwordRules.minLength ||
+      !this.passwordRules.hasLetter ||
+      !this.passwordRules.hasNumber
+    ) {
+      console.error("❌ Password does not meet requirements");
       return;
     }
 
@@ -606,5 +791,6 @@ export default class EmailSignUpTab extends Lightning.Component {
   _init(): void {
     this._updateFocus();
     this._updateFieldDisplay();
+    this._validatePassword();
   }
 }

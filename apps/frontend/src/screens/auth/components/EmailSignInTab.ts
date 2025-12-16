@@ -226,8 +226,7 @@ export default class EmailSignInTab extends Lightning.Component {
 
       Value: {
         x: 30,
-        y: 58,
-        mount: { x: 0, y: 0.5 },
+        y: 50,
         text: {
           text: placeholder,
           fontSize: 28,
@@ -440,17 +439,33 @@ export default class EmailSignInTab extends Lightning.Component {
     const formContainer = this.tag("FormContainer");
     if (!formContainer) return;
 
-    const emailValue = formContainer.tag("EmailField")?.tag("Value");
-    const passwordValue = formContainer.tag("PasswordField")?.tag("Value");
+    const emailField = formContainer.tag("EmailField");
+    const passwordField = formContainer.tag("PasswordField");
 
-    if (emailValue && emailValue.text) {
-      emailValue.text.text = this.emailValue || "yourname@example.com";
-      emailValue.text.textColor = this.emailValue ? Colors.textPrimary : Colors.textQuaternary;
+    if (emailField) {
+      const emailValue = emailField.tag("Value");
+      if (emailValue) {
+        emailValue.patch({
+          text: {
+            text: this.emailValue || "yourname@example.com",
+            textColor: this.emailValue ? Colors.textPrimary : Colors.textQuaternary,
+          },
+        });
+      }
     }
 
-    if (passwordValue && passwordValue.text) {
-      passwordValue.text.text = this.passwordValue ? "\u2022".repeat(this.passwordValue.length) : "Enter your password";
-      passwordValue.text.textColor = this.passwordValue ? Colors.textPrimary : Colors.textQuaternary;
+    if (passwordField) {
+      const passwordValue = passwordField.tag("Value");
+      if (passwordValue) {
+        passwordValue.patch({
+          text: {
+            text: this.passwordValue
+              ? "\u2022".repeat(this.passwordValue.length)
+              : "Enter your password",
+            textColor: this.passwordValue ? Colors.textPrimary : Colors.textQuaternary,
+          },
+        });
+      }
     }
 
     this.stage.update();

@@ -27,13 +27,22 @@ class AuthService {
       return { success: false, error: 'Email and password are required' };
     }
 
-    if (password.length < 6) {
-      return { success: false, error: 'Password must be at least 6 characters' };
-    }
-
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       return { success: false, error: 'Invalid email format' };
+    }
+
+    // Password validation rules
+    if (password.length < 8) {
+      return { success: false, error: 'Password must be at least 8 characters' };
+    }
+
+    if (!/[a-zA-Z]/.test(password)) {
+      return { success: false, error: 'Password must contain at least one letter' };
+    }
+
+    if (!/\d/.test(password)) {
+      return { success: false, error: 'Password must contain at least one number' };
     }
 
     try {
