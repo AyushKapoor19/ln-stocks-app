@@ -219,15 +219,6 @@ export default class SignUpScreen extends BaseScreen {
   }
 
   _captureKey(event: KeyboardEvent): boolean {
-    console.log(
-      "🎯 SignUpScreen _captureKey - key:",
-      event.key,
-      "focusOnTab:",
-      this.focusOnTab,
-      "currentTab:",
-      this.currentTab
-    );
-
     // Delegate keyboard capture to the active content component
     if (!this.focusOnTab) {
       const tabContent = this.tag("TabContent");
@@ -237,24 +228,14 @@ export default class SignUpScreen extends BaseScreen {
             ? tabContent.tag("MobileContent")
             : tabContent.tag("EmailContent");
 
-        console.log(
-          "🔄 Delegating to child component:",
-          activeContent ? "found" : "not found"
-        );
-
         if (
           activeContent &&
           typeof (activeContent as any)._captureKey === "function"
         ) {
-          const result = (activeContent as any)._captureKey(event);
-          console.log("🔄 Child returned:", result);
-          return result;
+          return (activeContent as any)._captureKey(event);
         }
       }
     }
-    console.log(
-      "❌ SignUpScreen: Not delegating (focusOnTab is true or no active content)"
-    );
     return false;
   }
 
@@ -341,20 +322,17 @@ export default class SignUpScreen extends BaseScreen {
       return true;
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (this as any).fireAncestors("$navigateBack");
+    this.fireAncestors("$navigateBack");
     return true;
   }
 
   $navigateToSignIn(): void {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (this as any).fireAncestors("$navigateToSignIn");
+    this.fireAncestors("$navigateToSignIn");
   }
 
   $authSuccess(data: { user: unknown; token: string }): void {
     console.log("✅ Sign up successful");
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (this as any).fireAncestors("$authSuccess", data);
+    this.fireAncestors("$authSuccess", data);
   }
 
   private _switchTab(): void {

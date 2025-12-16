@@ -41,11 +41,11 @@ export default class EmailSignUpTab extends Lightning.Component {
         w: 900,
         h: 640,
 
-        NameField: this._createInputField(0, "Name", "Full name"),
+        NameField: this._createInputField(0, "Name", "Warren Buffett"),
         EmailField: this._createInputField(
           110,
           "Email",
-          "yourname@example.com"
+          "investor@wallstreet.com"
         ),
         PasswordField: this._createInputField(
           220,
@@ -194,7 +194,7 @@ export default class EmailSignUpTab extends Lightning.Component {
             mount: 0.5,
             text: {
               text: "Name",
-              fontSize: 38,
+              fontSize: 48,
               fontStyle: FontStyle.Bold,
               textColor: 0xf0ffffff,
               fontFace: FontFamily.Default,
@@ -378,8 +378,7 @@ export default class EmailSignUpTab extends Lightning.Component {
       return true;
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (this as any).fireAncestors("$focusBackToTab");
+    this.fireAncestors("$focusBackToTab");
     return true;
   }
 
@@ -418,8 +417,7 @@ export default class EmailSignUpTab extends Lightning.Component {
     }
 
     if (this.focusedElement === "signin") {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (this as any).fireAncestors("$navigateToSignIn");
+      this.fireAncestors("$navigateToSignIn");
       return true;
     }
 
@@ -435,40 +433,24 @@ export default class EmailSignUpTab extends Lightning.Component {
   }
 
   _captureKey(event: KeyboardEvent): boolean {
-    console.log(
-      "🔍 _captureKey called - key:",
-      event.key,
-      "keyCode:",
-      event.keyCode,
-      "focusedElement:",
-      this.focusedElement
-    );
-
     // Only capture typing when in name, email, or password fields (not on buttons)
     if (
       this.focusedElement !== "name" &&
       this.focusedElement !== "email" &&
       this.focusedElement !== "password"
     ) {
-      console.log(
-        "❌ Blocked: Not in a field, focusedElement:",
-        this.focusedElement
-      );
       return false;
     }
 
     const key = event.key;
-    console.log("✅ Processing key:", key, "length:", key.length);
 
     // Capture printable characters (single character keys)
     // This includes letters, numbers, symbols
     if (key.length === 1 && !event.ctrlKey && !event.altKey && !event.metaKey) {
-      console.log("✅ Adding character:", key);
       this._addCharacter(key);
       return true; // Return true to prevent further processing
     }
 
-    console.log("❌ Key not captured, passing through");
     return false; // Let other keys pass through to _handleKey
   }
 
@@ -639,7 +621,7 @@ export default class EmailSignUpTab extends Lightning.Component {
       if (nameValue) {
         nameValue.patch({
           text: {
-            text: this.nameValue || "Full name",
+            text: this.nameValue || "Warren Buffett",
             textColor: this.nameValue
               ? Colors.textPrimary
               : Colors.textQuaternary,
@@ -653,7 +635,7 @@ export default class EmailSignUpTab extends Lightning.Component {
       if (emailValue) {
         emailValue.patch({
           text: {
-            text: this.emailValue || "yourname@example.com",
+            text: this.emailValue || "investor@wallstreet.com",
             textColor: this.emailValue
               ? Colors.textPrimary
               : Colors.textQuaternary,
@@ -669,7 +651,7 @@ export default class EmailSignUpTab extends Lightning.Component {
           text: {
             text: this.passwordValue
               ? "\u2022".repeat(this.passwordValue.length)
-              : "At least 8 characters",
+              : "••••••••",
             textColor: this.passwordValue
               ? Colors.textPrimary
               : Colors.textQuaternary,
@@ -849,8 +831,7 @@ export default class EmailSignUpTab extends Lightning.Component {
     if (response && response.success && response.token && response.user) {
       console.log("✅ Sign up successful!");
       authApi.saveToken(response.token);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (this as any).fireAncestors("$authSuccess", {
+      this.fireAncestors("$authSuccess", {
         user: response.user,
         token: response.token,
       });

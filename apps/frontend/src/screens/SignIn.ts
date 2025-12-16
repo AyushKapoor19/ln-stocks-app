@@ -642,15 +642,13 @@ export default class SignIn extends BaseScreen {
       return true;
     }
     console.log("📱 Navigating back to Home");
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (this as any).fireAncestors("$navigateBack");
+    this.fireAncestors("$navigateBack");
     return true;
   }
 
   $authenticationSuccess(data: { user: unknown; token: string }): void {
     console.log("✅ Authentication successful from child!");
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (this as any).fireAncestors("$authenticationSuccess", data);
+    this.fireAncestors("$authenticationSuccess", data);
   }
 
   private _updateTabs(): void {

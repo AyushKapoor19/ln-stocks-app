@@ -583,8 +583,7 @@ export default class AuthScreen extends BaseScreen {
       return true;
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (this as any).fireAncestors("$navigateBack");
+    this.fireAncestors("$navigateBack");
     return true;
   }
 
@@ -803,8 +802,7 @@ export default class AuthScreen extends BaseScreen {
       if (response && response.success && response.token && response.user) {
         console.log("✅ Sign up successful!");
         authApi.saveToken(response.token);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (this as any).fireAncestors("$authenticationSuccess", {
+        this.fireAncestors("$authenticationSuccess", {
           user: response.user,
           token: response.token,
         });
@@ -819,8 +817,7 @@ export default class AuthScreen extends BaseScreen {
       if (response && response.success && response.token && response.user) {
         console.log("✅ Sign in successful!");
         authApi.saveToken(response.token);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (this as any).fireAncestors("$authenticationSuccess", {
+        this.fireAncestors("$authenticationSuccess", {
           user: response.user,
           token: response.token,
         });

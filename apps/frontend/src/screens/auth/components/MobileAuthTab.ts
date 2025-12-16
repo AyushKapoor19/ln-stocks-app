@@ -196,8 +196,7 @@ export default class MobileAuthTab extends Lightning.Component {
 
       if (response.status === "approved" && response.token && response.user) {
         console.log("✅ Device code approved!");
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (this as any).fireAncestors("$authSuccess", {
+        this.fireAncestors("$authSuccess", {
           user: response.user,
           token: response.token,
         });

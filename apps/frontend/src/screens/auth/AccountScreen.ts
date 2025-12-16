@@ -22,7 +22,7 @@ export default class AccountScreen extends BaseScreen {
   private user: IUser | null = null;
   private focusedButton: "signout" | "back" = "back";
 
-  static _template(): Lightning.Component.Template<object> {
+  static _template(): Lightning.Component.Template {
     return {
       w: 1920,
       h: 1080,
@@ -69,53 +69,32 @@ export default class AccountScreen extends BaseScreen {
         },
       },
 
-      // Account Info Card
+      // Account Info (No grey box, minimal design)
       AccountCard: {
         x: 120,
-        y: 260,
+        y: 280,
         w: 1680,
-        h: 400,
-
-        Background: {
-          x: 0,
-          y: 0,
-          w: 1680,
-          h: 400,
-          rect: true,
-          color: 0x15ffffff,
-          shader: { type: Lightning.shaders.RoundedRectangle, radius: 20 },
-        },
-
-        Border: {
-          x: -2,
-          y: -2,
-          w: 1684,
-          h: 404,
-          rect: true,
-          color: 0x25ffffff,
-          shader: { type: Lightning.shaders.RoundedRectangle, radius: 22 },
-          zIndex: -1,
-        },
+        h: 350,
 
         // Profile Icon
         ProfileIcon: {
-          x: 60,
-          y: 60,
-          w: 120,
-          h: 120,
+          x: 0,
+          y: 0,
+          w: 90,
+          h: 90,
           rect: true,
           color: Colors.authAccent,
-          shader: { type: Lightning.shaders.RoundedRectangle, radius: 60 },
+          shader: { type: Lightning.shaders.RoundedRectangle, radius: 45 },
 
           InitialText: {
-            x: 60,
-            y: 60,
+            x: 45,
+            y: 45,
             mount: 0.5,
             text: {
               text: "",
-              fontSize: 56,
+              fontSize: 42,
               fontStyle: FontStyle.Bold,
-              textColor: Colors.black,
+              textColor: Colors.white,
               fontFace: FontFamily.Default,
             },
           },
@@ -123,15 +102,15 @@ export default class AccountScreen extends BaseScreen {
 
         // User Info
         UserInfo: {
-          x: 220,
-          y: 60,
+          x: 120,
+          y: 0,
 
           NameLabel: {
             x: 0,
             y: 0,
             text: {
               text: "Name",
-              fontSize: 22,
+              fontSize: 20,
               textColor: Colors.textTertiary,
               fontFace: FontFamily.Default,
             },
@@ -139,10 +118,10 @@ export default class AccountScreen extends BaseScreen {
 
           NameValue: {
             x: 0,
-            y: 35,
+            y: 30,
             text: {
               text: "—",
-              fontSize: 38,
+              fontSize: 32,
               fontStyle: FontStyle.Bold,
               textColor: Colors.textPrimary,
               fontFace: FontFamily.Default,
@@ -151,10 +130,10 @@ export default class AccountScreen extends BaseScreen {
 
           EmailLabel: {
             x: 0,
-            y: 100,
+            y: 105,
             text: {
               text: "Email",
-              fontSize: 22,
+              fontSize: 20,
               textColor: Colors.textTertiary,
               fontFace: FontFamily.Default,
             },
@@ -165,146 +144,115 @@ export default class AccountScreen extends BaseScreen {
             y: 135,
             text: {
               text: "—",
-              fontSize: 32,
+              fontSize: 28,
               textColor: Colors.textSecondary,
               fontFace: FontFamily.Default,
             },
           },
         },
 
-        // Status Badge
-        StatusBadge: {
-          x: 60,
-          y: 250,
-          w: 180,
-          h: 50,
-          rect: true,
-          color: Colors.authAccent,
-          shader: { type: Lightning.shaders.RoundedRectangle, radius: 25 },
+        // Status and Member Info (horizontal layout)
+        StatusRow: {
+          x: 120,
+          y: 195,
 
-          StatusText: {
-            x: 90,
-            y: 25,
-            mount: 0.5,
-            text: {
-              text: "Active",
-              fontSize: 24,
-              fontStyle: FontStyle.Bold,
-              textColor: Colors.black,
-              fontFace: FontFamily.Default,
+          StatusBadge: {
+            x: 0,
+            y: 0,
+            w: 140,
+            h: 40,
+            rect: true,
+            color: Colors.authAccent,
+            shader: { type: Lightning.shaders.RoundedRectangle, radius: 20 },
+
+            StatusText: {
+              x: 70,
+              y: 20,
+              mount: 0.5,
+              text: {
+                text: "● Active",
+                fontSize: 20,
+                fontStyle: FontStyle.Bold,
+                textColor: Colors.white,
+                fontFace: FontFamily.Default,
+              },
             },
           },
 
-          StatusIcon: {
-            x: 40,
-            y: 25,
-            mount: 0.5,
+          MemberInfo: {
+            x: 180,
+            y: 8,
             text: {
-              text: "●",
+              text: "Member since —",
               fontSize: 20,
-              textColor: Colors.black,
+              textColor: Colors.textTertiary,
               fontFace: FontFamily.Default,
             },
-          },
-        },
-
-        // Member Since
-        MemberSince: {
-          x: 280,
-          y: 265,
-          text: {
-            text: "Member since",
-            fontSize: 20,
-            textColor: Colors.textQuaternary,
-            fontFace: FontFamily.Default,
-          },
-        },
-
-        MemberDate: {
-          x: 450,
-          y: 265,
-          text: {
-            text: "—",
-            fontSize: 20,
-            fontStyle: FontStyle.Bold,
-            textColor: Colors.textSecondary,
-            fontFace: FontFamily.Default,
           },
         },
       },
 
-      // Actions Section
+      // Divider
+      Divider: {
+        x: 120,
+        y: 600,
+        w: 1680,
+        h: 1,
+        rect: true,
+        color: 0x20ffffff,
+      },
+
+      // Actions Section (minimal buttons)
       ActionsContainer: {
         x: 120,
-        y: 720,
+        y: 660,
         w: 1680,
 
         BackButton: {
           x: 0,
           y: 0,
-          w: 280,
-          h: 80,
+          w: 240,
+          h: 70,
           rect: true,
-          color: 0x20ffffff,
+          color: 0x00000000,
           shader: { type: Lightning.shaders.RoundedRectangle, radius: 12 },
 
           Label: {
-            x: 140,
-            y: 40,
+            x: 120,
+            y: 35,
             mount: 0.5,
             text: {
               text: "← Back",
-              fontSize: 28,
+              fontSize: 26,
               fontStyle: FontStyle.Bold,
-              textColor: Colors.textPrimary,
+              textColor: Colors.authAccent,
               fontFace: FontFamily.Default,
             },
           },
         },
 
         SignOutButton: {
-          x: 320,
+          x: 280,
           y: 0,
-          w: 280,
-          h: 80,
+          w: 240,
+          h: 70,
           rect: true,
-          color: 0x20ffffff,
+          color: 0x00000000,
           shader: { type: Lightning.shaders.RoundedRectangle, radius: 12 },
 
           Label: {
-            x: 140,
-            y: 40,
+            x: 120,
+            y: 35,
             mount: 0.5,
             text: {
               text: "Sign Out",
-              fontSize: 28,
+              fontSize: 26,
               fontStyle: FontStyle.Bold,
-              textColor: 0xffff4444,
+              textColor: 0xffef4444,
               fontFace: FontFamily.Default,
             },
           },
         },
-      },
-
-      // Decorative Elements
-      AccentLine1: {
-        x: 120,
-        y: 680,
-        w: 800,
-        h: 2,
-        rect: true,
-        color: Colors.authAccent,
-        alpha: 0.3,
-      },
-
-      AccentLine2: {
-        x: 1000,
-        y: 680,
-        w: 800,
-        h: 2,
-        rect: true,
-        color: Colors.authAccent,
-        alpha: 0.3,
       },
     };
   }
@@ -346,15 +294,18 @@ export default class AccountScreen extends BaseScreen {
       }
     }
 
-    // Update member date
-    const memberDate = accountCard.tag("MemberDate");
-    if (memberDate && memberDate.text && this.user.created_at) {
-      const date = new Date(this.user.created_at);
-      const formattedDate = date.toLocaleDateString("en-US", {
-        month: "short",
-        year: "numeric",
-      });
-      memberDate.text.text = formattedDate;
+    // Update member date in StatusRow
+    const statusRow = accountCard.tag("StatusRow");
+    if (statusRow && this.user.created_at) {
+      const memberInfo = statusRow.tag("MemberInfo");
+      if (memberInfo && memberInfo.text) {
+        const date = new Date(this.user.created_at);
+        const formattedDate = date.toLocaleDateString("en-US", {
+          month: "short",
+          year: "numeric",
+        });
+        memberInfo.text.text = `Member since ${formattedDate}`;
+      }
     }
 
     this.stage.update();
@@ -367,15 +318,16 @@ export default class AccountScreen extends BaseScreen {
     const backButton = actionsContainer.tag("BackButton");
     const signOutButton = actionsContainer.tag("SignOutButton");
 
+    // Minimal focus states - just opacity changes
     if (backButton) {
       backButton.patch({
-        color: this.focusedButton === "back" ? Colors.authAccent : 0x20ffffff,
+        alpha: this.focusedButton === "back" ? 1 : 0.6,
       });
     }
 
     if (signOutButton) {
       signOutButton.patch({
-        color: this.focusedButton === "signout" ? 0xff553333 : 0x20ffffff,
+        alpha: this.focusedButton === "signout" ? 1 : 0.6,
       });
     }
   }
@@ -400,8 +352,7 @@ export default class AccountScreen extends BaseScreen {
 
   _handleEnter(): boolean {
     if (this.focusedButton === "back") {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (this as any).fireAncestors("$navigateToHome");
+      this.fireAncestors("$navigateToHome");
       return true;
     }
 
@@ -414,8 +365,7 @@ export default class AccountScreen extends BaseScreen {
   }
 
   _handleBack(): boolean {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (this as any).fireAncestors("$navigateToHome");
+    this.fireAncestors("$navigateToHome");
     return true;
   }
 
@@ -423,8 +373,7 @@ export default class AccountScreen extends BaseScreen {
     console.log("🚪 Signing out...");
     // Clear stored token
     authApi.clearToken();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (this as any).fireAncestors("$signOut");
+    this.fireAncestors("$signOut");
   }
 
   _init(): void {

@@ -321,20 +321,17 @@ export default class SignInScreen extends BaseScreen {
       return true;
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (this as any).fireAncestors("$navigateBack");
+    this.fireAncestors("$navigateBack");
     return true;
   }
 
   $navigateToSignUp(): void {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (this as any).fireAncestors("$navigateToSignUp");
+    this.fireAncestors("$navigateToSignUp");
   }
 
   $authSuccess(data: { user: unknown; token: string }): void {
     console.log("✅ Sign in successful");
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (this as any).fireAncestors("$authSuccess", data);
+    this.fireAncestors("$authSuccess", data);
   }
 
   private _switchTab(): void {

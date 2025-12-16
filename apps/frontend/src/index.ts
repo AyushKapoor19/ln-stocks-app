@@ -49,6 +49,7 @@ const applicationOptions = {
   },
   debug: true,
   enablePointer: true,
+  keys: {},
 };
 
 console.log("✅ Application configured successfully");

@@ -29,11 +29,11 @@ export default class EmailSignInTab extends Lightning.Component {
         w: 900,
         h: 640,
 
-        EmailField: this._createInputField(0, "Email", "yourname@example.com"),
+        EmailField: this._createInputField(0, "Email", "investor@wallstreet.com"),
         PasswordField: this._createInputField(
           110,
           "Password",
-          "Enter your password"
+          "••••••••"
         ),
 
         SignInButton: {
@@ -144,7 +144,7 @@ export default class EmailSignInTab extends Lightning.Component {
             mount: 0.5,
             text: {
               text: "Email",
-              fontSize: 38,
+              fontSize: 48,
               fontStyle: FontStyle.Bold,
               textColor: 0xf0ffffff,
               fontFace: FontFamily.Default,
@@ -274,8 +274,7 @@ export default class EmailSignInTab extends Lightning.Component {
       return true;
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (this as any).fireAncestors("$focusBackToTab");
+    this.fireAncestors("$focusBackToTab");
     return true;
   }
 
@@ -309,8 +308,7 @@ export default class EmailSignInTab extends Lightning.Component {
     }
 
     if (this.focusedElement === "signup") {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (this as any).fireAncestors("$navigateToSignUp");
+      this.fireAncestors("$navigateToSignUp");
       return true;
     }
 
@@ -332,7 +330,6 @@ export default class EmailSignInTab extends Lightning.Component {
     }
 
     const key = event.key;
-    console.log("📝 Key captured:", key);
 
     // Capture printable characters (single character keys)
     // This includes letters, numbers, symbols
@@ -501,7 +498,7 @@ export default class EmailSignInTab extends Lightning.Component {
       if (emailValue) {
         emailValue.patch({
           text: {
-            text: this.emailValue || "yourname@example.com",
+            text: this.emailValue || "investor@wallstreet.com",
             textColor: this.emailValue
               ? Colors.textPrimary
               : Colors.textQuaternary,
@@ -517,7 +514,7 @@ export default class EmailSignInTab extends Lightning.Component {
           text: {
             text: this.passwordValue
               ? "\u2022".repeat(this.passwordValue.length)
-              : "Enter your password",
+              : "••••••••",
             textColor: this.passwordValue
               ? Colors.textPrimary
               : Colors.textQuaternary,
@@ -622,8 +619,7 @@ export default class EmailSignInTab extends Lightning.Component {
     if (response && response.success && response.token && response.user) {
       console.log("✅ Sign in successful!");
       authApi.saveToken(response.token);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (this as any).fireAncestors("$authSuccess", {
+      this.fireAncestors("$authSuccess", {
         user: response.user,
         token: response.token,
       });

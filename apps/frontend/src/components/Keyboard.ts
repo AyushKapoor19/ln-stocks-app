@@ -351,16 +351,16 @@ export default class Keyboard extends Lightning.Component {
       });
     });
 
-    // Update Done button focus
+    // Update Done button focus (subtle green color)
     const isDoneFocused = this.selectedRow === 3;
     doneButton.patch({
-      color: isDoneFocused ? 0xffffffff : 0x30ffffff,
+      color: isDoneFocused ? 0xffffffff : 0xff16a34a,
       shader: { type: Lightning.shaders.RoundedRectangle, radius: 10 },
     });
 
     const doneLabel = doneButton.tag("Label");
     if (doneLabel && doneLabel.text) {
-      doneLabel.text.textColor = isDoneFocused ? 0xff000000 : 0xffffffff;
+      doneLabel.text.textColor = isDoneFocused ? 0xff16a34a : 0xffffffff;
     }
 
     this.stage.update();
@@ -416,12 +416,29 @@ export default class Keyboard extends Lightning.Component {
   }
 
   _handleLeft(): boolean {
-    if (this.selectedCol > 0) {
-      this.selectedCol--;
+    // Wrap around to end of row when at start
+    if (this.selectedCol === 0) {
+      let maxCol = 0;
+      
+      if (this.selectedRow === 0) {
+        maxCol = 27; // SPACE + 26 letters + DELETE
+      } else if (this.selectedRow === 1) {
+        maxCol = 15; // 16 keys in second row
+      } else if (this.selectedRow === 2) {
+        maxCol = 1; // 2 mode toggles
+      } else if (this.selectedRow === 3) {
+        maxCol = 0; // Done button (no wrap needed)
+        return false;
+      }
+      
+      this.selectedCol = maxCol;
       this._updateKeyFocus();
       return true;
     }
-    return false;
+    
+    this.selectedCol--;
+    this._updateKeyFocus();
+    return true;
   }
 
   _handleRight(): boolean {
@@ -434,15 +451,20 @@ export default class Keyboard extends Lightning.Component {
     } else if (this.selectedRow === 2) {
       maxCol = 1; // 2 mode toggles
     } else if (this.selectedRow === 3) {
-      maxCol = 0; // Done button
+      maxCol = 0; // Done button (no wrap needed)
+      return false;
     }
 
-    if (this.selectedCol < maxCol) {
-      this.selectedCol++;
+    // Wrap around to start of row when at end
+    if (this.selectedCol >= maxCol) {
+      this.selectedCol = 0;
       this._updateKeyFocus();
       return true;
     }
-    return false;
+
+    this.selectedCol++;
+    this._updateKeyFocus();
+    return true;
   }
 
   _handleEnter(): boolean {
@@ -450,16 +472,16 @@ export default class Keyboard extends Lightning.Component {
     if (this.selectedRow === 0) {
       if (this.selectedCol === 0) {
         // SPACE button
-        (this as any).fireAncestors("$onKeyPress", { key: " " });
+        this.fireAncestors("$onKeyPress", { key: " " });
       } else if (this.selectedCol === 27) {
         // DELETE button
-        (this as any).fireAncestors("$onKeyPress", { key: "Delete" });
+        this.fireAncestors("$onKeyPress", { key: "Delete" });
       } else {
         // Letter keys (1-26)
         const currentLayout = this.layouts[this.mode];
         const key = currentLayout[this.selectedCol - 1];
         if (key) {
-          (this as any).fireAncestors("$onKeyPress", { key });
+          this.fireAncestors("$onKeyPress", { key });
         }
       }
     }
@@ -467,7 +489,7 @@ export default class Keyboard extends Lightning.Component {
     else if (this.selectedRow === 1) {
       const key = this.secondRowKeys[this.selectedCol];
       if (key) {
-        (this as any).fireAncestors("$onKeyPress", { key });
+        this.fireAncestors("$onKeyPress", { key });
       }
     }
     // Row 2: Mode toggles
@@ -481,21 +503,21 @@ export default class Keyboard extends Lightning.Component {
     }
     // Row 3: Done button
     else if (this.selectedRow === 3) {
-      (this as any).fireAncestors("$onKeyPress", { key: "Done" });
+      this.fireAncestors("$onKeyPress", { key: "Done" });
     }
 
     return true;
   }
 
   _handleBack(): boolean {
-    (this as any).fireAncestors("$closeKeyboard");
+    this.fireAncestors("$closeKeyboard");
     return true;
   }
 
   // Handle special keys with remote color buttons
   _handleRed(): boolean {
     // Delete key
-    (this as any).fireAncestors("$onKeyPress", { key: "Delete" });
+    this.fireAncestors("$onKeyPress", { key: "Delete" });
     return true;
   }
 
@@ -515,13 +537,13 @@ export default class Keyboard extends Lightning.Component {
 
   _handleYellow(): boolean {
     // Space key
-    (this as any).fireAncestors("$onKeyPress", { key: " " });
+    this.fireAncestors("$onKeyPress", { key: " " });
     return true;
   }
 
   _handleBlue(): boolean {
     // Done key
-    (this as any).fireAncestors("$onKeyPress", { key: "Done" });
+    this.fireAncestors("$onKeyPress", { key: "Done" });
     return true;
   }
 }
