@@ -560,8 +560,48 @@ export default class EmailSignInTab extends Lightning.Component {
   }
 
   _init(): void {
-    this._updateFocus();
     this._updateFieldDisplay();
+  }
+
+  _focus(): void {
+    // Focus first field when user navigates into the form
+    this.focusedElement = "email";
+    this._updateFocus();
+  }
+
+  _clearAllFocus(): void {
+    const formContainer = this.tag("FormContainer");
+    if (!formContainer) return;
+
+    const elements: string[] = [
+      "EmailField",
+      "PasswordField",
+      "SignInButton",
+      "SignUpButton",
+    ];
+
+    elements.forEach((tag) => {
+      const element = formContainer.tag(tag);
+      if (!element) return;
+
+      if (tag === "SignUpButton") {
+        const underline = element.tag("Underline");
+        if (underline) {
+          underline.setSmooth("alpha", 0, { duration: 0.2 });
+        }
+      } else if (tag === "SignInButton") {
+        element.patch({
+          color: Colors.authAccent,
+        });
+      } else {
+        const border = element.tag("FocusBorder");
+        if (border) {
+          border.setSmooth("alpha", 0, { duration: 0.2 });
+        }
+      }
+    });
+
+    this.stage.update();
   }
 }
 

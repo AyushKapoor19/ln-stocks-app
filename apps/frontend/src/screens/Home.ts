@@ -543,8 +543,8 @@ export default class Home extends BaseScreen {
       }
       return false;
     } else if (this.currentFocusIndex === 1) {
-      console.log("🔐 Opening Sign Up screen");
-      this.fireAncestors("$navigateToSignUp");
+      console.log("🔐 Opening Account/Sign In screen");
+      this.fireAncestors("$navigateToSignIn");
       return true;
     } else {
       const buttonIndex = this.currentFocusIndex - 2;
@@ -554,6 +554,18 @@ export default class Home extends BaseScreen {
       }
     }
     return false;
+  }
+
+  updateAuthButton(isLoggedIn: boolean): void {
+    const signInButton = this.tag("SignInButton");
+    if (!signInButton) return;
+
+    const icon = signInButton.tag("Icon");
+    if (icon && icon.text) {
+      icon.text.text = isLoggedIn ? "⚙" : "👤";
+    }
+
+    this.stage.update();
   }
 
   _handleKey(event: KeyboardEvent): boolean {

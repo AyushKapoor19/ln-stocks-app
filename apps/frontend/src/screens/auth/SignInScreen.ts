@@ -145,6 +145,15 @@ export default class SignInScreen extends BaseScreen {
   _init(): void {
     super._init();
     this._updateTabIndicators();
+    this._updateTabFocusIndicator();
+  }
+
+  _active(): void {
+    // Reset to mobile tab and focus on tabs when screen becomes active
+    this.currentTab = "mobile";
+    this.focusOnTab = true;
+    this._switchTab();
+    this._updateTabFocusIndicator();
   }
 
   _getFocused(): Lightning.Component {
@@ -165,23 +174,25 @@ export default class SignInScreen extends BaseScreen {
   }
 
   _handleLeft(): boolean {
-    if (!this.focusOnTab) return false;
-
-    if (this.currentTab === "email") {
-      this.currentTab = "mobile";
-      this._switchTab();
-      return true;
+    if (this.focusOnTab) {
+      if (this.currentTab === "email") {
+        this.currentTab = "mobile";
+        this._switchTab();
+        return true;
+      }
+      return false;
     }
     return false;
   }
 
   _handleRight(): boolean {
-    if (!this.focusOnTab) return false;
-
-    if (this.currentTab === "mobile") {
-      this.currentTab = "email";
-      this._switchTab();
-      return true;
+    if (this.focusOnTab) {
+      if (this.currentTab === "mobile") {
+        this.currentTab = "email";
+        this._switchTab();
+        return true;
+      }
+      return false;
     }
     return false;
   }
@@ -198,10 +209,59 @@ export default class SignInScreen extends BaseScreen {
   _handleUp(): boolean {
     if (!this.focusOnTab) {
       this.focusOnTab = true;
+      this._clearFieldFocus();
+      this._updateTabFocusIndicator();
       this.stage.update();
       return true;
     }
     return false;
+  }
+
+  $focusBackToTab(): void {
+    this.focusOnTab = true;
+    this._clearFieldFocus();
+    this._updateTabFocusIndicator();
+    this.stage.update();
+  }
+
+  private _clearFieldFocus(): void {
+    const tabContent = this.tag("TabContent");
+    if (!tabContent) return;
+
+    const emailContent = tabContent.tag("EmailContent");
+    if (emailContent && (emailContent as any)._clearAllFocus) {
+      (emailContent as any)._clearAllFocus();
+    }
+  }
+
+  private _updateTabFocusIndicator(): void {
+    const tabBar = this.tag("TabBar");
+    if (!tabBar) return;
+
+    const mobileTab = tabBar.tag("MobileTab");
+    const emailTab = tabBar.tag("EmailTab");
+
+    if (mobileTab) {
+      const mobileLabel = mobileTab.tag("Label");
+      if (mobileLabel && mobileLabel.text) {
+        if (this.focusOnTab) {
+          mobileLabel.text.textColor = this.currentTab === "mobile" ? 0xffffffff : Colors.textTertiary;
+        } else {
+          mobileLabel.text.textColor = this.currentTab === "mobile" ? Colors.authAccent : Colors.textTertiary;
+        }
+      }
+    }
+
+    if (emailTab) {
+      const emailLabel = emailTab.tag("Label");
+      if (emailLabel && emailLabel.text) {
+        if (this.focusOnTab) {
+          emailLabel.text.textColor = this.currentTab === "email" ? 0xffffffff : Colors.textTertiary;
+        } else {
+          emailLabel.text.textColor = this.currentTab === "email" ? Colors.authAccent : Colors.textTertiary;
+        }
+      }
+    }
   }
 
   _handleBack(): boolean {
@@ -224,7 +284,7 @@ export default class SignInScreen extends BaseScreen {
   $authSuccess(data: { user: unknown; token: string }): void {
     console.log("✅ Sign in successful");
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (this as any).fireAncestors("$authenticationSuccess", data);
+    (this as any).fireAncestors("$authSuccess", data);
   }
 
   private _switchTab(): void {
@@ -259,6 +319,7 @@ export default class SignInScreen extends BaseScreen {
     }
 
     this._updateTabIndicators();
+    this._updateTabFocusIndicator();
   }
 
   private _updateTabIndicators(): void {

@@ -2,8 +2,19 @@ import { Lightning } from "@lightningjs/sdk";
 import Home from "../screens/Home";
 import SignUpScreen from "../screens/auth/SignUpScreen";
 import SignInScreen from "../screens/auth/SignInScreen";
+import AccountScreen from "../screens/auth/AccountScreen";
 import { ImageUtils } from "../utils/imageUtils";
 import { Colors } from "../constants/Colors";
+import { authApi } from "../services/authApi";
+
+interface IUser {
+  id: number;
+  email: string;
+  display_name: string | null;
+  created_at: string;
+  updated_at: string;
+  last_login: string | null;
+}
 
 /**
  * Main App Class
@@ -13,6 +24,7 @@ import { Colors } from "../constants/Colors";
  */
 export default class App extends Lightning.Component {
   private currentScreen: string = "Home";
+  private currentUser: IUser | null = null;
 
   static getFonts(): object[] {
     return [];
@@ -43,6 +55,12 @@ export default class App extends Lightning.Component {
         zIndex: 2,
         visible: false,
       },
+      AccountScreen: {
+        type: AccountScreen,
+        alpha: 0,
+        zIndex: 2,
+        visible: false,
+      },
     };
   }
 
@@ -59,6 +77,42 @@ export default class App extends Lightning.Component {
     );
     console.log(`   Stage size: ${this.stage.w}x${this.stage.h}`);
     console.log(`   Precision: ${precision}`);
+
+    // Check for stored auth token and auto-login
+    void this._checkStoredAuth();
+  }
+
+  private async _checkStoredAuth(): Promise<void> {
+    const token = authApi.getToken();
+    
+    if (!token) {
+      console.log("📭 No stored auth token found");
+      return;
+    }
+
+    console.log("🔑 Found stored token, verifying...");
+    
+    const response = await authApi.verifyToken(token);
+    
+    if (response.success && response.user) {
+      console.log("✅ Auto-login successful!", response.user);
+      this.currentUser = response.user as IUser;
+      
+      // Update AccountScreen with user data
+      const accountScreen = this.tag("AccountScreen") as AccountScreen;
+      if (accountScreen && accountScreen.setUser) {
+        accountScreen.setUser(this.currentUser);
+      }
+      
+      // Update Home screen to show "Account" instead of "Sign In"
+      const homeScreen = this.tag("Home");
+      if (homeScreen && (homeScreen as any).updateAuthButton) {
+        (homeScreen as any).updateAuthButton(true);
+      }
+    } else {
+      console.log("❌ Token verification failed, clearing token");
+      authApi.clearToken();
+    }
   }
 
   _getFocused(): Lightning.Component | null {
@@ -66,8 +120,14 @@ export default class App extends Lightning.Component {
   }
 
   $navigateToSignIn(): void {
-    console.log("📱 Navigating to Sign In screen");
-    this._showScreen("SignInScreen");
+    // Check if user is already logged in
+    if (this.currentUser) {
+      console.log("📱 Navigating to Account screen (user logged in)");
+      this._showScreen("AccountScreen");
+    } else {
+      console.log("📱 Navigating to Sign Up screen (regular flow for new users)");
+      this._showScreen("SignUpScreen");
+    }
   }
 
   $navigateToSignUp(): void {
@@ -75,18 +135,55 @@ export default class App extends Lightning.Component {
     this._showScreen("SignUpScreen");
   }
 
+  $navigateToHome(): void {
+    console.log("📱 Navigating to Home");
+    this._showScreen("Home");
+  }
+
   $navigateBack(): void {
     console.log("📱 Navigating back to Home");
     this._showScreen("Home");
   }
 
-  $authenticationSuccess(data: { user: unknown; token: string }): void {
-    console.log("✅ Authentication successful!");
+  $authSuccess(data: { user: IUser; token: string }): void {
+    console.log("✅ Authentication successful!", data.user);
+    this.currentUser = data.user;
+    
+    // Save token for persistence
+    authApi.saveToken(data.token);
+    
+    // Update AccountScreen with user data
+    const accountScreen = this.tag("AccountScreen") as AccountScreen;
+    if (accountScreen && accountScreen.setUser) {
+      accountScreen.setUser(data.user);
+    }
+    
+    // Update Home screen to show "Account" button
+    const homeScreen = this.tag("Home");
+    if (homeScreen && (homeScreen as any).updateAuthButton) {
+      (homeScreen as any).updateAuthButton(true);
+    }
+    
+    // Navigate to Account screen
+    this._showScreen("AccountScreen");
+  }
+
+  $signOut(): void {
+    console.log("🚪 User signed out");
+    this.currentUser = null;
+    authApi.clearToken();
+    
+    // Update Home screen to show "Sign In" instead of "Account"
+    const homeScreen = this.tag("Home");
+    if (homeScreen && (homeScreen as any).updateAuthButton) {
+      (homeScreen as any).updateAuthButton(false);
+    }
+    
     this._showScreen("Home");
   }
 
   private _showScreen(screenName: string): void {
-    const screens = ["Home", "SignUpScreen", "SignInScreen"];
+    const screens = ["Home", "SignUpScreen", "SignInScreen", "AccountScreen"];
     
     screens.forEach((screen) => {
       const screenComponent = this.tag(screen);
