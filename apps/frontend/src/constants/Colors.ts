@@ -50,6 +50,17 @@ export const Colors = {
   success: 0xff10b981, // Success green
   warning: 0xfff59e0b, // Warning yellow
   error: 0xffef4444, // Error red
+
+  // Auth screen colors (mature green theme)
+  authAccent: 0xff16a34a, // Mature green accent for auth screens
+  authAccentHover: 0xff15803d, // Darker green on hover
+  authAccentLight: 0xff22c55e, // Light green for highlights
+  authBackground: 0xff000000, // Pure black background for auth
+  authCardBackground: 0xff0f0f0f, // Slightly lighter black for cards
+  authBorder: 0xff27272a, // Dark border
+  authBorderLight: 0xff3f3f46, // Lighter border
+  authInputBackground: 0xff18181b, // Input field background
+  authOverlay: 0xdd000000, // Overlay with transparency
 } as const;
 
 // Type for autocomplete support

@@ -1,6 +1,7 @@
 import { Lightning } from "@lightningjs/sdk";
 import Home from "../screens/Home";
-import SignIn from "../screens/SignIn";
+import SignUpScreen from "../screens/auth/SignUpScreen";
+import SignInScreen from "../screens/auth/SignInScreen";
 import { ImageUtils } from "../utils/imageUtils";
 import { Colors } from "../constants/Colors";
 
@@ -28,11 +29,19 @@ export default class App extends Lightning.Component {
         type: Home,
         alpha: 1,
         zIndex: 1,
+        visible: true,
       },
-      SignIn: {
-        type: SignIn,
+      SignUpScreen: {
+        type: SignUpScreen,
         alpha: 0,
         zIndex: 2,
+        visible: false,
+      },
+      SignInScreen: {
+        type: SignInScreen,
+        alpha: 0,
+        zIndex: 2,
+        visible: false,
       },
     };
   }
@@ -57,8 +66,13 @@ export default class App extends Lightning.Component {
   }
 
   $navigateToSignIn(): void {
-    console.log("📱 Navigating to SignIn screen");
-    this._showScreen("SignIn");
+    console.log("📱 Navigating to Sign In screen");
+    this._showScreen("SignInScreen");
+  }
+
+  $navigateToSignUp(): void {
+    console.log("📱 Navigating to Sign Up screen");
+    this._showScreen("SignUpScreen");
   }
 
   $navigateBack(): void {
@@ -72,7 +86,7 @@ export default class App extends Lightning.Component {
   }
 
   private _showScreen(screenName: string): void {
-    const screens = ["Home", "SignIn"];
+    const screens = ["Home", "SignUpScreen", "SignInScreen"];
     
     screens.forEach((screen) => {
       const screenComponent = this.tag(screen);

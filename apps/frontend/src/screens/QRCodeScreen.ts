@@ -44,7 +44,7 @@ export default class QRCodeScreen extends BaseScreen {
           y: 100,
           w: 900,
           text: {
-            text: "Or visit cnn.com/account/log-in/tv and confirm this code when prompted.",
+            text: "Scan the QR code with your mobile device to sign in.",
             fontSize: FontSize.Body,
             textColor: Colors.textSecondary,
             fontFace: FontFamily.Default,
