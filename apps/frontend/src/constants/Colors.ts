@@ -61,6 +61,9 @@ export const Colors = {
   authBorderLight: 0xff3f3f46, // Lighter border
   authInputBackground: 0xff18181b, // Input field background
   authOverlay: 0xdd000000, // Overlay with transparency
+
+  // Profile/Account colors
+  profileAccent: 0xff059669, // Deep teal-green for profile icons
 } as const;
 
 // Type for autocomplete support

@@ -83,7 +83,7 @@ export default class AccountScreen extends BaseScreen {
           w: 90,
           h: 90,
           rect: true,
-          color: Colors.authAccent,
+          color: Colors.profileAccent,
           shader: { type: Lightning.shaders.RoundedRectangle, radius: 45 },
 
           InitialText: {
@@ -211,19 +211,32 @@ export default class AccountScreen extends BaseScreen {
         BackButton: {
           x: 0,
           y: 0,
-          w: 240,
-          h: 70,
-          rect: true,
-          color: 0x00000000,
-          shader: { type: Lightning.shaders.RoundedRectangle, radius: 12 },
+          w: 180,
+          h: 60,
+
+          Border: {
+            x: 0,
+            y: 0,
+            w: 180,
+            h: 60,
+            rect: true,
+            color: 0x00000000,
+            alpha: 0,
+            shader: {
+              type: Lightning.shaders.RoundedRectangle,
+              radius: 8,
+              stroke: 3,
+              strokeColor: Colors.authAccent,
+            },
+          },
 
           Label: {
-            x: 120,
-            y: 35,
+            x: 90,
+            y: 30,
             mount: 0.5,
             text: {
               text: "← Back",
-              fontSize: 26,
+              fontSize: 28,
               fontStyle: FontStyle.Bold,
               textColor: Colors.authAccent,
               fontFace: FontFamily.Default,
@@ -232,21 +245,34 @@ export default class AccountScreen extends BaseScreen {
         },
 
         SignOutButton: {
-          x: 280,
+          x: 220,
           y: 0,
-          w: 240,
-          h: 70,
-          rect: true,
-          color: 0x00000000,
-          shader: { type: Lightning.shaders.RoundedRectangle, radius: 12 },
+          w: 200,
+          h: 60,
+
+          Border: {
+            x: 0,
+            y: 0,
+            w: 200,
+            h: 60,
+            rect: true,
+            color: 0x00000000,
+            alpha: 0,
+            shader: {
+              type: Lightning.shaders.RoundedRectangle,
+              radius: 8,
+              stroke: 3,
+              strokeColor: 0xffef4444,
+            },
+          },
 
           Label: {
-            x: 120,
-            y: 35,
+            x: 100,
+            y: 30,
             mount: 0.5,
             text: {
               text: "Sign Out",
-              fontSize: 26,
+              fontSize: 28,
               fontStyle: FontStyle.Bold,
               textColor: 0xffef4444,
               fontFace: FontFamily.Default,
@@ -318,17 +344,48 @@ export default class AccountScreen extends BaseScreen {
     const backButton = actionsContainer.tag("BackButton");
     const signOutButton = actionsContainer.tag("SignOutButton");
 
-    // Minimal focus states - just opacity changes
+    // Back button focus states
     if (backButton) {
-      backButton.patch({
-        alpha: this.focusedButton === "back" ? 1 : 0.6,
-      });
+      const backBorder = backButton.tag("Border");
+      const backLabel = backButton.tag("Label");
+
+      if (this.focusedButton === "back") {
+        if (backBorder) {
+          backBorder.alpha = 1;
+        }
+        if (backLabel && backLabel.text) {
+          backLabel.text.textColor = Colors.white;
+        }
+      } else {
+        if (backBorder) {
+          backBorder.alpha = 0;
+        }
+        if (backLabel && backLabel.text) {
+          backLabel.text.textColor = Colors.authAccent;
+        }
+      }
     }
 
+    // Sign Out button focus states
     if (signOutButton) {
-      signOutButton.patch({
-        alpha: this.focusedButton === "signout" ? 1 : 0.6,
-      });
+      const signOutBorder = signOutButton.tag("Border");
+      const signOutLabel = signOutButton.tag("Label");
+
+      if (this.focusedButton === "signout") {
+        if (signOutBorder) {
+          signOutBorder.alpha = 1;
+        }
+        if (signOutLabel && signOutLabel.text) {
+          signOutLabel.text.textColor = Colors.white;
+        }
+      } else {
+        if (signOutBorder) {
+          signOutBorder.alpha = 0;
+        }
+        if (signOutLabel && signOutLabel.text) {
+          signOutLabel.text.textColor = 0xffef4444;
+        }
+      }
     }
   }
 
