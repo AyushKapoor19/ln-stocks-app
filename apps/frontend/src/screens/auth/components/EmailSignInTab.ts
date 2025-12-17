@@ -61,6 +61,7 @@ export default class EmailSignInTab extends Lightning.Component {
           h: 80,
           rect: true,
           color: Colors.authAccent,
+          alpha: 0.7,
           shader: { type: Lightning.shaders.RoundedRectangle, radius: 12 },
 
           Label: {
@@ -570,12 +571,21 @@ export default class EmailSignInTab extends Lightning.Component {
 
       if (name === "signup") {
         const underline = element.tag("Underline");
+        const label = element.tag("Label");
         if (underline) {
           underline.setSmooth("alpha", isFocused ? 1 : 0, { duration: 0.2 });
         }
+        if (label) {
+          label.patch({
+            text: {
+              textColor: isFocused ? Colors.white : Colors.authAccentLight,
+            },
+          });
+        }
       } else if (name === "signin") {
         element.patch({
-          color: isFocused ? Colors.authAccentHover : Colors.authAccent,
+          color: isFocused ? Colors.authAccentLight : Colors.authAccent,
+          alpha: isFocused ? 1 : 0.7,
         });
       } else {
         const border = element.tag("FocusBorder");

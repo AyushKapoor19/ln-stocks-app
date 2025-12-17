@@ -129,7 +129,7 @@ export default class Keyboard extends Lightning.Component {
         w: 240,
         h: 80,
         rect: true,
-        color: 0x00000000,
+        color: 0x35ffffff,
         shader: { type: Lightning.shaders.RoundedRectangle, radius: 12 },
 
         Label: {
@@ -140,7 +140,7 @@ export default class Keyboard extends Lightning.Component {
             text: "Done",
             fontSize: 34,
             fontStyle: "bold",
-            textColor: 0xffffffff,
+            textColor: 0xff16a34a, // Subtle green always
           },
         },
       },
@@ -330,7 +330,7 @@ export default class Keyboard extends Lightning.Component {
           w: modeButtonWidth,
           h: 65,
           rect: true,
-          color: isFocused ? 0xffffffff : isActive ? 0x50ffffff : 0x30ffffff,
+          color: isFocused ? 0xffffffff : 0x35ffffff,
           shader: { type: Lightning.shaders.RoundedRectangle, radius: 12 },
           Label: {
             x: modeButtonWidth / 2,
@@ -340,27 +340,23 @@ export default class Keyboard extends Lightning.Component {
               text: modeItem.label,
               fontSize: 28,
               fontStyle: "bold",
-              textColor: isFocused
-                ? 0xff000000
-                : isActive
-                ? 0xffffffff
-                : 0xc0ffffff,
+              textColor: isFocused ? 0xff000000 : 0xffffffff,
             },
           },
         },
       });
     });
 
-    // Update Done button focus (subtle green color)
+    // Update Done button focus (same background as other keys, green text always)
     const isDoneFocused = this.selectedRow === 3;
     doneButton.patch({
-      color: isDoneFocused ? 0xffffffff : 0xff16a34a,
-      shader: { type: Lightning.shaders.RoundedRectangle, radius: 10 },
+      color: isDoneFocused ? 0xffffffff : 0x35ffffff,
+      shader: { type: Lightning.shaders.RoundedRectangle, radius: 12 },
     });
 
     const doneLabel = doneButton.tag("Label");
     if (doneLabel && doneLabel.text) {
-      doneLabel.text.textColor = isDoneFocused ? 0xff16a34a : 0xffffffff;
+      doneLabel.text.textColor = 0xff16a34a; // Subtle green always
     }
 
     this.stage.update();
@@ -419,7 +415,7 @@ export default class Keyboard extends Lightning.Component {
     // Wrap around to end of row when at start
     if (this.selectedCol === 0) {
       let maxCol = 0;
-      
+
       if (this.selectedRow === 0) {
         maxCol = 27; // SPACE + 26 letters + DELETE
       } else if (this.selectedRow === 1) {
@@ -430,12 +426,12 @@ export default class Keyboard extends Lightning.Component {
         maxCol = 0; // Done button (no wrap needed)
         return false;
       }
-      
+
       this.selectedCol = maxCol;
       this._updateKeyFocus();
       return true;
     }
-    
+
     this.selectedCol--;
     this._updateKeyFocus();
     return true;

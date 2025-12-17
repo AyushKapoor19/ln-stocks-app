@@ -315,7 +315,11 @@ export default class AuthScreen extends BaseScreen {
     };
   }
 
-  private static _createInputField(yPos: number, label: string, icon: string): object {
+  private static _createInputField(
+    yPos: number,
+    label: string,
+    icon: string
+  ): object {
     return {
       x: 0,
       y: yPos,
@@ -400,7 +404,8 @@ export default class AuthScreen extends BaseScreen {
       selectionScreen.patch({ alpha: 0, visible: false });
       formScreen.patch({ alpha: 1, visible: true });
       if (mainTitle && mainTitle.text) {
-        mainTitle.text.text = this.mode === "signin" ? "Sign In" : "Create Account";
+        mainTitle.text.text =
+          this.mode === "signin" ? "Sign In" : "Create Account";
       }
       if (subtitle && subtitle.text) {
         subtitle.text.text =
@@ -502,11 +507,7 @@ export default class AuthScreen extends BaseScreen {
     if (this.showKeyboard) return false;
 
     const maxIndex =
-      this.mode === "selection"
-        ? 2
-        : this.mode === "signup"
-        ? 4
-        : 3;
+      this.mode === "selection" ? 2 : this.mode === "signup" ? 4 : 3;
 
     if (this.focusIndex < maxIndex) {
       this.focusIndex++;
@@ -521,7 +522,9 @@ export default class AuthScreen extends BaseScreen {
   }
 
   _handleEnter(): boolean {
-    console.log(`📍 Enter pressed: mode=${this.mode}, focusIndex=${this.focusIndex}`);
+    console.log(
+      `📍 Enter pressed: mode=${this.mode}, focusIndex=${this.focusIndex}`
+    );
 
     if (this.mode === "selection") {
       if (this.focusIndex === 0) {
@@ -675,7 +678,9 @@ export default class AuthScreen extends BaseScreen {
     }
 
     inputText.text.text = displayValue || " ";
-    inputText.text.textColor = displayValue ? Colors.textPrimary : Colors.textSecondary;
+    inputText.text.textColor = displayValue
+      ? Colors.textPrimary
+      : Colors.textSecondary;
 
     this.stage.update();
   }
@@ -761,7 +766,10 @@ export default class AuthScreen extends BaseScreen {
   private _deleteCharacter(): void {
     if (this.activeField === "email" && this.emailValue.length > 0) {
       this.emailValue = this.emailValue.slice(0, -1);
-    } else if (this.activeField === "password" && this.passwordValue.length > 0) {
+    } else if (
+      this.activeField === "password" &&
+      this.passwordValue.length > 0
+    ) {
       this.passwordValue = this.passwordValue.slice(0, -1);
     } else if (this.activeField === "name" && this.nameValue.length > 0) {
       this.nameValue = this.nameValue.slice(0, -1);
@@ -840,4 +848,3 @@ export default class AuthScreen extends BaseScreen {
     return this;
   }
 }
-

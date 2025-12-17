@@ -200,6 +200,7 @@ export default class SignInScreen extends BaseScreen {
   _handleDown(): boolean {
     if (this.focusOnTab) {
       this.focusOnTab = false;
+      this._updateTabIndicators();
       this.stage.update();
       return true;
     }
@@ -380,10 +381,16 @@ export default class SignInScreen extends BaseScreen {
       const mobileLabel = mobileTab.tag("Label");
       const mobileIndicator = mobileTab.tag("Indicator");
       if (mobileLabel && mobileLabel.text) {
-        mobileLabel.text.textColor =
-          this.currentTab === "mobile"
-            ? Colors.authAccent
-            : Colors.textTertiary;
+        // Determine color based on active state AND focus state
+        let textColor;
+        if (this.currentTab === "mobile") {
+          // Active tab: white if focused, darker grey if not focused
+          textColor = this.focusOnTab ? Colors.white : Colors.textQuaternary;
+        } else {
+          // Inactive tab: medium grey
+          textColor = Colors.textTertiary;
+        }
+        mobileLabel.text.textColor = textColor;
       }
       if (mobileIndicator) {
         mobileIndicator.setSmooth(
@@ -400,8 +407,16 @@ export default class SignInScreen extends BaseScreen {
       const emailLabel = emailTab.tag("Label");
       const emailIndicator = emailTab.tag("Indicator");
       if (emailLabel && emailLabel.text) {
-        emailLabel.text.textColor =
-          this.currentTab === "email" ? Colors.authAccent : Colors.textTertiary;
+        // Determine color based on active state AND focus state
+        let textColor;
+        if (this.currentTab === "email") {
+          // Active tab: white if focused, darker grey if not focused
+          textColor = this.focusOnTab ? Colors.white : Colors.textQuaternary;
+        } else {
+          // Inactive tab: medium grey
+          textColor = Colors.textTertiary;
+        }
+        emailLabel.text.textColor = textColor;
       }
       if (emailIndicator) {
         emailIndicator.setSmooth("alpha", this.currentTab === "email" ? 1 : 0, {

@@ -16,6 +16,7 @@ export default class MobileAuthTab extends Lightning.Component {
   private deviceCode: string = "";
   private qrCodeUrl: string = "";
   private authType: "signup" | "signin" = "signup";
+  private isFocused: boolean = false;
 
   static _template(): object {
     return {
@@ -60,8 +61,12 @@ export default class MobileAuthTab extends Lightning.Component {
           w: 480,
           h: 120,
           rect: true,
-          color: Colors.authInputBackground,
-          shader: { type: Lightning.shaders.RoundedRectangle, radius: 16 },
+          color: Colors.authAccent,
+          alpha: 0.7,
+          shader: {
+            type: Lightning.shaders.RoundedRectangle,
+            radius: 16,
+          },
 
           CodeText: {
             x: 240,
@@ -71,7 +76,7 @@ export default class MobileAuthTab extends Lightning.Component {
               text: "Loading...",
               fontSize: 56,
               fontStyle: FontStyle.Bold,
-              textColor: Colors.authAccentLight,
+              textColor: Colors.black,
               fontFace: FontFamily.Default,
               letterSpacing: 8,
             },
@@ -144,6 +149,32 @@ export default class MobileAuthTab extends Lightning.Component {
     }
   }
 
+  _focus(): void {
+    this.isFocused = true;
+    this._updateDeviceCodeStyle();
+  }
+
+  _unfocus(): void {
+    this.isFocused = false;
+    this._updateDeviceCodeStyle();
+  }
+
+  _getFocused(): Lightning.Component {
+    return this;
+  }
+
+  private _updateDeviceCodeStyle(): void {
+    const deviceCodeContainer = this.tag("LeftSection")?.tag(
+      "DeviceCodeContainer"
+    );
+    if (deviceCodeContainer) {
+      deviceCodeContainer.patch({
+        color: this.isFocused ? Colors.authAccentLight : Colors.authAccent,
+        alpha: this.isFocused ? 1 : 0.7,
+      });
+    }
+  }
+
   private _updateInstructions(): void {
     const instructions = this.tag("LeftSection")?.tag("Instructions");
     if (instructions && instructions.text) {
@@ -183,6 +214,7 @@ export default class MobileAuthTab extends Lightning.Component {
       qrImage.patch({ src: this.qrCodeUrl });
     }
 
+    this._updateDeviceCodeStyle();
     this.stage.update();
     void this._pollDeviceCodeStatus();
   }

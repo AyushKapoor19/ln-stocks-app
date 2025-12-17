@@ -38,4 +38,3 @@ declare module "@lightningjs/sdk" {
     }
   }
 }
-

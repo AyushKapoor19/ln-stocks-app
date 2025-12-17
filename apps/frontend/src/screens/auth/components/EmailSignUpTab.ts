@@ -78,6 +78,7 @@ export default class EmailSignUpTab extends Lightning.Component {
           h: 80,
           rect: true,
           color: Colors.authAccent,
+          alpha: 0.7,
           shader: { type: Lightning.shaders.RoundedRectangle, radius: 12 },
 
           Label: {
@@ -708,12 +709,21 @@ export default class EmailSignUpTab extends Lightning.Component {
 
       if (name === "signin") {
         const underline = element.tag("Underline");
+        const label = element.tag("Label");
         if (underline) {
           underline.setSmooth("alpha", isFocused ? 1 : 0, { duration: 0.2 });
         }
+        if (label) {
+          label.patch({
+            text: {
+              textColor: isFocused ? Colors.white : Colors.authAccentLight,
+            },
+          });
+        }
       } else if (name === "signup") {
         element.patch({
-          color: isFocused ? Colors.authAccentHover : Colors.authAccent,
+          color: isFocused ? Colors.authAccentLight : Colors.authAccent,
+          alpha: isFocused ? 1 : 0.7,
         });
       } else {
         const border = element.tag("FocusBorder");
@@ -908,11 +918,11 @@ export default class EmailSignUpTab extends Lightning.Component {
     } else {
       const errorMsg = response?.error || "Sign up failed";
       console.error("❌ Sign up failed:", errorMsg);
-      
+
       if (errorMsg === "Email already registered") {
         this._showBackendError(errorMsg);
       }
-      
+
       this._shakeField("EmailField");
       this._showErrorGlow("EmailField");
     }
@@ -1009,12 +1019,12 @@ export default class EmailSignUpTab extends Lightning.Component {
       EmailField: "email",
       PasswordField: "password",
     };
-    
+
     const fieldElement = fieldNameMap[fieldName];
-    
+
     // Always add to errorFields and show red border immediately
     this.errorFields.add(fieldName);
-    
+
     // Force red border immediately, regardless of focus state
     border.patch({
       color: 0xffef4444,
@@ -1031,7 +1041,7 @@ export default class EmailSignUpTab extends Lightning.Component {
       if (this.errorGlowTimeouts.get(fieldName) === timeoutId) {
         this.errorFields.delete(fieldName);
         this.errorGlowTimeouts.delete(fieldName);
-        
+
         // If not focused, fade out the border
         if (this.focusedElement !== fieldElement) {
           border.setSmooth("alpha", 0, { duration: 0.3 });
@@ -1067,17 +1077,17 @@ export default class EmailSignUpTab extends Lightning.Component {
       if (label && label.text) {
         label.text.text = "Creating account...";
       }
-      button.patch({ 
+      button.patch({
         color: Colors.authAccentHover,
-        alpha: 0.8 
+        alpha: 0.8,
       });
     } else {
       if (label && label.text) {
         label.text.text = "Create Account";
       }
-      button.patch({ 
+      button.patch({
         color: Colors.authAccent,
-        alpha: 1 
+        alpha: 1,
       });
     }
   }
