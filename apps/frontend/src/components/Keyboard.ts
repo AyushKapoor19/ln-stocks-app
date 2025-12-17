@@ -152,6 +152,13 @@ export default class Keyboard extends Lightning.Component {
     this._createModeToggles();
   }
 
+  _focus(): void {
+    // Always default to "a" key when keyboard opens
+    this.selectedRow = 0;
+    this.selectedCol = 1;
+    this._updateKeyFocus();
+  }
+
   private _createKeys(): void {
     const keysRow = this.tag("KeysRow") as any;
     const secondRow = this.tag("SecondRow") as any;
