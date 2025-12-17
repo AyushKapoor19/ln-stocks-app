@@ -137,8 +137,8 @@ export default class SearchResults extends BaseComponent {
     const scrollContainer = this.tag("ScrollContainer");
     if (scrollContainer) {
       const resultsList = scrollContainer.tag("ResultsList");
-      if (resultsList) {
-        resultsList.children = [];
+    if (resultsList) {
+      resultsList.children = [];
       }
     }
   }

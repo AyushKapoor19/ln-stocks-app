@@ -23,6 +23,11 @@ export default class EmailSignUpTab extends Lightning.Component {
   private nameValue: string = "";
   private emailValue: string = "";
   private passwordValue: string = "";
+  private isLoading: boolean = false;
+  private shakingFields: Set<string> = new Set();
+  private errorFields: Set<string> = new Set();
+  private errorGlowTimeouts: Map<string, NodeJS.Timeout> = new Map();
+  private fieldOriginalPositions: Map<string, number> = new Map();
   private passwordRules: IPasswordRules = {
     minLength: false,
     hasLetter: false,
@@ -52,6 +57,19 @@ export default class EmailSignUpTab extends Lightning.Component {
           "Password",
           "Create a secure password"
         ),
+
+        BackendErrorMessage: {
+          x: 0,
+          y: 350,
+          alpha: 0,
+          text: {
+            text: "",
+            fontSize: 22,
+            textColor: 0xffef4444,
+            fontFace: FontFamily.Default,
+            wordWrapWidth: 900,
+          },
+        },
 
         SignUpButton: {
           x: 0,
@@ -412,7 +430,9 @@ export default class EmailSignUpTab extends Lightning.Component {
     }
 
     if (this.focusedElement === "signup") {
-      void this._handleSignUp();
+      if (!this.isLoading) {
+        void this._handleSignUp();
+      }
       return true;
     }
 
@@ -448,6 +468,7 @@ export default class EmailSignUpTab extends Lightning.Component {
     // This includes letters, numbers, symbols
     if (key.length === 1 && !event.ctrlKey && !event.altKey && !event.metaKey) {
       this._addCharacter(key);
+      this._hideBackendError();
       return true; // Return true to prevent further processing
     }
 
@@ -469,6 +490,7 @@ export default class EmailSignUpTab extends Lightning.Component {
     // Handle backspace
     if (key === "Backspace") {
       this._deleteCharacter();
+      this._hideBackendError();
       return true;
     }
 
@@ -485,8 +507,11 @@ export default class EmailSignUpTab extends Lightning.Component {
 
     if (key === "Delete") {
       this._deleteCharacter();
+      this._hideBackendError();
       return;
     }
+
+    this._hideBackendError();
 
     if (key === "Clear") {
       this._clearField();
@@ -693,7 +718,29 @@ export default class EmailSignUpTab extends Lightning.Component {
       } else {
         const border = element.tag("FocusBorder");
         if (border) {
-          border.setSmooth("alpha", isFocused ? 1 : 0, { duration: 0.2 });
+          if (isFocused) {
+            // Clear any error state when field receives focus
+            if (this.errorFields.has(tag)) {
+              this.errorFields.delete(tag);
+              const existingTimeout = this.errorGlowTimeouts.get(tag);
+              if (existingTimeout) {
+                clearTimeout(existingTimeout);
+                this.errorGlowTimeouts.delete(tag);
+              }
+            }
+
+            // Always apply green focus border
+            border.patch({
+              color: Colors.authAccent,
+              shader: {
+                type: Lightning.shaders.RoundedRectangle,
+                radius: 14,
+              },
+            });
+            border.setSmooth("alpha", 1, { duration: 0.2 });
+          } else {
+            border.setSmooth("alpha", 0, { duration: 0.2 });
+          }
         }
       }
     });
@@ -807,36 +854,231 @@ export default class EmailSignUpTab extends Lightning.Component {
   }
 
   private async _handleSignUp(): Promise<void> {
-    if (!this.nameValue || !this.emailValue || !this.passwordValue) {
-      console.error("❌ All fields are required");
-      return;
+    let hasError = false;
+
+    // Check empty fields
+    if (!this.nameValue) {
+      this._shakeField("NameField");
+      this._showErrorGlow("NameField");
+      hasError = true;
     }
 
-    if (
+    if (!this.emailValue) {
+      this._shakeField("EmailField");
+      this._showErrorGlow("EmailField");
+      hasError = true;
+    } else if (!this._isValidEmail(this.emailValue)) {
+      this._shakeField("EmailField");
+      this._showErrorGlow("EmailField");
+      hasError = true;
+    }
+
+    if (!this.passwordValue) {
+      this._shakeField("PasswordField");
+      this._showErrorGlow("PasswordField");
+      hasError = true;
+    } else if (
       !this.passwordRules.minLength ||
       !this.passwordRules.hasLetter ||
       !this.passwordRules.hasNumber
     ) {
-      console.error("❌ Password does not meet requirements");
-      return;
+      this._shakeField("PasswordField");
+      this._showErrorGlow("PasswordField");
+      hasError = true;
     }
 
-    console.log("🚀 Signing up...");
+    if (hasError) return;
+
+    this._setLoadingState(true);
 
     const response = await authApi.signup(
       this.emailValue,
       this.passwordValue,
       this.nameValue
     );
+
+    this._setLoadingState(false);
+
     if (response && response.success && response.token && response.user) {
-      console.log("✅ Sign up successful!");
       authApi.saveToken(response.token);
       this.fireAncestors("$authSuccess", {
         user: response.user,
         token: response.token,
       });
     } else {
-      console.error("❌ Sign up failed:", response?.error);
+      const errorMsg = response?.error || "Sign up failed";
+      console.error("❌ Sign up failed:", errorMsg);
+      
+      if (errorMsg === "Email already registered") {
+        this._showBackendError(errorMsg);
+      }
+      
+      this._shakeField("EmailField");
+      this._showErrorGlow("EmailField");
+    }
+  }
+
+  private _showBackendError(message: string): void {
+    const formContainer = this.tag("FormContainer");
+    if (!formContainer) return;
+
+    const errorMessage = formContainer.tag("BackendErrorMessage");
+    if (errorMessage && errorMessage.text) {
+      errorMessage.text.text = message;
+      errorMessage.setSmooth("alpha", 1, { duration: 0.3 });
+    }
+  }
+
+  private _hideBackendError(): void {
+    const formContainer = this.tag("FormContainer");
+    if (!formContainer) return;
+
+    const errorMessage = formContainer.tag("BackendErrorMessage");
+    if (errorMessage) {
+      errorMessage.setSmooth("alpha", 0, { duration: 0.3 });
+    }
+  }
+
+  private _shakeField(fieldName: string): void {
+    if (this.shakingFields.has(fieldName)) {
+      return;
+    }
+
+    const formContainer = this.tag("FormContainer");
+    if (!formContainer) {
+      return;
+    }
+
+    const field = formContainer.tag(fieldName);
+    if (!field) {
+      return;
+    }
+
+    // Store original position on first shake
+    if (!this.fieldOriginalPositions.has(fieldName)) {
+      this.fieldOriginalPositions.set(fieldName, field.x || 0);
+    }
+
+    const originalX = this.fieldOriginalPositions.get(fieldName) || 0;
+    this.shakingFields.add(fieldName);
+
+    // Force field back to original position before shaking
+    field.patch({ x: originalX });
+
+    field.setSmooth("x", originalX + 15, { duration: 0.1 });
+    setTimeout(() => {
+      field.setSmooth("x", originalX - 15, { duration: 0.1 });
+    }, 100);
+    setTimeout(() => {
+      field.setSmooth("x", originalX + 10, { duration: 0.1 });
+    }, 200);
+    setTimeout(() => {
+      field.setSmooth("x", originalX - 10, { duration: 0.1 });
+    }, 300);
+    setTimeout(() => {
+      field.setSmooth("x", originalX, { duration: 0.1 });
+      this.shakingFields.delete(fieldName);
+    }, 400);
+  }
+
+  private _showErrorGlow(fieldName: string): void {
+    const formContainer = this.tag("FormContainer");
+    if (!formContainer) {
+      return;
+    }
+
+    const field = formContainer.tag(fieldName);
+    if (!field) {
+      return;
+    }
+
+    const border = field.tag("FocusBorder");
+    if (!border) {
+      return;
+    }
+
+    // Clear any existing timeout for this field
+    const existingTimeout = this.errorGlowTimeouts.get(fieldName);
+    if (existingTimeout) {
+      clearTimeout(existingTimeout);
+      this.errorGlowTimeouts.delete(fieldName);
+    }
+
+    const fieldNameMap: Record<string, FocusedElement> = {
+      NameField: "name",
+      EmailField: "email",
+      PasswordField: "password",
+    };
+    
+    const fieldElement = fieldNameMap[fieldName];
+    
+    // Always add to errorFields and show red border immediately
+    this.errorFields.add(fieldName);
+    
+    // Force red border immediately, regardless of focus state
+    border.patch({
+      color: 0xffef4444,
+      shader: {
+        type: Lightning.shaders.RoundedRectangle,
+        radius: 14,
+      },
+      alpha: 1,
+    });
+
+    // Set timeout to hide the glow after 1 second
+    const timeoutId = setTimeout(() => {
+      // Only proceed if this is still the active timeout for this field
+      if (this.errorGlowTimeouts.get(fieldName) === timeoutId) {
+        this.errorFields.delete(fieldName);
+        this.errorGlowTimeouts.delete(fieldName);
+        
+        // If not focused, fade out the border
+        if (this.focusedElement !== fieldElement) {
+          border.setSmooth("alpha", 0, { duration: 0.3 });
+          setTimeout(() => {
+            border.patch({ color: Colors.authAccent });
+          }, 300);
+        } else {
+          // If focused, just reset to green immediately
+          border.patch({ color: Colors.authAccent });
+        }
+      }
+    }, 1000);
+
+    this.errorGlowTimeouts.set(fieldName, timeoutId);
+  }
+
+  private _isValidEmail(email: string): boolean {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  }
+
+  private _setLoadingState(loading: boolean): void {
+    this.isLoading = loading;
+    const formContainer = this.tag("FormContainer");
+    if (!formContainer) return;
+
+    const button = formContainer.tag("SignUpButton");
+    if (!button) return;
+
+    const label = button.tag("Label");
+
+    if (loading) {
+      if (label && label.text) {
+        label.text.text = "Creating account...";
+      }
+      button.patch({ 
+        color: Colors.authAccentHover,
+        alpha: 0.8 
+      });
+    } else {
+      if (label && label.text) {
+        label.text.text = "Create Account";
+      }
+      button.patch({ 
+        color: Colors.authAccent,
+        alpha: 1 
+      });
     }
   }
 
