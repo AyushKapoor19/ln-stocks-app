@@ -13,7 +13,11 @@ import { healthRoute } from "./routes/healthRoute.js.js";
 import { quotesRoute } from "./routes/quotesRoute.js.js";
 import { seriesRoute } from "./routes/seriesRoute.js.js";
 import { searchRoute } from "./routes/searchRoute.js.js";
-import { signupRoute, loginRoute, verifyTokenRoute } from "./routes/authRoutes.js.js";
+import {
+  signupRoute,
+  loginRoute,
+  verifyTokenRoute,
+} from "./routes/authRoutes.js.js";
 import {
   generateDeviceCodeRoute,
   checkDeviceCodeStatusRoute,
