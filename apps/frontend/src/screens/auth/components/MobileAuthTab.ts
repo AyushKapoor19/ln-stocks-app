@@ -17,6 +17,8 @@ export default class MobileAuthTab extends Lightning.Component {
   private qrCodeUrl: string = "";
   private authType: "signup" | "signin" = "signup";
   private isFocused: boolean = false;
+  private expiryTimer: NodeJS.Timeout | null = null;
+  private codeExpiresIn: number = 15 * 60 * 1000; // 15 minutes
 
   static _template(): object {
     return {
@@ -135,6 +137,17 @@ export default class MobileAuthTab extends Lightning.Component {
     }
   }
 
+  _detach(): void {
+    // Clear timer when component is removed
+    if (this.expiryTimer) {
+      clearTimeout(this.expiryTimer);
+      this.expiryTimer = null;
+    }
+    // Clear device code data
+    this.deviceCode = "";
+    this.qrCodeUrl = "";
+  }
+
   _focus(): void {
     this.isFocused = true;
     this._updateDeviceCodeStyle();
@@ -177,6 +190,9 @@ export default class MobileAuthTab extends Lightning.Component {
   private async _loadDeviceCode(): Promise<void> {
     console.log(`📱 Loading device code for ${this.authType}...`);
 
+    // Fade out animation
+    await this._fadeOutCode();
+
     const response = await authApi.generateDeviceCode(this.authType);
     if (!response) {
       console.error("❌ Failed to load device code");
@@ -200,9 +216,63 @@ export default class MobileAuthTab extends Lightning.Component {
       qrImage.patch({ src: this.qrCodeUrl });
     }
 
+    // Fade in animation
+    await this._fadeInCode();
+
     this._updateDeviceCodeStyle();
     this.stage.update();
+
+    // Set up auto-refresh timer
+    this._setupExpiryTimer();
+
     void this._pollDeviceCodeStatus();
+  }
+
+  private async _fadeOutCode(): Promise<void> {
+    const deviceCodeContainer = this.tag("LeftSection")?.tag(
+      "DeviceCodeContainer"
+    );
+    const qrCodeCard = this.tag("RightSection")?.tag("QRCodeCard");
+
+    return new Promise((resolve) => {
+      if (deviceCodeContainer) {
+        deviceCodeContainer.setSmooth("alpha", 0.2, { duration: 0.4 });
+      }
+      if (qrCodeCard) {
+        qrCodeCard.setSmooth("alpha", 0.2, { duration: 0.4 });
+      }
+      setTimeout(resolve, 400);
+    });
+  }
+
+  private async _fadeInCode(): Promise<void> {
+    const deviceCodeContainer = this.tag("LeftSection")?.tag(
+      "DeviceCodeContainer"
+    );
+    const qrCodeCard = this.tag("RightSection")?.tag("QRCodeCard");
+
+    return new Promise((resolve) => {
+      if (deviceCodeContainer) {
+        deviceCodeContainer.setSmooth("alpha", 1, { duration: 0.6 });
+      }
+      if (qrCodeCard) {
+        qrCodeCard.setSmooth("alpha", 1, { duration: 0.6 });
+      }
+      setTimeout(resolve, 600);
+    });
+  }
+
+  private _setupExpiryTimer(): void {
+    // Clear existing timer
+    if (this.expiryTimer) {
+      clearTimeout(this.expiryTimer);
+    }
+
+    // Set timer to auto-refresh code before expiry
+    this.expiryTimer = setTimeout(() => {
+      console.log("⏰ Code expired - generating new code...");
+      void this._loadDeviceCode();
+    }, this.codeExpiresIn);
   }
 
   private async _pollDeviceCodeStatus(): Promise<void> {
@@ -227,10 +297,5 @@ export default class MobileAuthTab extends Lightning.Component {
     };
 
     setTimeout(checkStatus, 3000);
-  }
-
-  _detach(): void {
-    this.deviceCode = "";
-    this.qrCodeUrl = "";
   }
 }
