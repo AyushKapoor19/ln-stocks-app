@@ -5,12 +5,12 @@
  */
 
 import type { FastifyRequest, FastifyReply } from "fastify";
-import { authService } from "../services/authService";
+import { authService } from "../services/authService.js";
 import type {
   ISignupRequest,
   ILoginRequest,
   IAuthResponse,
-} from "../types/auth";
+} from "../types/auth.js";
 
 interface ISignupBody {
   email: string;

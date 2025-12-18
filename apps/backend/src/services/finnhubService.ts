@@ -5,9 +5,9 @@
  */
 
 import fetch from "node-fetch";
-import { FINNHUB_KEY } from "../constants/config";
-import type { IQuoteData, IFinnhubQuoteResponse } from "../types/quote";
-import type { IFinnhubSearchResponse, ISearchResult } from "../types/search";
+import { FINNHUB_KEY } from "../constants/config.js";
+import type { IQuoteData, IFinnhubQuoteResponse } from "../types/quote.js";
+import type { IFinnhubSearchResponse, ISearchResult } from "../types/search.js";
 
 class FinnhubService {
   private baseUrl = "https://finnhub.io/api/v1";

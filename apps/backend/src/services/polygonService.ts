@@ -5,8 +5,8 @@
  */
 
 import fetch from "node-fetch";
-import { POLYGON_KEY } from "../constants/config";
-import type { ISeriesData, IPolygonResponse, Period } from "../types/series";
+import { POLYGON_KEY } from "../constants/config.js";
+import type { ISeriesData, IPolygonResponse, Period } from "../types/series.js";
 
 class PolygonService {
   private baseUrl = "https://api.polygon.io/v2";

@@ -4,8 +4,8 @@
  * Validates and sanitizes API request parameters
  */
 
-import { MAX_SYMBOLS_PER_REQUEST } from "../constants/config";
-import type { Period } from "../types/series";
+import { MAX_SYMBOLS_PER_REQUEST } from "../constants/config.js";
+import type { Period } from "../types/series.js";
 
 export function parseSymbols(symbolsParam: unknown): string[] {
   const symbolsString = String(symbolsParam || "");

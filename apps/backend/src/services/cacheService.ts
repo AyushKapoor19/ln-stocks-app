@@ -4,9 +4,9 @@
  * Simple in-memory cache to avoid rate limiting
  */
 
-import { CACHE_DURATION } from "../constants/config";
-import type { IQuoteCache, IQuoteData } from "../types/quote";
-import type { ISeriesCache, ISeriesData } from "../types/series";
+import { CACHE_DURATION } from "../constants/config.js";
+import type { IQuoteCache, IQuoteData } from "../types/quote.js";
+import type { ISeriesCache, ISeriesData } from "../types/series.js";
 
 class CacheService {
   private quoteCache = new Map<string, IQuoteCache>();

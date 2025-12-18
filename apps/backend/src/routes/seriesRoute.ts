@@ -5,12 +5,12 @@
  */
 
 import type { FastifyRequest, FastifyReply } from "fastify";
-import { cacheService } from "../services/cacheService";
-import { polygonService } from "../services/polygonService";
-import { generateFallbackSeries } from "../utils/fallbackData";
-import { parseSymbols, validatePeriod } from "../utils/validation";
-import type { ISeriesResponse } from "../types/series";
-import type { IQueryParams } from "../types/api";
+import { cacheService } from "../services/cacheService.js";
+import { polygonService } from "../services/polygonService.js";
+import { generateFallbackSeries } from "../utils/fallbackData.js";
+import { parseSymbols, validatePeriod } from "../utils/validation.js";
+import type { ISeriesResponse } from "../types/series.js";
+import type { IQueryParams } from "../types/api.js";
 
 export async function seriesRoute(
   request: FastifyRequest<{ Querystring: IQueryParams }>,

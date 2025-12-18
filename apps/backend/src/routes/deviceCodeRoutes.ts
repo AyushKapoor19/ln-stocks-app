@@ -5,13 +5,13 @@
  */
 
 import type { FastifyRequest, FastifyReply } from "fastify";
-import { deviceCodeService } from "../services/deviceCodeService";
-import { authService } from "../services/authService";
-import { pool } from "../utils/db";
+import { deviceCodeService } from "../services/deviceCodeService.js";
+import { authService } from "../services/authService.js";
+import { pool } from "../utils/db.js";
 import type {
   IDeviceCodeResponse,
   IDeviceCodeStatusResponse,
-} from "../types/auth";
+} from "../types/auth.js";
 
 interface IDeviceCodeQueryParams {
   code: string;

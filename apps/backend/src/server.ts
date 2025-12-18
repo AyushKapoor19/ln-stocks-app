@@ -7,20 +7,20 @@
 import "dotenv/config";
 import Fastify from "fastify";
 import cors from "@fastify/cors";
-import { PORT, HOST, logApiKeysStatus } from "./constants/config";
-import { testConnection } from "./utils/db";
-import { healthRoute } from "./routes/healthRoute";
-import { quotesRoute } from "./routes/quotesRoute";
-import { seriesRoute } from "./routes/seriesRoute";
-import { searchRoute } from "./routes/searchRoute";
-import { signupRoute, loginRoute, verifyTokenRoute } from "./routes/authRoutes";
+import { PORT, HOST, logApiKeysStatus } from "./constants/config.js.js";
+import { testConnection } from "./utils/db.js.js";
+import { healthRoute } from "./routes/healthRoute.js.js";
+import { quotesRoute } from "./routes/quotesRoute.js.js";
+import { seriesRoute } from "./routes/seriesRoute.js.js";
+import { searchRoute } from "./routes/searchRoute.js.js";
+import { signupRoute, loginRoute, verifyTokenRoute } from "./routes/authRoutes.js.js";
 import {
   generateDeviceCodeRoute,
   checkDeviceCodeStatusRoute,
   approveDeviceCodeRoute,
   verifyDeviceCodeRoute,
   approveDeviceCodeWithSignUpRoute,
-} from "./routes/deviceCodeRoutes";
+} from "./routes/deviceCodeRoutes.js.js";
 
 // Initialize server
 const app = Fastify({ logger: true });

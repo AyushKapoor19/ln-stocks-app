@@ -5,12 +5,12 @@
  */
 
 import type { FastifyRequest, FastifyReply } from "fastify";
-import { cacheService } from "../services/cacheService";
-import { finnhubService } from "../services/finnhubService";
-import { generateFallbackQuote } from "../utils/fallbackData";
-import { parseSymbols } from "../utils/validation";
-import type { IQuotesResponse, IQuoteData } from "../types/quote";
-import type { IQueryParams } from "../types/api";
+import { cacheService } from "../services/cacheService.js";
+import { finnhubService } from "../services/finnhubService.js";
+import { generateFallbackQuote } from "../utils/fallbackData.js";
+import { parseSymbols } from "../utils/validation.js";
+import type { IQuotesResponse, IQuoteData } from "../types/quote.js";
+import type { IQueryParams } from "../types/api.js";
 
 export async function quotesRoute(
   request: FastifyRequest<{ Querystring: IQueryParams }>,

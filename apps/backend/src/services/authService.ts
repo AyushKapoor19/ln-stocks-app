@@ -6,8 +6,8 @@
 
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import { pool } from "../utils/db";
-import { JWT_SECRET, JWT_EXPIRES_IN } from "../constants/config";
+import { pool } from "../utils/db.js";
+import { JWT_SECRET, JWT_EXPIRES_IN } from "../constants/config.js";
 import type {
   IUser,
   IUserWithPassword,
@@ -15,7 +15,7 @@ import type {
   ILoginRequest,
   IAuthResponse,
   IJwtPayload,
-} from "../types/auth";
+} from "../types/auth.js";
 
 const SALT_ROUNDS = 10;
 

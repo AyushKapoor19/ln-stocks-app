@@ -4,9 +4,9 @@
  * Generates professional-quality mock data when APIs are unavailable
  */
 
-import { PERIOD_SETTINGS } from "../constants/config";
-import type { IQuoteData } from "../types/quote";
-import type { ISeriesData, Period } from "../types/series";
+import { PERIOD_SETTINGS } from "../constants/config.js";
+import type { IQuoteData } from "../types/quote.js";
+import type { ISeriesData, Period } from "../types/series.js";
 
 export function generateFallbackQuote(symbol: string): IQuoteData {
   console.log(`📊 Using calculated fallback for ${symbol}`);

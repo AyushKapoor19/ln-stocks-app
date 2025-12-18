@@ -5,18 +5,18 @@
  */
 
 import QRCode from "qrcode";
-import { pool } from "../utils/db";
+import { pool } from "../utils/db.js";
 import {
   DEVICE_CODE_LENGTH,
   DEVICE_CODE_EXPIRES_IN,
   DEVICE_CODE_POLL_INTERVAL,
-} from "../constants/config";
+} from "../constants/config.js";
 import type {
   IDeviceCode,
   IDeviceCodeResponse,
   IDeviceCodeStatusResponse,
-} from "../types/auth";
-import { authService } from "./authService";
+} from "../types/auth.js";
+import { authService } from "./authService.js";
 
 class DeviceCodeService {
   async generateDeviceCode(

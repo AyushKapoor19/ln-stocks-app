@@ -4,7 +4,7 @@
  * Centralized configuration and constants
  */
 
-import type { IPeriodSettings, Period } from "../types/series";
+import type { IPeriodSettings, Period } from "../types/series.js";
 
 // API Keys
 export const FINNHUB_KEY = process.env.FINNHUB_KEY || "";

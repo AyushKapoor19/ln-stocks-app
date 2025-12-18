@@ -5,7 +5,7 @@
  */
 
 import "dotenv/config";
-import { testConnection, pool } from "./db";
+import { testConnection, pool } from "./db.js";
 
 async function main() {
   console.log("🔍 Testing database connection...\n");

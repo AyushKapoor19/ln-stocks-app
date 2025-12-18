@@ -5,11 +5,11 @@
  */
 
 import type { FastifyRequest, FastifyReply } from "fastify";
-import { finnhubService } from "../services/finnhubService";
-import { validateSearchQuery } from "../utils/validation";
-import { FINNHUB_KEY } from "../constants/config";
-import type { ISearchResponse } from "../types/search";
-import type { IQueryParams } from "../types/api";
+import { finnhubService } from "../services/finnhubService.js";
+import { validateSearchQuery } from "../utils/validation.js";
+import { FINNHUB_KEY } from "../constants/config.js";
+import type { ISearchResponse } from "../types/search.js";
+import type { IQueryParams } from "../types/api.js";
 
 export async function searchRoute(
   request: FastifyRequest<{ Querystring: IQueryParams }>,

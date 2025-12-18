@@ -5,8 +5,8 @@
  */
 
 import type { FastifyRequest, FastifyReply } from "fastify";
-import { FINNHUB_KEY } from "../constants/config";
-import type { IHealthResponse } from "../types/api";
+import { FINNHUB_KEY } from "../constants/config.js";
+import type { IHealthResponse } from "../types/api.js";
 
 export async function healthRoute(
   request: FastifyRequest,
