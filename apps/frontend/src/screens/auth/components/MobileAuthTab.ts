@@ -88,7 +88,7 @@ export default class MobileAuthTab extends Lightning.Component {
           y: 400,
           w: 700,
           text: {
-            text: "Visit stocks.app/activate on your mobile device",
+            text: "Visit localhost:3001/activate on your device",
             fontSize: FontSize.Body,
             textColor: Colors.textTertiary,
             fontFace: FontFamily.Default,
@@ -189,9 +189,9 @@ export default class MobileAuthTab extends Lightning.Component {
   }
 
   private async _loadDeviceCode(): Promise<void> {
-    console.log("📱 Loading device code...");
+    console.log(`📱 Loading device code for ${this.authType}...`);
 
-    const response = await authApi.generateDeviceCode();
+    const response = await authApi.generateDeviceCode(this.authType);
     if (!response) {
       console.error("❌ Failed to load device code");
       return;

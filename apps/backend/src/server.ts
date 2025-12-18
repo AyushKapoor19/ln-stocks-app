@@ -18,6 +18,8 @@ import {
   generateDeviceCodeRoute,
   checkDeviceCodeStatusRoute,
   approveDeviceCodeRoute,
+  verifyDeviceCodeRoute,
+  approveDeviceCodeWithSignUpRoute,
 } from "./routes/deviceCodeRoutes";
 
 // Initialize server
@@ -46,7 +48,9 @@ app.get("/auth/verify", verifyTokenRoute);
 // Register device code routes (for TV authentication)
 app.post("/auth/device-code/generate", generateDeviceCodeRoute);
 app.get("/auth/device-code/status", checkDeviceCodeStatusRoute);
+app.post("/auth/device-code/verify", verifyDeviceCodeRoute);
 app.post("/auth/device-code/approve", approveDeviceCodeRoute);
+app.post("/auth/device-code/approve-signup", approveDeviceCodeWithSignUpRoute);
 
 // Start server
 app.listen({ port: PORT, host: HOST }).catch((error) => {

@@ -50,10 +50,12 @@ class AuthApiService {
     }
   }
 
-  async generateDeviceCode(): Promise<IDeviceCodeResponse | null> {
+  async generateDeviceCode(
+    authType: "signin" | "signup" = "signin"
+  ): Promise<IDeviceCodeResponse | null> {
     try {
       const response = await fetch(
-        `${this.baseUrl}/auth/device-code/generate`,
+        `${this.baseUrl}/auth/device-code/generate?authType=${authType}`,
         {
           method: "POST",
         }

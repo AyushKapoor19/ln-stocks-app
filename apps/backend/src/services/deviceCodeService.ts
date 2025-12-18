@@ -19,17 +19,19 @@ import type {
 import { authService } from "./authService";
 
 class DeviceCodeService {
-  async generateDeviceCode(): Promise<IDeviceCodeResponse> {
+  async generateDeviceCode(
+    authType: "signin" | "signup" = "signin"
+  ): Promise<IDeviceCodeResponse> {
     const code = this.generateRandomCode(DEVICE_CODE_LENGTH);
     const expiresAt = new Date(Date.now() + DEVICE_CODE_EXPIRES_IN);
 
     try {
       await pool.query(
-        "INSERT INTO device_codes (code, status, expires_at) VALUES ($1, $2, $3)",
-        [code, "pending", expiresAt]
+        "INSERT INTO device_codes (code, status, auth_type, expires_at) VALUES ($1, $2, $3, $4::timestamptz)",
+        [code, "pending", authType, expiresAt.toISOString()]
       );
 
-      const authUrl = `https://ln-stocks.app/auth/verify?code=${code}`;
+      const authUrl = `http://localhost:3001/activate?code=${code}`;
       const qrCodeDataUrl = await QRCode.toDataURL(authUrl, {
         width: 400,
         margin: 2,
@@ -39,7 +41,7 @@ class DeviceCodeService {
         },
       });
 
-      console.log(`✅ Generated device code: ${code}`);
+      console.log(`✅ Generated device code: ${code} (${authType})`);
 
       return {
         code,

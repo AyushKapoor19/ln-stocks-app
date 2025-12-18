@@ -38,6 +38,7 @@ export interface IDeviceCode {
   code: string;
   user_id: number | null;
   status: "pending" | "approved" | "expired";
+  auth_type: "signin" | "signup";
   created_at: Date;
   expires_at: Date;
   used_at: Date | null;

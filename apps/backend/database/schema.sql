@@ -15,6 +15,7 @@ CREATE TABLE IF NOT EXISTS device_codes (
   code VARCHAR(7) UNIQUE NOT NULL,
   user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
   status VARCHAR(20) DEFAULT 'pending', -- pending, approved, expired
+  auth_type VARCHAR(10) DEFAULT 'signin', -- signin, signup
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   expires_at TIMESTAMP NOT NULL,
   used_at TIMESTAMP
