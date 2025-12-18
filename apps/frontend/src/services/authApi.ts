@@ -12,7 +12,7 @@ import type {
 } from "../types/auth";
 
 class AuthApiService {
-  private baseUrl = "http://localhost:8787";
+  private baseUrl = "https://ln-stocks-backend.onrender.com";
 
   async signup(
     email: string,

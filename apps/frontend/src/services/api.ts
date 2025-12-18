@@ -31,7 +31,7 @@ class StocksApiService {
 
   constructor() {
     // Use localhost for development, production URL can be configured via env
-    this.baseUrl = "http://localhost:8787";
+    this.baseUrl = "https://ln-stocks-backend.onrender.com";
   }
 
   // Get real-time quote for VOO
