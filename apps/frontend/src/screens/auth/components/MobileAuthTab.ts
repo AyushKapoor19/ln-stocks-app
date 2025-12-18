@@ -31,7 +31,7 @@ export default class MobileAuthTab extends Lightning.Component {
 
         Instructions: {
           x: 0,
-          y: 0,
+          y: 40,
           w: 700,
           text: {
             text: "",
@@ -88,7 +88,7 @@ export default class MobileAuthTab extends Lightning.Component {
           y: 400,
           w: 700,
           text: {
-            text: "Visit localhost:3001/activate on your device",
+            text: "Visit ln-stocks-mobile-web.vercel.app/activate",
             fontSize: FontSize.Body,
             textColor: Colors.textTertiary,
             fontFace: FontFamily.Default,
@@ -103,30 +103,16 @@ export default class MobileAuthTab extends Lightning.Component {
         h: 640,
 
         QRCodeCard: {
-          x: 140,
-          y: 80,
-          w: 500,
-          h: 500,
-          rect: true,
-          color: Colors.authCardBackground,
-          shader: { type: Lightning.shaders.RoundedRectangle, radius: 24 },
-
-          Shadow: {
-            x: -8,
-            y: -8,
-            w: 516,
-            h: 516,
-            rect: true,
-            color: Colors.shadow,
-            shader: { type: Lightning.shaders.RoundedRectangle, radius: 24 },
-            zIndex: -1,
-          },
+          x: 327,
+          y: 40,
+          w: 450,
+          h: 450,
 
           QRCodeImage: {
-            x: 50,
-            y: 50,
-            w: 400,
-            h: 400,
+            x: 0,
+            y: 0,
+            w: 450,
+            h: 450,
             src: "",
           },
         },

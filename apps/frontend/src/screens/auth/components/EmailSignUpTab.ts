@@ -147,14 +147,14 @@ export default class EmailSignUpTab extends Lightning.Component {
 
       // Password Requirements Section
       PasswordRequirements: {
-        x: 1200,
-        y: 0,
-        w: 580,
+        x: 1300,
+        y: 40,
+        w: 480,
         h: 310,
 
         Title: {
           x: 0,
-          y: 20,
+          y: 0,
           text: {
             text: "Security Requirements",
             fontSize: 32,
@@ -166,16 +166,16 @@ export default class EmailSignUpTab extends Lightning.Component {
 
         Divider: {
           x: 0,
-          y: 70,
-          w: 480,
+          y: 50,
+          w: 380,
           h: 2,
           rect: true,
           color: 0x40ffffff,
         },
 
-        Rule1: this._createPasswordRule(110, "Minimum 8 characters"),
-        Rule2: this._createPasswordRule(175, "At least one letter"),
-        Rule3: this._createPasswordRule(240, "At least one number"),
+        Rule1: this._createPasswordRule(90, "Minimum 8 characters"),
+        Rule2: this._createPasswordRule(155, "At least one letter"),
+        Rule3: this._createPasswordRule(220, "At least one number"),
       },
 
       // Keyboard Overlay (cover entire screen from TabContent position)
