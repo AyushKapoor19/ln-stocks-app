@@ -88,7 +88,7 @@ export default class MobileAuthTab extends Lightning.Component {
           y: 400,
           w: 700,
           text: {
-            text: "Visit ln-stocks-mobile-web.vercel.app/activate",
+            text: "Visit ln-stocks-web.vercel.app/activate",
             fontSize: FontSize.Body,
             textColor: Colors.textTertiary,
             fontFace: FontFamily.Default,

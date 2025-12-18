@@ -31,7 +31,8 @@ class DeviceCodeService {
         [code, "pending", authType, expiresAt.toISOString()]
       );
 
-      const mobileWebUrl = process.env.MOBILE_WEB_URL || "http://localhost:3001";
+      const mobileWebUrl =
+        process.env.MOBILE_WEB_URL || "http://localhost:3001";
       const authUrl = `${mobileWebUrl}/activate?code=${code}`;
       const qrCodeDataUrl = await QRCode.toDataURL(authUrl, {
         width: 400,
