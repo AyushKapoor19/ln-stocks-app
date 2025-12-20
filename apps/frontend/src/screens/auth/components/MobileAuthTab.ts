@@ -188,7 +188,7 @@ export default class MobileAuthTab extends Lightning.Component {
   }
 
   private async _loadDeviceCode(): Promise<void> {
-    console.log(`📱 Loading device code for ${this.authType}...`);
+    console.log(`Loading device code for ${this.authType}...`);
 
     // Fade out animation
     await this._fadeOutCode();

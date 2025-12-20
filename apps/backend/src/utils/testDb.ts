@@ -8,7 +8,7 @@ import "dotenv/config";
 import { testConnection, pool } from "./db.js";
 
 async function main() {
-  console.log("🔍 Testing database connection...\n");
+  console.log("Testing database connection...\n");
 
   const connected = await testConnection();
 
@@ -25,9 +25,9 @@ async function main() {
       `);
 
       if (tables.rows.length === 0) {
-        console.log("⚠️  No tables found. Run schema.sql in Neon SQL Editor.");
+        console.log("No tables found. Run schema.sql in Neon SQL Editor.");
       } else {
-        console.log("\n📊 Found tables:");
+        console.log("\nFound tables:");
         tables.rows.forEach((row) => {
           console.log(`   - ${row.table_name}`);
         });

@@ -21,7 +21,7 @@ class MetricsService {
    */
   async fetchMetrics(symbol: string): Promise<IStockMetrics> {
     try {
-      console.log(`📊 Fetching metrics for ${symbol}...`);
+      console.log(`Fetching metrics for ${symbol}...`);
 
       // Fetch data from multiple sources in parallel
       const [polygonMetrics, finnhubMetrics] = await Promise.all([
@@ -68,7 +68,7 @@ class MetricsService {
       const yearData = await polygonService.fetchSeries(symbol, "1Y");
       
       if (!yearData || !yearData.points || yearData.points.length === 0) {
-        console.log(`⚠️ No Polygon data for ${symbol}`);
+        console.log(`No Polygon data for ${symbol}`);
         return {};
       }
 
@@ -90,7 +90,7 @@ class MetricsService {
         week52Low: week52Low > 0 ? week52Low : undefined,
       };
     } catch (error) {
-      console.log(`⚠️ Polygon metrics error for ${symbol}:`, error);
+      console.log(`Polygon metrics error for ${symbol}:`, error);
       return {};
     }
   }
@@ -114,7 +114,7 @@ class MetricsService {
       const profileResponse = await fetch(profileUrl);
       
       if (!profileResponse.ok) {
-        console.log(`⚠️ Finnhub profile failed for ${symbol}: ${profileResponse.status}`);
+        console.log(`Finnhub profile failed for ${symbol}: ${profileResponse.status}`);
         return {};
       }
 
@@ -149,7 +149,7 @@ class MetricsService {
         week52Low,
       };
     } catch (error) {
-      console.log(`⚠️ Finnhub metrics error for ${symbol}:`, error);
+      console.log(`Finnhub metrics error for ${symbol}:`, error);
       return {};
     }
   }

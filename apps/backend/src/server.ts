@@ -64,4 +64,4 @@ app.listen({ port: PORT, host: HOST }).catch((error) => {
   process.exit(1);
 });
 
-console.log(`🚀 LN Stocks API running on http://${HOST}:${PORT}`);
+console.log(`LN Stocks API running on http://${HOST}:${PORT}`);

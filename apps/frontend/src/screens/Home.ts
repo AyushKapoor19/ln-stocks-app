@@ -3,9 +3,11 @@ import BaseScreen from "./BaseScreen";
 import StockChart from "../components/charts/StockChart";
 import SearchBar from "../components/SearchBar";
 import SearchResults from "../components/SearchResults";
+import WatchlistPanel from "../components/WatchlistPanel";
 import { stocksApi } from "../services/api";
 import { Colors } from "../constants/Colors";
 import { FontSize, FontStyle, FontFamily } from "../constants/Fonts";
+import { StockUtils } from "../utils/StockUtils";
 import {
   ISearchResult,
   ISearchActivatedEvent,
@@ -609,211 +611,10 @@ export default class Home extends BaseScreen {
 
       // Watchlist Panel
       WatchlistPanel: {
+        type: WatchlistPanel,
         x: 1340,
         y: FRAME_TOP + 770,
         alpha: 0,
-        w: 520,
-        h: 200,
-        rect: true,
-        color: Colors.cardBackground,
-        shader: { type: Lightning.shaders.RoundedRectangle, radius: 16 },
-        Title: {
-          x: 25,
-          y: 22,
-          text: {
-            text: "Watchlist",
-            fontFace: FontFamily.Default,
-            fontSize: 36,
-            fontStyle: FontStyle.Bold,
-            textColor: Colors.textPrimary,
-          },
-        },
-        // Empty state for non-signed-in users
-        EmptyStateNotSignedIn: {
-          alpha: 0,
-          Icon: {
-            x: 260,
-            y: 85,
-            mount: 0.5,
-            text: {
-              text: "⭐",
-              fontFace: FontFamily.Default,
-              fontSize: 32,
-              textColor: Colors.textTertiary,
-            },
-          },
-          Message: {
-            x: 260,
-            y: 115,
-            mount: 0.5,
-            text: {
-              text: "Sign in to track your favorite stocks",
-              fontFace: FontFamily.Default,
-              fontSize: 20,
-              fontStyle: FontStyle.Medium,
-              textColor: Colors.textSecondary,
-              textAlign: "center",
-              wordWrapWidth: 450,
-            },
-          },
-          Subtitle: {
-            x: 260,
-            y: 145,
-            mount: 0.5,
-            text: {
-              text: "Build a personalized watchlist",
-              fontFace: FontFamily.Default,
-              fontSize: 18,
-              fontStyle: FontStyle.Regular,
-              textColor: Colors.textTertiary,
-              textAlign: "center",
-            },
-          },
-        },
-        // Empty state for signed-in users with no watchlist
-        EmptyStateSignedIn: {
-          alpha: 0,
-          Icon: {
-            x: 260,
-            y: 85,
-            mount: 0.5,
-            text: {
-              text: "📊",
-              fontFace: FontFamily.Default,
-              fontSize: 32,
-              textColor: Colors.textTertiary,
-            },
-          },
-          Message: {
-            x: 260,
-            y: 115,
-            mount: 0.5,
-            text: {
-              text: "Your watchlist is empty",
-              fontFace: FontFamily.Default,
-              fontSize: 20,
-              fontStyle: FontStyle.Medium,
-              textColor: Colors.textSecondary,
-              textAlign: "center",
-            },
-          },
-          Subtitle: {
-            x: 260,
-            y: 145,
-            mount: 0.5,
-            text: {
-              text: "Search and add stocks to track",
-              fontFace: FontFamily.Default,
-              fontSize: 18,
-              fontStyle: FontStyle.Regular,
-              textColor: Colors.textTertiary,
-              textAlign: "center",
-            },
-          },
-        },
-        // Watchlist items will be dynamically added here
-        Stock1: {
-          x: 25,
-          y: 75,
-          alpha: 0,
-          Symbol: {
-            text: {
-              text: "AAPL",
-              fontFace: FontFamily.Default,
-              fontSize: FontSize.Body,
-              fontStyle: FontStyle.SemiBold,
-              textColor: Colors.textPrimary,
-            },
-          },
-          Price: {
-            x: 170,
-            text: {
-              text: "$195.50",
-              fontFace: FontFamily.Default,
-              fontSize: FontSize.Body,
-              fontStyle: FontStyle.Medium,
-              textColor: Colors.textPrimary,
-            },
-          },
-          Change: {
-            x: 360,
-            text: {
-              text: "+2.5%",
-              fontFace: FontFamily.Default,
-              fontSize: FontSize.Body,
-              fontStyle: FontStyle.Medium,
-              textColor: Colors.stockGreenBright,
-            },
-          },
-        },
-        Stock2: {
-          x: 25,
-          y: 118,
-          alpha: 0,
-          Symbol: {
-            text: {
-              text: "TSLA",
-              fontFace: FontFamily.Default,
-              fontSize: FontSize.Body,
-              fontStyle: FontStyle.SemiBold,
-              textColor: Colors.textPrimary,
-            },
-          },
-          Price: {
-            x: 170,
-            text: {
-              text: "$248.30",
-              fontFace: FontFamily.Default,
-              fontSize: FontSize.Body,
-              fontStyle: FontStyle.Medium,
-              textColor: Colors.textPrimary,
-            },
-          },
-          Change: {
-            x: 360,
-            text: {
-              text: "-1.2%",
-              fontFace: FontFamily.Default,
-              fontSize: FontSize.Body,
-              fontStyle: FontStyle.Medium,
-              textColor: Colors.stockRed,
-            },
-          },
-        },
-        Stock3: {
-          x: 25,
-          y: 161,
-          alpha: 0,
-          Symbol: {
-            text: {
-              text: "MSFT",
-              fontFace: FontFamily.Default,
-              fontSize: FontSize.Body,
-              fontStyle: FontStyle.SemiBold,
-              textColor: Colors.textPrimary,
-            },
-          },
-          Price: {
-            x: 170,
-            text: {
-              text: "$415.20",
-              fontFace: FontFamily.Default,
-              fontSize: FontSize.Body,
-              fontStyle: FontStyle.Medium,
-              textColor: Colors.textPrimary,
-            },
-          },
-          Change: {
-            x: 360,
-            text: {
-              text: "+0.8%",
-              fontFace: FontFamily.Default,
-              fontSize: FontSize.Body,
-              fontStyle: FontStyle.Medium,
-              textColor: Colors.stockGreenBright,
-            },
-          },
-        },
       },
     };
   }
@@ -821,7 +622,7 @@ export default class Home extends BaseScreen {
   _init(): void {
     super._init();
 
-    console.log("📊 Initializing Stock Dashboard...");
+    console.log("Initializing Stock Dashboard...");
     console.log(
       `📐 Screen dimensions: ${this.coordsWidth}x${this.coordsHeight} (1080p design)`
     );
@@ -860,7 +661,7 @@ export default class Home extends BaseScreen {
 
   async _active(): Promise<void> {
     try {
-      console.log(`🚀 Stock Dashboard ready (${this.currentSymbol})`);
+      console.log(`Stock Dashboard ready (${this.currentSymbol})`);
       this._updateMarketStatus();
       this._updateMarketIndices();
       this._updateWatchlist();
@@ -924,8 +725,7 @@ export default class Home extends BaseScreen {
             `✅ Loaded ${chartData.length} chart points from ${series.source}`
           );
         } else {
-          console.warn("⚠️ No chart data available, using fallback");
-          this._loadFallbackData();
+          console.warn("⚠️ No chart data available");
         }
       } else {
         if (quote) {
@@ -933,12 +733,10 @@ export default class Home extends BaseScreen {
           this.currentChangePct = quote.changePct;
           this._updatePriceDisplay();
         }
-        console.warn("⚠️ No series data available, using fallback");
-        this._loadFallbackData();
+        console.warn("⚠️ No series data available");
       }
     } catch (error) {
-      console.error("❌ Failed to load VOO data:", error);
-      this._loadFallbackData();
+      console.error("❌ Failed to load stock data:", error);
     } finally {
       this.isLoading = false;
     }
@@ -980,22 +778,8 @@ export default class Home extends BaseScreen {
   }
 
   private _updateMarketStatus(): void {
-    const now = new Date();
-
-    // Convert to EST time
-    const estTime = new Date(
-      now.toLocaleString("en-US", { timeZone: "America/New_York" })
-    );
-    const currentHour = estTime.getHours();
-    const currentMinutes = estTime.getMinutes();
-    const currentDay = estTime.getDay();
-
-    // Market hours: Monday-Friday, 9:30 AM - 4:00 PM EST
-    const isWeekday = currentDay >= 1 && currentDay <= 5;
-    const afterOpen =
-      currentHour > 9 || (currentHour === 9 && currentMinutes >= 30);
-    const beforeClose = currentHour < 16;
-    const isOpen = isWeekday && afterOpen && beforeClose;
+    const status = StockUtils.getMarketStatus();
+    const layout = StockUtils.getMarketStatusLayout(status.isOpen);
 
     const marketStatus = this.tag("MarketStatus");
     if (marketStatus) {
@@ -1005,25 +789,21 @@ export default class Home extends BaseScreen {
       const timeText = marketStatus.tag("TimeText");
 
       if (statusDot) {
-        statusDot.color = isOpen ? Colors.stockGreenBright : Colors.stockRed;
+        statusDot.color = status.isOpen
+          ? Colors.stockGreenBright
+          : Colors.stockRed;
       }
 
       if (statusText && statusText.text) {
-        const statusMessage = isOpen ? "Market Open" : "Market Closed";
-        statusText.text.text = statusMessage;
+        statusText.text.text = status.statusText;
         statusText.text.textColor = Colors.textPrimary;
 
-        // Dynamically position separator and time text based on status text width
-        // "Market Open" ≈ 122px, "Market Closed" ≈ 145px at 20px font
-        const separatorX = isOpen ? 150 : 165;
-        const timeTextX = isOpen ? 164 : 179;
-
         if (separator) {
-          separator.x = separatorX;
+          separator.x = layout.separatorX;
         }
 
         if (timeText) {
-          timeText.x = timeTextX;
+          timeText.x = layout.timeTextX;
         }
       }
     }
@@ -1039,7 +819,7 @@ export default class Home extends BaseScreen {
 
     // Fetch real market data for major indices
     try {
-      console.log("📊 Fetching real market indices data...");
+      console.log("Fetching real market indices data...");
       const [spyQuote, diaQuote, qqqQuote] = await Promise.all([
         stocksApi.getQuote("SPY"), // S&P 500 ETF
         stocksApi.getQuote("DIA"), // Dow Jones ETF
@@ -1135,7 +915,7 @@ export default class Home extends BaseScreen {
     statsPanel.setSmooth("y", FRAME_TOP + 320, { duration: 0.6, delay: 0.4 });
 
     try {
-      console.log(`📊 Fetching real metrics for ${this.currentSymbol}...`);
+      console.log(`Fetching real metrics for ${this.currentSymbol}...`);
 
       // Fetch real stock metrics and quote in parallel
       const [metrics, quote] = await Promise.all([
@@ -1145,12 +925,14 @@ export default class Home extends BaseScreen {
 
       // Volume (from metrics)
       const volume =
-        metrics && metrics.volume ? this._formatVolume(metrics.volume) : "N/A";
+        metrics && metrics.volume
+          ? StockUtils.formatVolume(metrics.volume)
+          : "N/A";
 
       // Market Cap (from metrics)
       const marketCap =
         metrics && metrics.marketCap
-          ? this._formatMarketCap(metrics.marketCap)
+          ? StockUtils.formatMarketCap(metrics.marketCap)
           : "N/A";
 
       // Day Range (from quote's dayHigh and dayLow)
@@ -1223,39 +1005,12 @@ export default class Home extends BaseScreen {
     }
   }
 
-  private _formatVolume(volume: number): string {
-    if (volume >= 1000000000) {
-      return `${(volume / 1000000000).toFixed(1)}B`;
-    } else if (volume >= 1000000) {
-      return `${(volume / 1000000).toFixed(1)}M`;
-    } else if (volume >= 1000) {
-      return `${(volume / 1000).toFixed(1)}K`;
-    }
-    return volume.toString();
-  }
-
-  private _formatMarketCap(marketCap: number): string {
-    if (marketCap >= 1000000000000) {
-      return `$${(marketCap / 1000000000000).toFixed(1)}T`;
-    } else if (marketCap >= 1000000000) {
-      return `$${(marketCap / 1000000000).toFixed(0)}B`;
-    } else if (marketCap >= 1000000) {
-      return `$${(marketCap / 1000000).toFixed(0)}M`;
-    }
-    return `$${marketCap.toString()}`;
-  }
-
   /**
-   * Updates the watchlist panel based on user authentication and watchlist state
-   *
-   * Three possible states:
-   * 1. Not signed in: Show prompt to sign in with star icon
-   * 2. Signed in but empty watchlist: Show message to add stocks with chart icon
-   * 3. Signed in with items: Display up to 3 watchlist stocks with prices/changes
+   * Updates the watchlist panel
    */
   private _updateWatchlist(): void {
     const FRAME_TOP = 50;
-    const watchlistPanel = this.tag("WatchlistPanel");
+    const watchlistPanel = this.tag("WatchlistPanel") as WatchlistPanel;
     if (!watchlistPanel) {
       return;
     }
@@ -1267,64 +1022,9 @@ export default class Home extends BaseScreen {
       delay: 0.6,
     });
 
-    // Check authentication status
-    const token = localStorage.getItem("auth_token");
-    const isLoggedIn = !!token;
-
-    // Check if user has watchlist items
-    const hasWatchlistItems = this._hasWatchlistItems();
-
-    // Get all UI elements
-    const emptyStateNotSignedIn = watchlistPanel.tag("EmptyStateNotSignedIn");
-    const emptyStateSignedIn = watchlistPanel.tag("EmptyStateSignedIn");
-    const stock1 = watchlistPanel.tag("Stock1");
-    const stock2 = watchlistPanel.tag("Stock2");
-    const stock3 = watchlistPanel.tag("Stock3");
-
-    // Hide all states initially
-    if (emptyStateNotSignedIn) {
-      emptyStateNotSignedIn.alpha = 0;
-    }
-    if (emptyStateSignedIn) {
-      emptyStateSignedIn.alpha = 0;
-    }
-    if (stock1) {
-      stock1.alpha = 0;
-    }
-    if (stock2) {
-      stock2.alpha = 0;
-    }
-    if (stock3) {
-      stock3.alpha = 0;
-    }
-
-    // Determine which state to show
-    if (!isLoggedIn) {
-      // State 1: User not signed in - show sign-in prompt
-      console.log("📊 Watchlist: Showing sign-in prompt");
-      if (emptyStateNotSignedIn) {
-        emptyStateNotSignedIn.setSmooth("alpha", 1, {
-          duration: 0.3,
-          delay: 0.8,
-        });
-      }
-    } else if (!hasWatchlistItems) {
-      // State 2: User signed in but watchlist is empty
-      console.log("📊 Watchlist: Showing empty watchlist message");
-      if (emptyStateSignedIn) {
-        emptyStateSignedIn.setSmooth("alpha", 1, {
-          duration: 0.3,
-          delay: 0.8,
-        });
-      }
-    } else {
-      // State 3: User signed in and has watchlist items - show them
-      console.log("📊 Watchlist: Showing user's stocks");
-      const watchlist = this._getUserWatchlist();
-      const stockElements = [stock1, stock2, stock3];
-
-      // Fetch real-time data for watchlist stocks
-      this._updateWatchlistPrices(watchlist.slice(0, 3), stockElements);
+    // Update watchlist content
+    if (watchlistPanel.update) {
+      watchlistPanel.update();
     }
   }
 
@@ -1350,67 +1050,6 @@ export default class Home extends BaseScreen {
           this.currentChange >= 0 ? "#00ff88" : "#ff4444";
       }
     }
-  }
-
-  private _loadFallbackData(): void {
-    const basePrice = 615.3;
-    const pointCount =
-      this.currentTimePeriod.days === 1
-        ? 50
-        : this.currentTimePeriod.days <= 30
-        ? 100
-        : 200;
-
-    const fallbackData: number[] = [];
-    const seed = this.currentTimePeriod.id.charCodeAt(0);
-    let seededRandom = seed;
-    const deterministicRandom = () => {
-      seededRandom = (seededRandom * 9301 + 49297) % 233280;
-      return seededRandom / 233280;
-    };
-
-    for (let i = 0; i < pointCount; i++) {
-      const timeProgress = i / pointCount;
-      const periodMultiplier =
-        {
-          "1D": 0.002,
-          "1W": 0.005,
-          "1M": 0.015,
-          "3M": 0.03,
-          "1Y": 0.08,
-        }[this.currentTimePeriod.id] || 0.01;
-
-      const trendDirection =
-        this.currentTimePeriod.id === "1Y"
-          ? 1
-          : deterministicRandom() > 0.5
-          ? 1
-          : -1;
-      const overallTrend =
-        trendDirection * periodMultiplier * timeProgress * 0.3;
-      const marketCycle =
-        Math.sin(timeProgress * Math.PI * 2) * periodMultiplier * 0.4;
-      const volatility = (deterministicRandom() - 0.5) * periodMultiplier * 0.8;
-      const dailyVariation =
-        Math.sin(timeProgress * Math.PI * 20) * periodMultiplier * 0.1;
-
-      let price =
-        basePrice *
-        (1 + overallTrend + marketCycle + volatility + dailyVariation);
-      price = Math.max(580, Math.min(650, price));
-      fallbackData.push(Math.round(price * 100) / 100);
-    }
-
-    const latestPrice = fallbackData[fallbackData.length - 1];
-    const previousPrice = fallbackData[fallbackData.length - 2];
-
-    this.currentPrice = latestPrice;
-    this.currentChange = latestPrice - previousPrice;
-    this.currentChangePct = this.currentChange / previousPrice;
-    this._updatePriceDisplay();
-
-    this._updateChart(fallbackData);
-    console.log("📊 Using realistic VOO fallback data matching backend");
   }
 
   _handleUp(): boolean {
@@ -1558,12 +1197,12 @@ export default class Home extends BaseScreen {
       }
       return false;
     } else if (this.currentFocusIndex === 1) {
-      console.log("🔐 Opening Account/Auth screen");
+      console.log("Opening Account/Auth screen");
       this.fireAncestors("$showAuthFlow");
       return true;
     } else if (this.currentFocusIndex === 2 + TIME_PERIODS.length) {
       // Star button pressed - toggle watchlist
-      console.log("⭐ Toggling watchlist for", this.currentSymbol);
+      console.log("Toggling watchlist for", this.currentSymbol);
       this._toggleWatchlist();
       return true;
     } else {
@@ -1779,14 +1418,14 @@ export default class Home extends BaseScreen {
 
   $searchActivated(event: ISearchActivatedEvent): void {
     this.isSearchActive = true;
-    console.log("🔍 Search activated from SearchBar component");
+    console.log("Search activated from SearchBar component");
   }
 
   $searchDeactivated(event: ISearchDeactivatedEvent): void {
     this.isSearchActive = false;
     this.searchResults = [];
     this._clearSearchResults();
-    console.log("🔍 Search deactivated from SearchBar component");
+    console.log("Search deactivated from SearchBar component");
   }
 
   $showSearchResults(event: IShowSearchResultsEvent): void {
@@ -1846,7 +1485,7 @@ export default class Home extends BaseScreen {
   }
 
   $authenticationSuccess(): void {
-    console.log("🔐 User authenticated, refreshing watchlist");
+    console.log("User authenticated, refreshing watchlist");
     this._updateWatchlistStarButton();
     this._updateWatchlist();
   }
@@ -1858,117 +1497,12 @@ export default class Home extends BaseScreen {
   }
 
   /**
-   * Retrieves user's watchlist from localStorage
-   * @returns Array of stock symbols in the watchlist
-   */
-  private _getUserWatchlist(): string[] {
-    try {
-      const token = localStorage.getItem("auth_token");
-      if (!token) {
-        return [];
-      }
-
-      const watchlistData = localStorage.getItem("user_watchlist");
-      if (!watchlistData) {
-        return [];
-      }
-
-      const watchlist = JSON.parse(watchlistData);
-      return Array.isArray(watchlist) ? watchlist : [];
-    } catch (error) {
-      console.error("Failed to fetch watchlist:", error);
-      return [];
-    }
-  }
-
-  /**
-   * Checks if user has any items in their watchlist
-   * @returns true if watchlist has items, false otherwise
-   */
-  private _hasWatchlistItems(): boolean {
-    const watchlist = this._getUserWatchlist();
-    return watchlist && watchlist.length > 0;
-  }
-
-  /**
-   * Saves watchlist to localStorage
-   * @param watchlist Array of stock symbols
-   */
-  private _saveWatchlist(watchlist: string[]): void {
-    try {
-      localStorage.setItem("user_watchlist", JSON.stringify(watchlist));
-      console.log("💾 Watchlist saved:", watchlist);
-    } catch (error) {
-      console.error("Failed to save watchlist:", error);
-    }
-  }
-
-  /**
-   * Checks if current stock is in the watchlist
-   * @returns true if current stock is in watchlist
-   */
-  private _isInWatchlist(): boolean {
-    const watchlist = this._getUserWatchlist();
-    return watchlist.includes(this.currentSymbol);
-  }
-
-  /**
-   * Adds current stock to watchlist
-   */
-  private _addToWatchlist(): void {
-    const token = localStorage.getItem("auth_token");
-    if (!token) {
-      console.log("⚠️ User not signed in, cannot add to watchlist");
-      return;
-    }
-
-    const watchlist = this._getUserWatchlist();
-    if (watchlist.includes(this.currentSymbol)) {
-      console.log(`ℹ️ ${this.currentSymbol} already in watchlist`);
-      return;
-    }
-
-    watchlist.push(this.currentSymbol);
-    this._saveWatchlist(watchlist);
-    this._updateWatchlistStarButton();
-    this._updateWatchlist();
-    console.log(`⭐ Added ${this.currentSymbol} to watchlist`);
-  }
-
-  /**
-   * Removes current stock from watchlist
-   */
-  private _removeFromWatchlist(): void {
-    const watchlist = this._getUserWatchlist();
-    const index = watchlist.indexOf(this.currentSymbol);
-
-    if (index === -1) {
-      console.log(`ℹ️ ${this.currentSymbol} not in watchlist`);
-      return;
-    }
-
-    watchlist.splice(index, 1);
-    this._saveWatchlist(watchlist);
-    this._updateWatchlistStarButton();
-    this._updateWatchlist();
-    console.log(`☆ Removed ${this.currentSymbol} from watchlist`);
-  }
-
-  /**
    * Toggles current stock in/out of watchlist
    */
   private _toggleWatchlist(): void {
-    const token = localStorage.getItem("auth_token");
-    if (!token) {
-      console.log("⚠️ User not signed in");
-      return;
-    }
-
-    if (this._isInWatchlist()) {
-      this._removeFromWatchlist();
-    } else {
-      this._addToWatchlist();
-    }
+    WatchlistPanel.toggleWatchlist(this.currentSymbol);
+    this._updateWatchlistStarButton();
+    this._updateWatchlist();
   }
 
   /**
@@ -1997,7 +1531,7 @@ export default class Home extends BaseScreen {
       return;
     }
 
-    const isInWatchlist = this._isInWatchlist();
+    const isInWatchlist = WatchlistPanel.isInWatchlist(this.currentSymbol);
 
     if (isInWatchlist) {
       // Filled yellow star
@@ -2007,107 +1541,6 @@ export default class Home extends BaseScreen {
       // Empty star with border
       starIcon.text.text = "☆";
       starIcon.text.textColor = Colors.textTertiary;
-    }
-  }
-
-  /**
-   * Fetches and displays real-time prices for watchlist stocks
-   * @param watchlist Array of stock symbols (max 3)
-   * @param stockElements Array of UI elements to display stocks
-   */
-  private async _updateWatchlistPrices(
-    watchlist: string[],
-    stockElements: (Lightning.Component | null)[]
-  ): Promise<void> {
-    try {
-      console.log(
-        "📊 Fetching real-time data for watchlist stocks...",
-        watchlist
-      );
-
-      // Fetch quotes for all watchlist stocks in parallel
-      const quotePromises = watchlist.map((symbol) =>
-        stocksApi.getQuote(symbol)
-      );
-      const quotes = await Promise.all(quotePromises);
-
-      // Update UI for each stock
-      quotes.forEach((quote, index) => {
-        const stockElement = stockElements[index];
-        if (!stockElement) {
-          return;
-        }
-
-        // Update stock symbol
-        const symbolTag = stockElement.tag("Symbol");
-        if (symbolTag && symbolTag.text && quote) {
-          symbolTag.text.text = quote.symbol;
-        }
-
-        // Update price
-        const priceTag = stockElement.tag("Price");
-        if (priceTag && priceTag.text) {
-          if (quote) {
-            priceTag.text.text = stocksApi.formatPrice(quote.price);
-          } else {
-            priceTag.text.text = "$---";
-          }
-        }
-
-        // Update change percentage
-        const changeTag = stockElement.tag("Change");
-        if (changeTag && changeTag.text) {
-          if (quote) {
-            const changePct = (quote.changePct * 100).toFixed(2);
-            const sign = quote.change >= 0 ? "+" : "";
-            changeTag.text.text = `${sign}${changePct}%`;
-            changeTag.text.textColor =
-              quote.change >= 0 ? Colors.stockGreen : Colors.stockRed;
-          } else {
-            changeTag.text.text = "--%";
-            changeTag.text.textColor = Colors.textTertiary;
-          }
-        }
-
-        // Show the element with staggered animation
-        stockElement.setSmooth("alpha", 1, {
-          duration: 0.3,
-          delay: 0.8 + index * 0.1,
-        });
-      });
-
-      console.log("✅ Watchlist prices updated with real data");
-    } catch (error) {
-      console.error("❌ Failed to fetch watchlist prices:", error);
-
-      // Show elements with placeholder data if fetch fails
-      watchlist.forEach((symbol, index) => {
-        const stockElement = stockElements[index];
-        if (!stockElement) {
-          return;
-        }
-
-        const symbolTag = stockElement.tag("Symbol");
-        if (symbolTag && symbolTag.text) {
-          symbolTag.text.text = symbol;
-        }
-
-        const priceTag = stockElement.tag("Price");
-        if (priceTag && priceTag.text) {
-          priceTag.text.text = "$---";
-        }
-
-        const changeTag = stockElement.tag("Change");
-        if (changeTag && changeTag.text) {
-          changeTag.text.text = "--%";
-          changeTag.text.textColor = Colors.textTertiary;
-        }
-
-        stockElement.setSmooth("alpha", 1, {
-          duration: 0.3,
-          delay: 0.8 + index * 0.1,
-        });
-      });
     }
   }
 }

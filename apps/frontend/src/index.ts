@@ -12,7 +12,7 @@ import {
   getPlatformStageConfig,
 } from "./utils/platform.js";
 
-console.log("🚀 Starting Lightning Stocks App...");
+console.log("Starting Lightning Stocks App...");
 
 // Step 1: Detect platform
 const platform = detectPlatform();
@@ -74,4 +74,4 @@ Launch(
   {}
 );
 
-console.log("🎉 App launched successfully!\n");
+console.log("App launched successfully!\n");

@@ -17,7 +17,7 @@ class CacheService {
     const cached = this.quoteCache.get(cacheKey);
 
     if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
-      console.log(`💾 Using cached quote for ${symbol}`);
+      console.log(`Using cached quote for ${symbol}`);
       return cached.data;
     }
 
@@ -37,7 +37,7 @@ class CacheService {
     const cached = this.seriesCache.get(cacheKey);
 
     if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
-      console.log(`💾 Using cached series for ${symbol} (${period})`);
+      console.log(`Using cached series for ${symbol} (${period})`);
       return cached.data;
     }
 
@@ -55,7 +55,7 @@ class CacheService {
   clearAll(): void {
     this.quoteCache.clear();
     this.seriesCache.clear();
-    console.log("🗑️  Cache cleared");
+    console.log("Cache cleared");
   }
 }
 

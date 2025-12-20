@@ -221,7 +221,7 @@ export default class SearchBar extends BaseComponent {
     const event: ISearchActivatedEvent = { component: this };
     this.fireAncestors("$searchActivated", event);
 
-    console.log("🔍 Search activated - type to search!");
+    console.log("Search activated - type to search!");
   }
 
   private _deactivateSearch(): void {
@@ -252,7 +252,7 @@ export default class SearchBar extends BaseComponent {
 
     const event: ISearchDeactivatedEvent = { component: this };
     this.fireAncestors("$searchDeactivated", event);
-    console.log("🔍 Search deactivated");
+    console.log("Search deactivated");
   }
 
   private _updateSearchText(): void {
@@ -294,7 +294,7 @@ export default class SearchBar extends BaseComponent {
   private async _performSearch(): Promise<void> {
     if (!this.searchQuery || this.searchQuery.length < 1) return;
 
-    console.log(`🔍 Searching for: ${this.searchQuery}`);
+    console.log(`Searching for: ${this.searchQuery}`);
 
     try {
       const results = await stocksApi.searchStocks(this.searchQuery);

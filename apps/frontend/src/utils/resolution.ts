@@ -46,37 +46,37 @@ export function detectResolution(): StageConfig {
   const windowWidth = window.innerWidth;
   const windowHeight = window.innerHeight;
 
-  console.log(`🖥️  Detected window size: ${windowWidth}x${windowHeight}`);
+  console.log(`Detected window size: ${windowWidth}x${windowHeight}`);
 
   // Check for URL parameters to override detection (for testing)
   // This allows testing different resolutions without changing TV settings
   const urlParams = new URLSearchParams(window.location.search);
 
   if (urlParams.has("720") || urlParams.get("resolution") === "720p") {
-    console.log("🎯 Using 720p (forced via URL param)");
+    console.log("Using 720p (forced via URL param)");
     return get720pConfig();
   }
 
   if (urlParams.has("1080") || urlParams.get("resolution") === "1080p") {
-    console.log("🎯 Using 1080p (forced via URL param)");
+    console.log("Using 1080p (forced via URL param)");
     return get1080pConfig();
   }
 
   if (urlParams.has("4k") || urlParams.get("resolution") === "4k") {
-    console.log("🎯 Using 4K (forced via URL param)");
+    console.log("Using 4K (forced via URL param)");
     return get4KConfig();
   }
 
   // Auto-detect based on window size
   // Auto-detect based on window dimensions
   if (windowHeight <= 720 || windowWidth <= 1280) {
-    console.log("🎯 Auto-detected: 720p");
+    console.log("Auto-detected: 720p");
     return get720pConfig();
   } else if (windowHeight >= 2160 || windowWidth >= 3840) {
-    console.log("🎯 Auto-detected: 4K");
+    console.log("Auto-detected: 4K");
     return get4KConfig();
   } else {
-    console.log("🎯 Auto-detected: 1080p (default)");
+    console.log("Auto-detected: 1080p (default)");
     return get1080pConfig();
   }
 }
@@ -157,7 +157,7 @@ export function scaleValue(value: number, precision: number): number {
 export function logResolutionInfo(config: StageConfig): void {
   const info = getResolutionInfo(config);
 
-  console.log("📺 TV Resolution Configuration:");
+  console.log("TV Resolution Configuration:");
   console.log(`   Resolution: ${info.name} (${info.width}x${info.height})`);
   console.log(`   Precision: ${info.precision.toFixed(3)}`);
   console.log(`   Device Pixel Ratio: ${info.devicePixelRatio.toFixed(3)}`);
@@ -168,4 +168,3 @@ export function logResolutionInfo(config: StageConfig): void {
     `   All UI is designed for ${DESIGN_WIDTH}x${DESIGN_HEIGHT} and auto-scales`
   );
 }
-

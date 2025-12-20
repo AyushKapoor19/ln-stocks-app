@@ -72,7 +72,7 @@ export default class StockChart extends BaseComponent {
     this.canvasLeft = config.canvasLeft || this.canvasLeft;
     this.canvasTop = config.canvasTop || this.canvasTop;
 
-    console.log("📊 Chart Configuration:", {
+    console.log("Chart Configuration:", {
       chartWidth: this.chartWidth,
       chartHeight: this.chartHeight,
       padding: this.padding,
@@ -136,7 +136,7 @@ export default class StockChart extends BaseComponent {
   }
 
   set points(data: number[]) {
-    console.log("📊 StockChart received points:", data);
+    console.log("StockChart received points:", data);
 
     if (!data || data.length === 0) return;
 
@@ -222,7 +222,15 @@ export default class StockChart extends BaseComponent {
     const max = Math.max.apply(null, this.chartData);
     const range = Math.max(max - min, 1);
 
-    this.drawGridLines(width, height, padding, rightPadding, bottomPadding, min, max);
+    this.drawGridLines(
+      width,
+      height,
+      padding,
+      rightPadding,
+      bottomPadding,
+      min,
+      max
+    );
 
     const visiblePoints = Math.floor(
       this.chartData.length * this.animationProgress
@@ -252,7 +260,9 @@ export default class StockChart extends BaseComponent {
 
     this.ctx.beginPath();
     data.forEach((point, index) => {
-      const x = padding + (index / (data.length - 1)) * (width - padding - rightPadding);
+      const x =
+        padding +
+        (index / (data.length - 1)) * (width - padding - rightPadding);
       const y =
         padding +
         (1 - (point - min) / range) * (height - padding - bottomPadding);
@@ -269,7 +279,9 @@ export default class StockChart extends BaseComponent {
     });
 
     const lastX =
-      padding + ((data.length - 1) / (data.length - 1)) * (width - padding - rightPadding);
+      padding +
+      ((data.length - 1) / (data.length - 1)) *
+        (width - padding - rightPadding);
     const bottomY = height - bottomPadding;
     this.ctx.lineTo(lastX, bottomY);
     this.ctx.lineTo(padding, bottomY);
@@ -281,7 +293,9 @@ export default class StockChart extends BaseComponent {
 
     if (data.length > 2) {
       const points = data.map((point, index) => ({
-        x: padding + (index / (data.length - 1)) * (width - padding - rightPadding),
+        x:
+          padding +
+          (index / (data.length - 1)) * (width - padding - rightPadding),
         y:
           padding +
           (1 - (point - min) / range) * (height - padding - bottomPadding),
@@ -308,7 +322,9 @@ export default class StockChart extends BaseComponent {
       this.ctx.lineTo(lastPoint.x, lastPoint.y);
     } else {
       data.forEach((point, index) => {
-        const x = padding + (index / (data.length - 1)) * (width - padding - rightPadding);
+        const x =
+          padding +
+          (index / (data.length - 1)) * (width - padding - rightPadding);
         const y =
           padding +
           (1 - (point - min) / range) * (height - padding - bottomPadding);
@@ -339,7 +355,15 @@ export default class StockChart extends BaseComponent {
     this.ctx.shadowBlur = 0;
 
     this.drawMonthLabels(width, height, padding, rightPadding, bottomPadding);
-    this.drawPriceLabels(width, height, padding, rightPadding, bottomPadding, min, max);
+    this.drawPriceLabels(
+      width,
+      height,
+      padding,
+      rightPadding,
+      bottomPadding,
+      min,
+      max
+    );
   }
 
   private drawGridLines(
@@ -386,7 +410,8 @@ export default class StockChart extends BaseComponent {
     const labelCount = 8;
 
     for (let i = 0; i < labelCount; i++) {
-      const x = padding + (i / (labelCount - 1)) * (width - padding - rightPadding);
+      const x =
+        padding + (i / (labelCount - 1)) * (width - padding - rightPadding);
       const y = height - bottomPadding + 40;
 
       const dataIndex = Math.floor(

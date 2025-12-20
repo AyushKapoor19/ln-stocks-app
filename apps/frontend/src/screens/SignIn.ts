@@ -641,7 +641,7 @@ export default class SignIn extends BaseScreen {
       this._hideKeyboard();
       return true;
     }
-    console.log("📱 Navigating back to Home");
+    console.log("Navigating back to Home");
     this.fireAncestors("$navigateBack");
     return true;
   }
@@ -766,13 +766,13 @@ export default class SignIn extends BaseScreen {
   }
 
   private _showKeyboard(): void {
-    console.log("⌨️  Opening keyboard for field:", this.activeField);
+    console.log("Opening keyboard for field:", this.activeField);
     this.showKeyboard = true;
     const blurOverlay = this.tag("BlurOverlay");
     const keyboardContainer = this.tag("KeyboardContainer");
 
-    console.log("🔍 BlurOverlay found:", !!blurOverlay);
-    console.log("🔍 KeyboardContainer found:", !!keyboardContainer);
+    console.log("BlurOverlay found:", !!blurOverlay);
+    console.log("KeyboardContainer found:", !!keyboardContainer);
 
     if (blurOverlay) {
       blurOverlay.setSmooth("alpha", 1, { duration: 0.3 });
@@ -912,13 +912,13 @@ export default class SignIn extends BaseScreen {
   private _updateKeyboardDisplay(): void {
     const keyboardContainer = this.tag("KeyboardContainer");
     if (!keyboardContainer) {
-      console.log("⚠️ KeyboardContainer not found");
+      console.log("KeyboardContainer not found");
       return;
     }
 
     const inputCard = keyboardContainer.tag("InputDisplayCard");
     if (!inputCard) {
-      console.log("⚠️ InputDisplayCard not found");
+      console.log("InputDisplayCard not found");
       return;
     }
 
@@ -944,7 +944,7 @@ export default class SignIn extends BaseScreen {
     // Remove old text element if it exists
     const oldInputText = inputCard.tag("InputText");
     if (oldInputText) {
-      console.log("🗑️ Removing old text element");
+      console.log("Removing old text element");
       inputCard.childList.remove(oldInputText);
     }
 
@@ -1045,7 +1045,7 @@ export default class SignIn extends BaseScreen {
   }
 
   private async _handleLogin(): Promise<void> {
-    console.log("🔐 Attempting login...");
+    console.log("Attempting login...");
     console.log(`📧 Email: ${this.emailValue}`);
     console.log(`🔑 Password: ${this.passwordValue.replace(/./g, "*")}`);
 
@@ -1073,18 +1073,18 @@ export default class SignIn extends BaseScreen {
 
   _getFocused(): Lightning.Component {
     if (this.showKeyboard) {
-      console.log("🎯 Focus: Keyboard is open, getting keyboard component");
+      console.log("Focus: Keyboard is open, getting keyboard component");
       const keyboardContainer = this.tag("KeyboardContainer");
       if (!keyboardContainer) {
-        console.log("⚠️ KeyboardContainer not found in _getFocused");
+        console.log("KeyboardContainer not found in _getFocused");
         return this;
       }
       const keyboard = keyboardContainer.tag("Keyboard");
-      console.log("⌨️  Keyboard component found:", !!keyboard);
+      console.log("Keyboard component found:", !!keyboard);
       return keyboard || this;
     }
 
-    console.log("🎯 Focus: Returning SignIn component");
+    console.log("Focus: Returning SignIn component");
     return this;
   }
 

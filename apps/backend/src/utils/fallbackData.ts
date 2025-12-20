@@ -9,7 +9,7 @@ import type { IQuoteData } from "../types/quote.js";
 import type { ISeriesData, Period } from "../types/series.js";
 
 export function generateFallbackQuote(symbol: string): IQuoteData {
-  console.log(`📊 Using calculated fallback for ${symbol}`);
+  console.log(`Using calculated fallback for ${symbol}`);
 
   const basePrice = 50 + ((symbol.charCodeAt(0) * 7) % 800);
   const change = basePrice * ((Math.random() - 0.5) * 0.01);

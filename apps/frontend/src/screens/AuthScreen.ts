@@ -591,7 +591,7 @@ export default class AuthScreen extends BaseScreen {
   }
 
   private _showKeyboard(): void {
-    console.log("⌨️  Opening keyboard for field:", this.activeField);
+    console.log("Opening keyboard for field:", this.activeField);
     this.showKeyboard = true;
 
     const blurOverlay = this.tag("BlurOverlay");
@@ -789,7 +789,7 @@ export default class AuthScreen extends BaseScreen {
   }
 
   private async _handleSubmit(): Promise<void> {
-    console.log("🚀 Submitting form:", this.mode);
+    console.log("Submitting form:", this.mode);
 
     if (!this.emailValue || !this.passwordValue) {
       console.error("❌ Email and password are required");

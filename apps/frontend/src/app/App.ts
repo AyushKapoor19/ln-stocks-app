@@ -3,7 +3,6 @@ import Home from "../screens/Home";
 import SignUpScreen from "../screens/auth/SignUpScreen";
 import SignInScreen from "../screens/auth/SignInScreen";
 import AccountScreen from "../screens/auth/AccountScreen";
-import { ImageUtils } from "../utils/imageUtils";
 import { Colors } from "../constants/Colors";
 import { authApi } from "../services/authApi";
 
@@ -68,9 +67,7 @@ export default class App extends Lightning.Component {
     // Set width using Lightning.js coordsWidth
     this.w = this.stage.coordsWidth;
 
-    // Initialize ImageUtils with current precision
     const precision = (this.stage.getOption("precision") as number) || 1;
-    ImageUtils.setScaleFactor(precision);
 
     console.log(
       `📱 App initialized with design coordinates: ${this.w}x${this.stage.coordsHeight}`
@@ -122,31 +119,31 @@ export default class App extends Lightning.Component {
   $showAuthFlow(): void {
     // Called from Home button - decides between SignUp/SignIn/Account
     if (this.currentUser) {
-      console.log("📱 Navigating to Account screen (user logged in)");
+      console.log("Navigating to Account screen (user logged in)");
       this._showScreen("AccountScreen");
     } else {
-      console.log("📱 Navigating to Sign Up screen (default for new users)");
+      console.log("Navigating to Sign Up screen (default for new users)");
       this._showScreen("SignUpScreen");
     }
   }
 
   $navigateToSignIn(): void {
-    console.log("📱 Navigating to Sign In screen");
+    console.log("Navigating to Sign In screen");
     this._showScreen("SignInScreen");
   }
 
   $navigateToSignUp(): void {
-    console.log("📱 Navigating to Sign Up screen");
+    console.log("Navigating to Sign Up screen");
     this._showScreen("SignUpScreen");
   }
 
   $navigateToHome(): void {
-    console.log("📱 Navigating to Home");
+    console.log("Navigating to Home");
     this._showScreen("Home");
   }
 
   $navigateBack(): void {
-    console.log("📱 Navigating back to Home");
+    console.log("Navigating back to Home");
     this._showScreen("Home");
   }
 
