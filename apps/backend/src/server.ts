@@ -13,6 +13,7 @@ import { healthRoute } from "./routes/healthRoute.js";
 import { quotesRoute } from "./routes/quotesRoute.js";
 import { seriesRoute } from "./routes/seriesRoute.js";
 import { searchRoute } from "./routes/searchRoute.js";
+import { metricsRoute } from "./routes/metricsRoute.js";
 import {
   signupRoute,
   loginRoute,
@@ -43,6 +44,7 @@ app.get("/", healthRoute);
 app.get("/v1/quotes", quotesRoute);
 app.get("/v1/series", seriesRoute);
 app.get("/v1/search", searchRoute);
+app.get("/v1/metrics", metricsRoute);
 
 // Register auth routes
 app.post("/auth/signup", signupRoute);

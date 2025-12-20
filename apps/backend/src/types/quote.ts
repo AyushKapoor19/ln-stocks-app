@@ -11,6 +11,10 @@ export interface IQuoteData {
   changePct: number;
   time: number;
   source: "finnhub_quote" | "calculated_fallback" | "error";
+  dayHigh?: number;
+  dayLow?: number;
+  open?: number;
+  previousClose?: number;
 }
 
 export interface IFinnhubQuoteResponse {

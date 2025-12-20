@@ -42,7 +42,7 @@ class FinnhubService {
         const change = currentPrice - previousClose;
         const changePct = previousClose !== 0 ? change / previousClose : 0;
 
-        console.log(`✅ Got quote for ${symbol}: $${currentPrice}`);
+        console.log(`✅ Got quote for ${symbol}: $${currentPrice} (H: ${data.h}, L: ${data.l})`);
 
         return {
           symbol: symbol,
@@ -51,6 +51,10 @@ class FinnhubService {
           changePct: Math.round(changePct * 10000) / 10000,
           time: data.t * 1000,
           source: "finnhub_quote",
+          dayHigh: data.h ? Math.round(data.h * 100) / 100 : undefined,
+          dayLow: data.l ? Math.round(data.l * 100) / 100 : undefined,
+          open: data.o ? Math.round(data.o * 100) / 100 : undefined,
+          previousClose: previousClose ? Math.round(previousClose * 100) / 100 : undefined,
         };
       }
 

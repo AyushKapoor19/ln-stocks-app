@@ -4,6 +4,19 @@ interface QuoteResponse {
   change: number;
   changePct: number;
   time: number;
+  dayHigh?: number;
+  dayLow?: number;
+  open?: number;
+  previousClose?: number;
+}
+
+interface MetricsResponse {
+  symbol: string;
+  volume?: number;
+  marketCap?: number;
+  week52High?: number;
+  week52Low?: number;
+  source: string;
 }
 
 interface SeriesPoint {
@@ -145,8 +158,27 @@ class StocksApiService {
       return [];
     }
   }
+
+  // Get stock metrics (volume, market cap, 52-week range)
+  async getMetrics(symbol: string): Promise<MetricsResponse | null> {
+    try {
+      const response = await fetch(
+        `${this.baseUrl}/v1/metrics?symbols=${encodeURIComponent(symbol)}`
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data: ApiResponse<MetricsResponse> = await response.json();
+      return data[symbol] || null;
+    } catch (error) {
+      console.error(`Failed to fetch metrics for ${symbol}:`, error);
+      return null;
+    }
+  }
 }
 
 // Export singleton instance
 export const stocksApi = new StocksApiService();
-export type { QuoteResponse, SeriesResponse, SeriesPoint };
+export type { QuoteResponse, SeriesResponse, SeriesPoint, MetricsResponse };
