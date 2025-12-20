@@ -60,9 +60,9 @@ export default class Home extends BaseScreen {
   private currentTimePeriod: TimePeriod = { id: "1M", label: "1M", days: 30 };
   private selectedPeriodIndex = 0;
   private isLoading = false;
-  private currentPrice = 428.75;
-  private currentChange = 2.45;
-  private currentChangePct = 0.0057;
+  private currentPrice = 0;
+  private currentChange = 0;
+  private currentChangePct = 0;
   private currentSymbol = "VOO";
   private currentStockName = "Vanguard S&P 500 ETF";
   private searchQuery = "";
@@ -81,25 +81,25 @@ export default class Home extends BaseScreen {
   ];
   private marketIndices: MarketIndex[] = [
     {
-      symbol: "SPX",
+      symbol: "SPY",
       name: "S&P 500",
-      price: 5876.0,
-      change: 49.5,
-      changePct: 0.0085,
+      price: 0,
+      change: 0,
+      changePct: 0,
     },
     {
-      symbol: "DJI",
+      symbol: "DIA",
       name: "Dow Jones",
-      price: 42840.0,
-      change: 221.5,
-      changePct: 0.0052,
+      price: 0,
+      change: 0,
+      changePct: 0,
     },
     {
-      symbol: "IXIC",
+      symbol: "QQQ",
       name: "Nasdaq",
-      price: 19340.0,
-      change: 237.2,
-      changePct: 0.0124,
+      price: 0,
+      change: 0,
+      changePct: 0,
     },
   ];
 
@@ -225,21 +225,21 @@ export default class Home extends BaseScreen {
         StockPrice: {
           y: 60,
           text: {
-            text: "$428.75",
+            text: "Loading...",
             fontFace: FontFamily.Default,
             fontSize: 72,
             fontStyle: FontStyle.Bold,
-            textColor: Colors.stockGreenBright,
+            textColor: Colors.textPrimary,
           },
         },
         StockChange: {
           y: 148,
           text: {
-            text: "+2.45 (+0.57%)",
+            text: "--",
             fontFace: FontFamily.Default,
             fontSize: FontSize.Large,
             fontStyle: FontStyle.Medium,
-            textColor: Colors.stockGreenBright,
+            textColor: Colors.textSecondary,
           },
         },
       },
@@ -365,7 +365,7 @@ export default class Home extends BaseScreen {
           x: 25,
           y: 75,
           Symbol: {
-            text: {
+          text: {
               text: "S&P 500",
               fontFace: FontFamily.Default,
               fontSize: FontSize.Body,
@@ -376,7 +376,7 @@ export default class Home extends BaseScreen {
           Price: {
             x: 170,
             text: {
-              text: "$5,876.00",
+              text: "Loading...",
               fontFace: FontFamily.Default,
               fontSize: FontSize.Large,
               fontStyle: FontStyle.SemiBold,
@@ -386,11 +386,11 @@ export default class Home extends BaseScreen {
           Change: {
             x: 360,
             text: {
-              text: "+0.85%",
+              text: "--",
               fontFace: FontFamily.Default,
               fontSize: FontSize.Body,
               fontStyle: FontStyle.Medium,
-              textColor: Colors.stockGreenBright,
+              textColor: Colors.textSecondary,
             },
           },
         },
@@ -410,7 +410,7 @@ export default class Home extends BaseScreen {
           Price: {
             x: 170,
             text: {
-              text: "$42,840.00",
+              text: "Loading...",
               fontFace: FontFamily.Default,
               fontSize: FontSize.Large,
               fontStyle: FontStyle.SemiBold,
@@ -420,11 +420,11 @@ export default class Home extends BaseScreen {
           Change: {
             x: 360,
             text: {
-              text: "+0.52%",
+              text: "--",
               fontFace: FontFamily.Default,
               fontSize: FontSize.Body,
               fontStyle: FontStyle.Medium,
-              textColor: Colors.stockGreenBright,
+              textColor: Colors.textSecondary,
             },
           },
         },
@@ -433,7 +433,7 @@ export default class Home extends BaseScreen {
           x: 25,
           y: 175,
           Symbol: {
-            text: {
+          text: {
               text: "Nasdaq",
               fontFace: FontFamily.Default,
               fontSize: FontSize.Body,
@@ -444,7 +444,7 @@ export default class Home extends BaseScreen {
           Price: {
             x: 170,
             text: {
-              text: "$19,340.00",
+              text: "Loading...",
               fontFace: FontFamily.Default,
               fontSize: FontSize.Large,
               fontStyle: FontStyle.SemiBold,
@@ -454,11 +454,11 @@ export default class Home extends BaseScreen {
           Change: {
             x: 360,
             text: {
-              text: "+1.24%",
+              text: "--",
               fontFace: FontFamily.Default,
               fontSize: FontSize.Body,
               fontStyle: FontStyle.Medium,
-              textColor: Colors.stockGreenBright,
+              textColor: Colors.textSecondary,
             },
           },
         },
@@ -501,11 +501,11 @@ export default class Home extends BaseScreen {
           Value: {
             y: 34,
             text: {
-              text: "2.5M",
+              text: "Loading...",
               fontFace: FontFamily.Default,
               fontSize: FontSize.Large,
               fontStyle: FontStyle.SemiBold,
-              textColor: Colors.textPrimary,
+              textColor: Colors.textSecondary,
             },
           },
         },
@@ -525,11 +525,11 @@ export default class Home extends BaseScreen {
           Value: {
             y: 34,
             text: {
-              text: "$523B",
+              text: "Loading...",
               fontFace: FontFamily.Default,
               fontSize: FontSize.Large,
               fontStyle: FontStyle.SemiBold,
-              textColor: Colors.textPrimary,
+              textColor: Colors.textSecondary,
             },
           },
         },
@@ -557,11 +557,11 @@ export default class Home extends BaseScreen {
           Value: {
             y: 34,
             text: {
-              text: "$615.20 - $618.45",
+              text: "Loading...",
               fontFace: FontFamily.Default,
               fontSize: FontSize.Large,
               fontStyle: FontStyle.SemiBold,
-              textColor: Colors.textPrimary,
+              textColor: Colors.textSecondary,
             },
           },
         },
@@ -589,11 +589,11 @@ export default class Home extends BaseScreen {
           Value: {
             y: 34,
             text: {
-              text: "$485.30 - $633.71",
+              text: "Loading...",
               fontFace: FontFamily.Default,
               fontSize: FontSize.Large,
               fontStyle: FontStyle.SemiBold,
-              textColor: Colors.textPrimary,
+              textColor: Colors.textSecondary,
             },
           },
         },
@@ -1436,7 +1436,7 @@ export default class Home extends BaseScreen {
     } else if (this.currentFocusIndex >= 2) {
       // From time period buttons, go to Sign In button
       this.currentFocusIndex = 1;
-      this._updateFocus();
+        this._updateFocus();
       return true;
     }
     return false;
@@ -1463,7 +1463,7 @@ export default class Home extends BaseScreen {
     } else if (this.currentFocusIndex === 1) {
       // From Sign In button, go to first time period button
       this.currentFocusIndex = 2;
-      this._updateFocus();
+        this._updateFocus();
       return true;
     }
     return false;
