@@ -365,7 +365,7 @@ export default class Home extends BaseScreen {
           x: 25,
           y: 75,
           Symbol: {
-          text: {
+            text: {
               text: "S&P 500",
               fontFace: FontFamily.Default,
               fontSize: FontSize.Body,
@@ -433,7 +433,7 @@ export default class Home extends BaseScreen {
           x: 25,
           y: 175,
           Symbol: {
-          text: {
+            text: {
               text: "Nasdaq",
               fontFace: FontFamily.Default,
               fontSize: FontSize.Body,
@@ -1436,7 +1436,7 @@ export default class Home extends BaseScreen {
     } else if (this.currentFocusIndex >= 2) {
       // From time period buttons, go to Sign In button
       this.currentFocusIndex = 1;
-        this._updateFocus();
+      this._updateFocus();
       return true;
     }
     return false;
@@ -1463,7 +1463,7 @@ export default class Home extends BaseScreen {
     } else if (this.currentFocusIndex === 1) {
       // From Sign In button, go to first time period button
       this.currentFocusIndex = 2;
-        this._updateFocus();
+      this._updateFocus();
       return true;
     }
     return false;
