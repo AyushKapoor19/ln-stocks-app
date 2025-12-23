@@ -80,6 +80,7 @@ export default class Home extends BaseScreen {
     "TimeButton_3M",
     "TimeButton_1Y",
     "WatchlistStarButton",
+    "WatchlistPanel",
   ];
   private marketIndices: MarketIndex[] = [
     {
@@ -1072,8 +1073,18 @@ export default class Home extends BaseScreen {
       this.currentFocusIndex = 0;
       this._updateFocus();
       return true;
+    } else if (this.currentFocusIndex === 2 + TIME_PERIODS.length + 1) {
+      // From watchlist, try to navigate within it first
+      const watchlist = this.tag("WatchlistPanel") as WatchlistPanel;
+      if (watchlist && watchlist.handleUp()) {
+        return true;
+      }
+      // If at top of watchlist, go back to star button
+      this.currentFocusIndex = 2 + TIME_PERIODS.length;
+      this._updateFocus();
+      return true;
     } else if (this.currentFocusIndex >= 2) {
-      // From time period buttons, go to Sign In button
+      // From time period buttons or star, go to Sign In button
       this.currentFocusIndex = 1;
       this._updateFocus();
       return true;
@@ -1104,6 +1115,45 @@ export default class Home extends BaseScreen {
       this.currentFocusIndex = 2;
       this._updateFocus();
       return true;
+    } else if (this.currentFocusIndex === 2 + TIME_PERIODS.length) {
+      // From star button, try to go to watchlist if user has stocks
+      const token = localStorage.getItem("auth_token");
+      const watchlistData = localStorage.getItem("user_watchlist");
+
+      console.log("🔍 Attempting to focus watchlist:", {
+        hasToken: !!token,
+        hasWatchlistData: !!watchlistData,
+        currentFocus: this.currentFocusIndex,
+      });
+
+      if (token && watchlistData) {
+        try {
+          const watchlist = JSON.parse(watchlistData);
+          if (Array.isArray(watchlist) && watchlist.length > 0) {
+            console.log(
+              "✅ Focusing watchlist with",
+              watchlist.length,
+              "stocks"
+            );
+            this.currentFocusIndex = 2 + TIME_PERIODS.length + 1;
+            this._updateFocus();
+            return true;
+          } else {
+            console.log("📭 Watchlist is empty");
+          }
+        } catch (error) {
+          console.error("❌ Error parsing watchlist:", error);
+        }
+      } else {
+        if (!token) console.log("❌ Not signed in");
+        if (!watchlistData) console.log("❌ No watchlist data");
+      }
+    } else if (this.currentFocusIndex === 2 + TIME_PERIODS.length + 1) {
+      // Navigate within watchlist
+      const watchlist = this.tag("WatchlistPanel") as WatchlistPanel;
+      if (watchlist && watchlist.handleDown()) {
+        return true;
+      }
     }
     return false;
   }
@@ -1198,6 +1248,30 @@ export default class Home extends BaseScreen {
       console.log("Toggling watchlist for", this.currentSymbol);
       this._toggleWatchlist();
       return true;
+    } else if (this.currentFocusIndex === 2 + TIME_PERIODS.length + 1) {
+      // Watchlist item selected - load that stock
+      const watchlist = this.tag("WatchlistPanel") as WatchlistPanel;
+      if (watchlist) {
+        const selectedStock = watchlist.getSelectedStock();
+        if (selectedStock) {
+          console.log(`Loading stock from watchlist: ${selectedStock}`);
+          this.currentSymbol = selectedStock;
+
+          // Update UI with symbol
+          const mainDisplay = this.tag("MainDisplay");
+          if (mainDisplay) {
+            const symbolElement = mainDisplay.tag("StockSymbol");
+            if (symbolElement && symbolElement.text) {
+              symbolElement.text.text = selectedStock;
+            }
+          }
+
+          // Update star button and load data
+          this._updateWatchlistStarButton();
+          void this._loadStockData(selectedStock);
+          return true;
+        }
+      }
     } else {
       const buttonIndex = this.currentFocusIndex - 2;
       if (buttonIndex >= 0 && buttonIndex < TIME_PERIODS.length) {
@@ -1432,6 +1506,21 @@ export default class Home extends BaseScreen {
           });
         }
       }
+    }
+
+    // Update watchlist focus
+    const watchlist = this.tag("WatchlistPanel") as WatchlistPanel;
+    const isWatchlistFocused =
+      this.currentFocusIndex === 2 + TIME_PERIODS.length + 1;
+    console.log(
+      `🎯 Home._updateFocus: watchlist=${!!watchlist}, isWatchlistFocused=${isWatchlistFocused}, currentFocus=${
+        this.currentFocusIndex
+      }`
+    );
+    if (watchlist && watchlist.setFocused) {
+      watchlist.setFocused(isWatchlistFocused);
+    } else if (!watchlist) {
+      console.log("❌ WatchlistPanel component not found!");
     }
 
     this.stage.update();

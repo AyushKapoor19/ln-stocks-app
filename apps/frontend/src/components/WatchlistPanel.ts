@@ -10,6 +10,13 @@ import { Colors } from "../constants/Colors";
 import { FontSize, FontStyle, FontFamily } from "../constants/Fonts";
 import { stocksApi } from "../services/api";
 
+interface StockQuote {
+  symbol: string;
+  price: number;
+  change: number;
+  changePct: number;
+}
+
 interface TemplateSpec extends Lightning.Component.TemplateSpec {
   Title: object;
   EmptyStateNotSignedIn: {
@@ -22,20 +29,8 @@ interface TemplateSpec extends Lightning.Component.TemplateSpec {
     Message: object;
     Subtitle: object;
   };
-  Stock1: {
-    Symbol: object;
-    Price: object;
-    Change: object;
-  };
-  Stock2: {
-    Symbol: object;
-    Price: object;
-    Change: object;
-  };
-  Stock3: {
-    Symbol: object;
-    Price: object;
-    Change: object;
+  StocksContainer: {
+    StocksList: object;
   };
 }
 
@@ -43,6 +38,14 @@ export default class WatchlistPanel
   extends Lightning.Component<TemplateSpec>
   implements Lightning.Component.ImplementTemplateSpec<TemplateSpec>
 {
+  private stocks: StockQuote[] = [];
+  private selectedStockIndex = 0;
+  private scrollY = 0;
+  private readonly ITEM_HEIGHT = 43;
+  private readonly VISIBLE_ITEMS = 3;
+  private readonly CONTAINER_HEIGHT = 115;
+  private isFocused = false;
+
   static override _template(): Lightning.Component.Template<TemplateSpec> {
     return {
       w: 520,
@@ -144,107 +147,16 @@ export default class WatchlistPanel
           },
         },
       },
-      // Watchlist items
-      Stock1: {
+      // Scrollable watchlist container
+      StocksContainer: {
         x: 25,
         y: 75,
+        w: 470,
+        h: 115,
+        clipping: true,
         alpha: 0,
-        Symbol: {
-          text: {
-            text: "AAPL",
-            fontFace: FontFamily.Default,
-            fontSize: FontSize.Body,
-            fontStyle: FontStyle.SemiBold,
-            textColor: Colors.textPrimary,
-          },
-        },
-        Price: {
-          x: 170,
-          text: {
-            text: "$195.50",
-            fontFace: FontFamily.Default,
-            fontSize: FontSize.Body,
-            fontStyle: FontStyle.Medium,
-            textColor: Colors.textPrimary,
-          },
-        },
-        Change: {
-          x: 360,
-          text: {
-            text: "+2.5%",
-            fontFace: FontFamily.Default,
-            fontSize: FontSize.Body,
-            fontStyle: FontStyle.Medium,
-            textColor: Colors.stockGreenBright,
-          },
-        },
-      },
-      Stock2: {
-        x: 25,
-        y: 118,
-        alpha: 0,
-        Symbol: {
-          text: {
-            text: "TSLA",
-            fontFace: FontFamily.Default,
-            fontSize: FontSize.Body,
-            fontStyle: FontStyle.SemiBold,
-            textColor: Colors.textPrimary,
-          },
-        },
-        Price: {
-          x: 170,
-          text: {
-            text: "$248.30",
-            fontFace: FontFamily.Default,
-            fontSize: FontSize.Body,
-            fontStyle: FontStyle.Medium,
-            textColor: Colors.textPrimary,
-          },
-        },
-        Change: {
-          x: 360,
-          text: {
-            text: "-1.2%",
-            fontFace: FontFamily.Default,
-            fontSize: FontSize.Body,
-            fontStyle: FontStyle.Medium,
-            textColor: Colors.stockRed,
-          },
-        },
-      },
-      Stock3: {
-        x: 25,
-        y: 161,
-        alpha: 0,
-        Symbol: {
-          text: {
-            text: "MSFT",
-            fontFace: FontFamily.Default,
-            fontSize: FontSize.Body,
-            fontStyle: FontStyle.SemiBold,
-            textColor: Colors.textPrimary,
-          },
-        },
-        Price: {
-          x: 170,
-          text: {
-            text: "$415.20",
-            fontFace: FontFamily.Default,
-            fontSize: FontSize.Body,
-            fontStyle: FontStyle.Medium,
-            textColor: Colors.textPrimary,
-          },
-        },
-        Change: {
-          x: 360,
-          text: {
-            text: "+0.8%",
-            fontFace: FontFamily.Default,
-            fontSize: FontSize.Body,
-            fontStyle: FontStyle.Medium,
-            textColor: Colors.stockGreenBright,
-          },
+        StocksList: {
+          y: 0,
         },
       },
     };
@@ -264,16 +176,12 @@ export default class WatchlistPanel
     // Get all UI elements
     const emptyStateNotSignedIn = this.tag("EmptyStateNotSignedIn");
     const emptyStateSignedIn = this.tag("EmptyStateSignedIn");
-    const stock1 = this.tag("Stock1");
-    const stock2 = this.tag("Stock2");
-    const stock3 = this.tag("Stock3");
+    const stocksContainer = this.tag("StocksContainer");
 
     // Hide all states initially
     if (emptyStateNotSignedIn) emptyStateNotSignedIn.alpha = 0;
     if (emptyStateSignedIn) emptyStateSignedIn.alpha = 0;
-    if (stock1) stock1.alpha = 0;
-    if (stock2) stock2.alpha = 0;
-    if (stock3) stock3.alpha = 0;
+    if (stocksContainer) stocksContainer.alpha = 0;
 
     // Determine which state to show
     if (!isLoggedIn) {
@@ -298,10 +206,9 @@ export default class WatchlistPanel
       // State 3: User signed in and has watchlist items
       console.log("Watchlist: Showing user's stocks");
       const watchlist = this._getUserWatchlist();
-      const stockElements = [stock1, stock2, stock3];
 
-      // Fetch real-time data for watchlist stocks
-      this._updateWatchlistPrices(watchlist.slice(0, 3), stockElements);
+      // Fetch real-time data for all watchlist stocks
+      this._fetchAndBuildWatchlist(watchlist);
     }
   }
 
@@ -333,12 +240,9 @@ export default class WatchlistPanel
   }
 
   /**
-   * Fetches and displays real-time prices for watchlist stocks
+   * Fetches stock data and builds the scrollable list
    */
-  private async _updateWatchlistPrices(
-    watchlist: string[],
-    stockElements: (Lightning.Element | undefined | null)[]
-  ): Promise<void> {
+  private async _fetchAndBuildWatchlist(watchlist: string[]): Promise<void> {
     try {
       console.log(
         "📊 Fetching real-time data for watchlist stocks...",
@@ -351,80 +255,223 @@ export default class WatchlistPanel
       );
       const quotes = await Promise.all(quotePromises);
 
-      // Update UI for each stock
-      quotes.forEach((quote, index) => {
-        const stockElement = stockElements[index];
-        if (!stockElement) return;
+      // Build stocks array
+      this.stocks = quotes
+        .filter((quote) => quote !== null)
+        .map((quote) => ({
+          symbol: quote!.symbol,
+          price: quote!.price,
+          change: quote!.change,
+          changePct: quote!.changePct,
+        }));
 
-        // Update stock symbol
-        const symbolTag = stockElement.tag("Symbol");
-        if (symbolTag && symbolTag.text && quote) {
-          symbolTag.text.text = quote.symbol;
-        }
+      console.log(`✅ Loaded ${this.stocks.length} stocks for watchlist`);
 
-        // Update price
-        const priceTag = stockElement.tag("Price");
-        if (priceTag && priceTag.text) {
-          if (quote) {
-            priceTag.text.text = stocksApi.formatPrice(quote.price);
-          } else {
-            priceTag.text.text = "$---";
-          }
-        }
+      // Build the UI
+      this._buildStocksList();
 
-        // Update change percentage
-        const changeTag = stockElement.tag("Change");
-        if (changeTag && changeTag.text) {
-          if (quote) {
-            const changePct = (quote.changePct * 100).toFixed(2);
-            const sign = quote.change >= 0 ? "+" : "";
-            changeTag.text.text = `${sign}${changePct}%`;
-            changeTag.text.textColor =
-              quote.change >= 0 ? Colors.stockGreen : Colors.stockRed;
-          } else {
-            changeTag.text.text = "--%";
-            changeTag.text.textColor = Colors.textTertiary;
-          }
-        }
-
-        // Show the element with staggered animation
-        stockElement.setSmooth("alpha", 1, {
+      // Show the container
+      const stocksContainer = this.tag("StocksContainer");
+      if (stocksContainer) {
+        stocksContainer.setSmooth("alpha", 1, {
           duration: 0.3,
-          delay: 0.8 + index * 0.1,
+          delay: 0.8,
         });
-      });
-
-      console.log("✅ Watchlist prices updated with real data");
+      }
     } catch (error) {
       console.error("❌ Failed to fetch watchlist prices:", error);
-
-      // Show elements with placeholder data if fetch fails
-      watchlist.forEach((symbol, index) => {
-        const stockElement = stockElements[index];
-        if (!stockElement) return;
-
-        const symbolTag = stockElement.tag("Symbol");
-        if (symbolTag && symbolTag.text) {
-          symbolTag.text.text = symbol;
-        }
-
-        const priceTag = stockElement.tag("Price");
-        if (priceTag && priceTag.text) {
-          priceTag.text.text = "$---";
-        }
-
-        const changeTag = stockElement.tag("Change");
-        if (changeTag && changeTag.text) {
-          changeTag.text.text = "--%";
-          changeTag.text.textColor = Colors.textTertiary;
-        }
-
-        stockElement.setSmooth("alpha", 1, {
-          duration: 0.3,
-          delay: 0.8 + index * 0.1,
-        });
-      });
     }
+  }
+
+  /**
+   * Builds the dynamic stock list with scrolling support
+   */
+  private _buildStocksList(): void {
+    const stocksList = this.tag("StocksContainer")?.tag("StocksList");
+    if (!stocksList) return;
+
+    stocksList.childList.clear();
+
+    this.stocks.forEach((stock, index) => {
+      const isPositive = stock.change >= 0;
+      const changePct = (stock.changePct * 100).toFixed(2);
+      const sign = stock.change >= 0 ? "+" : "";
+
+      const stockItem = {
+        ref: `Stock_${index}`,
+        y: index * this.ITEM_HEIGHT,
+        w: 470,
+        h: this.ITEM_HEIGHT,
+        rect: true,
+        color: 0x00000000,
+        shader: { type: Lightning.shaders.RoundedRectangle, radius: 8 },
+
+        Symbol: {
+          x: 0,
+          y: 22,
+          mount: 0,
+          mountY: 0.5,
+          text: {
+            text: stock.symbol,
+            fontFace: FontFamily.Default,
+            fontSize: FontSize.Body,
+            fontStyle: FontStyle.SemiBold,
+            textColor: Colors.textPrimary,
+          },
+        },
+
+        Price: {
+          x: 170,
+          y: 22,
+          mount: 0,
+          mountY: 0.5,
+          text: {
+            text: stocksApi.formatPrice(stock.price),
+            fontFace: FontFamily.Default,
+            fontSize: FontSize.Body,
+            fontStyle: FontStyle.Medium,
+            textColor: Colors.textPrimary,
+          },
+        },
+
+        Change: {
+          x: 360,
+          y: 22,
+          mount: 0,
+          mountY: 0.5,
+          text: {
+            text: `${sign}${changePct}%`,
+            fontFace: FontFamily.Default,
+            fontSize: FontSize.Body,
+            fontStyle: FontStyle.Medium,
+            textColor: isPositive ? Colors.stockGreen : Colors.stockRed,
+          },
+        },
+      };
+
+      stocksList.childList.a(stockItem);
+    });
+
+    this._updateStockFocus();
+  }
+
+  /**
+   * Updates the visual focus state of stock items
+   */
+  private _updateStockFocus(): void {
+    const stocksList = this.tag("StocksContainer")?.tag("StocksList");
+    if (!stocksList) {
+      console.log("❌ StocksList not found");
+      return;
+    }
+
+    console.log(
+      `🎯 Updating focus: isFocused=${this.isFocused}, selectedIndex=${this.selectedStockIndex}`
+    );
+
+    this.stocks.forEach((stock, index) => {
+      const stockItem = stocksList.tag(`Stock_${index}`);
+      if (stockItem) {
+        const isFocusedItem =
+          this.isFocused && index === this.selectedStockIndex;
+
+        console.log(
+          `  Stock ${index} (${stock.symbol}): focused=${isFocusedItem}`
+        );
+
+        stockItem.setSmooth(
+          "color",
+          isFocusedItem ? 0x33ffffff : 0x00000000,
+          { duration: 0.2 }
+        );
+      }
+    });
+  }
+
+  /**
+   * Scrolls the list to keep the selected item visible
+   */
+  private _scrollToSelectedItem(): void {
+    const stocksList = this.tag("StocksContainer")?.tag("StocksList");
+    if (!stocksList) return;
+
+    const targetY = this.selectedStockIndex * this.ITEM_HEIGHT;
+    const maxScroll = Math.max(
+      0,
+      this.stocks.length * this.ITEM_HEIGHT - this.CONTAINER_HEIGHT
+    );
+
+    // Calculate scroll position to keep item visible
+    if (targetY < Math.abs(this.scrollY)) {
+      // Item is above visible area
+      this.scrollY = -targetY;
+    } else if (
+      targetY + this.ITEM_HEIGHT >
+      Math.abs(this.scrollY) + this.CONTAINER_HEIGHT
+    ) {
+      // Item is below visible area
+      this.scrollY = -(targetY + this.ITEM_HEIGHT - this.CONTAINER_HEIGHT);
+    }
+
+    // Clamp scroll position
+    this.scrollY = Math.max(-maxScroll, Math.min(0, this.scrollY));
+
+    stocksList.setSmooth("y", this.scrollY, { duration: 0.2 });
+  }
+
+  /**
+   * Public methods for focus handling
+   */
+  setFocused(focused: boolean): void {
+    console.log(`📊 Watchlist setFocused: ${focused}, stocks: ${this.stocks.length}`);
+    this.isFocused = focused;
+    this._updateStockFocus();
+  }
+
+  handleUp(): boolean {
+    console.log(
+      `⬆️ handleUp: isFocused=${this.isFocused}, stocks=${this.stocks.length}, index=${this.selectedStockIndex}`
+    );
+    if (!this.isFocused || this.stocks.length === 0) return false;
+
+    if (this.selectedStockIndex > 0) {
+      this.selectedStockIndex--;
+      console.log(`  → Moving to index ${this.selectedStockIndex}`);
+      this._scrollToSelectedItem();
+      this._updateStockFocus();
+      return true;
+    }
+    return false;
+  }
+
+  handleDown(): boolean {
+    console.log(
+      `⬇️ handleDown: isFocused=${this.isFocused}, stocks=${this.stocks.length}, index=${this.selectedStockIndex}`
+    );
+    if (!this.isFocused || this.stocks.length === 0) return false;
+
+    if (this.selectedStockIndex < this.stocks.length - 1) {
+      this.selectedStockIndex++;
+      console.log(`  → Moving to index ${this.selectedStockIndex}`);
+      this._scrollToSelectedItem();
+      this._updateStockFocus();
+      return true;
+    }
+    return false;
+  }
+
+  getSelectedStock(): string | null {
+    if (
+      this.stocks.length === 0 ||
+      this.selectedStockIndex >= this.stocks.length
+    ) {
+      return null;
+    }
+    return this.stocks[this.selectedStockIndex].symbol;
+  }
+
+  hasStocks(): boolean {
+    return this.stocks.length > 0;
   }
 
   /**
