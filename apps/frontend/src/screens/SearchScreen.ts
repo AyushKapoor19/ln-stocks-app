@@ -369,23 +369,23 @@ export default class SearchScreen extends BaseScreen {
               2
             )} (${stock.changePct.toFixed(2)}%)`
           : "";
-      changeTag.text.textColor = isPositive ? 0xff22c55e : 0xffef4444;
+      changeTag.text.textColor = isPositive ? 0xff10b981 : 0xffef4444;
     }
 
-    // Update gradient overlay
+    // Update primary gradient (lighter unfocused state)
     const gradient = card.tag("GradientOverlay");
     if (gradient) {
       gradient.patch({
-        colorTop: isPositive ? 0x2016a34a : 0x20dc2626,
+        colorTop: isPositive ? 0x30059669 : 0x30991b1b, // Light 30% (unfocused)
       });
     }
 
-    // Update border color
-    const border = card.tag("Border");
-    if (border) {
-      const borderColor = isPositive ? Colors.success : Colors.error;
-      border.patch({
-        color: borderColor,
+    // Update secondary gradient (hidden by default, appears when focused)
+    const gradientAccent = card.tag("GradientAccent");
+    if (gradientAccent) {
+      gradientAccent.patch({
+        colorBottom: isPositive ? 0x70065f46 : 0x70991b1b, // Rich 70% (focused)
+        alpha: 0, // Keep hidden
       });
     }
   }
@@ -422,9 +422,8 @@ export default class SearchScreen extends BaseScreen {
 
     grid.childList.clear();
 
-    // Larger cards for 2/3 screen (3 columns)
     const CARD_WIDTH = 380;
-    const CARD_HEIGHT = 220;
+    const CARD_HEIGHT = 260;
     const CARD_SPACING = 20;
     const COLS = 3;
 
@@ -435,7 +434,6 @@ export default class SearchScreen extends BaseScreen {
       const col = index % COLS;
 
       const isPositive = stock.change && stock.change >= 0;
-      const borderColor = isPositive ? Colors.success : Colors.error;
 
       const card = {
         ref: `Card_${index}`,
@@ -444,41 +442,42 @@ export default class SearchScreen extends BaseScreen {
         w: CARD_WIDTH,
         h: CARD_HEIGHT,
         rect: true,
-        color: 0xff1a1a1a,
-        shader: { type: Lightning.shaders.RoundedRectangle, radius: 20 },
+        color: 0xff1a1a1a, // Premium dark background
+        shader: { type: Lightning.shaders.RoundedRectangle, radius: 24 },
         alpha: 0, // Start invisible for fade-in
 
-        // Gradient Overlay
+        // Subtle gradient overlay (lighter when unfocused)
         GradientOverlay: {
           x: 0,
           y: 0,
           w: CARD_WIDTH,
           h: CARD_HEIGHT,
           rect: true,
-          colorTop: isPositive ? 0x2016a34a : 0x20dc2626,
-          colorBottom: 0x00000000,
-          shader: { type: Lightning.shaders.RoundedRectangle, radius: 20 },
+          colorTop: isPositive ? 0x30059669 : 0x30991b1b, // Lighter 30% opacity (unfocused)
+          colorBottom: 0x00000000, // Fade to transparent
+          shader: { type: Lightning.shaders.RoundedRectangle, radius: 24 },
         },
 
-        // Focus Border - Dynamic color based on stock performance
-        Border: {
-          x: -6,
-          y: -6,
-          w: CARD_WIDTH + 12,
-          h: CARD_HEIGHT + 12,
+        // Secondary gradient (appears on focus for dual-layer depth)
+        GradientAccent: {
+          x: 0,
+          y: CARD_HEIGHT * 0.6, // Start from 60% down
+          w: CARD_WIDTH,
+          h: CARD_HEIGHT * 0.4, // Bottom 40%
           rect: true,
-          color: borderColor,
+          colorTop: 0x00000000, // Transparent top
+          colorBottom: isPositive ? 0x70065f46 : 0x70991b1b, // Rich accent (70% opacity when focused)
           shader: { type: Lightning.shaders.RoundedRectangle, radius: 24 },
-          alpha: 0,
+          alpha: 0, // Hidden by default
         },
 
         Content: {
-          x: 28,
-          y: 28,
-          w: CARD_WIDTH - 56,
-          h: CARD_HEIGHT - 56,
+          x: 32, // More generous padding
+          y: 32,
+          w: CARD_WIDTH - 64,
+          h: CARD_HEIGHT - 64,
 
-          // Symbol - Large and bold
+          // Symbol - Bold and prominent
           Symbol: {
             x: 0,
             y: 0,
@@ -486,46 +485,45 @@ export default class SearchScreen extends BaseScreen {
               text: stock.symbol,
               fontSize: 48,
               fontStyle: FontStyle.Bold,
-              textColor: Colors.white,
+              textColor: 0xffffffff,
               fontFace: FontFamily.Default,
             },
           },
 
-          // Company Name - Smaller, grey
+          // Company Name - Elegant grey
           Name: {
             x: 0,
-            y: 60,
+            y: 54,
             text: {
               text:
-                stock.name.length > 28
-                  ? stock.name.substring(0, 28) + "..."
+                stock.name.length > 22
+                  ? stock.name.substring(0, 22) + "..."
                   : stock.name,
-              fontSize: 18,
-              textColor: 0xffaaaaaa,
+              fontSize: 24,
+              textColor: 0xff888888,
               fontFace: FontFamily.Default,
-              wordWrap: true,
-              wordWrapWidth: CARD_WIDTH - 56,
-              maxLines: 2,
+              wordWrap: false,
+              maxLines: 1,
             },
           },
 
-          // Price - Large, prominent
+          // Price - Hero element, extra large
           Price: {
             x: 0,
-            y: 120,
+            y: 123,
             text: {
               text: stock.price ? `$${stock.price.toFixed(2)}` : "Loading...",
-              fontSize: 36,
-              fontStyle: FontStyle.Bold,
-              textColor: Colors.white,
+              fontSize: 45,
+              fontStyle: FontStyle.SemiBold,
+              textColor: 0xffffffff,
               fontFace: FontFamily.Default,
             },
           },
 
-          // Change - Color coded
+          // Change - Clear and color-coded
           Change: {
             x: 0,
-            y: 165,
+            y: 178,
             text: {
               text:
                 stock.change && stock.changePct
@@ -533,9 +531,9 @@ export default class SearchScreen extends BaseScreen {
                       2
                     )} (${stock.changePct.toFixed(2)}%)`
                   : "",
-              fontSize: 18,
-              fontStyle: FontStyle.Bold,
-              textColor: isPositive ? 0xff22c55e : 0xffef4444,
+              fontSize: 22,
+              fontStyle: FontStyle.Body,
+              textColor: isPositive ? 0xff10b981 : 0xffef4444,
               fontFace: FontFamily.Default,
             },
           },
@@ -588,16 +586,47 @@ export default class SearchScreen extends BaseScreen {
   }
 
   private _updateCardFocus(): void {
-    this.searchResults.forEach((_, index) => {
+    this.searchResults.forEach((stock, index) => {
       const card = this.tag(`Card_${index}`);
       if (card) {
-        const border = card.tag("Border");
+        const gradientOverlay = card.tag("GradientOverlay");
+        const gradientAccent = card.tag("GradientAccent");
         const isFocused =
           this.currentFocus === "cards" && index === this.selectedCardIndex;
 
-        if (border) {
-          border.setSmooth("alpha", isFocused ? 1 : 0, { duration: 0.2 });
+        // Determine stock performance
+        const isPositive = stock.change && stock.change >= 0;
+
+        // Gradient colors - dramatic difference between states
+        const primaryGradientUnfocused = isPositive ? 0x30059669 : 0x30991b1b;
+        const primaryGradientFocused = isPositive ? 0x80047857 : 0x807f1d1d;
+        const accentGradientFocused = isPositive ? 0x70065f46 : 0x70991b1b;
+
+        // Update primary gradient (subtle unfocused → dramatic focused)
+        if (gradientOverlay) {
+          gradientOverlay.patch({
+            colorTop: isFocused
+              ? primaryGradientFocused
+              : primaryGradientUnfocused,
+          });
         }
+
+        // Show/hide secondary gradient layer (dual-layer depth when focused)
+        if (gradientAccent) {
+          gradientAccent.patch({
+            colorBottom: accentGradientFocused,
+          });
+          gradientAccent.setSmooth("alpha", isFocused ? 1 : 0, {
+            duration: 0.2,
+          });
+        }
+
+        // Subtle background darkening when focused (adds depth)
+        card.setSmooth("color", isFocused ? 0xff0f0f0f : 0xff1a1a1a, {
+          duration: 0.2,
+        });
+
+        // Smooth scale animation (subtle emphasis)
         card.setSmooth("scale", isFocused ? 1.08 : 1, { duration: 0.25 });
       }
     });

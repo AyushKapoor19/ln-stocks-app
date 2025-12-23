@@ -12,11 +12,31 @@ import { stocksApi } from "../services/api";
 
 interface TemplateSpec extends Lightning.Component.TemplateSpec {
   Title: object;
-  EmptyStateNotSignedIn: object;
-  EmptyStateSignedIn: object;
-  Stock1: object;
-  Stock2: object;
-  Stock3: object;
+  EmptyStateNotSignedIn: {
+    Icon: object;
+    Message: object;
+    Subtitle: object;
+  };
+  EmptyStateSignedIn: {
+    Icon: object;
+    Message: object;
+    Subtitle: object;
+  };
+  Stock1: {
+    Symbol: object;
+    Price: object;
+    Change: object;
+  };
+  Stock2: {
+    Symbol: object;
+    Price: object;
+    Change: object;
+  };
+  Stock3: {
+    Symbol: object;
+    Price: object;
+    Change: object;
+  };
 }
 
 export default class WatchlistPanel
@@ -317,7 +337,7 @@ export default class WatchlistPanel
    */
   private async _updateWatchlistPrices(
     watchlist: string[],
-    stockElements: (Lightning.Component | null)[]
+    stockElements: (Lightning.Element | undefined | null)[]
   ): Promise<void> {
     try {
       console.log(
@@ -505,4 +525,3 @@ export default class WatchlistPanel
     }
   }
 }
-
