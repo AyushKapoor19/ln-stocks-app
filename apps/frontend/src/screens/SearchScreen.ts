@@ -16,6 +16,15 @@ interface StockCardData extends SearchResult {
   description?: string;
 }
 
+const gridConfig = {
+  cardWidth: 380,
+  cardHeight: 260,
+  spacing: 20,
+  columns: 3,
+  viewportHeight: 920,
+  titleHeight: 80,
+};
+
 export default class SearchScreen extends BaseScreen {
   private searchQuery = "";
   private searchResults: StockCardData[] = [];
@@ -26,6 +35,8 @@ export default class SearchScreen extends BaseScreen {
   private searchTimeout: NodeJS.Timeout | undefined = undefined;
   private cursorBlinkInterval: NodeJS.Timeout | undefined = undefined;
   private cursorVisible = true;
+  private gridScrollY = 0;
+  private isTitleVisible = true;
 
   // Compact 6-column keyboard layout
   private keyboard = [
@@ -418,27 +429,34 @@ export default class SearchScreen extends BaseScreen {
     const grid = this.tag("CardsGrid");
     if (!grid) return;
 
-    grid.childList.clear();
+    // Reset scroll position for new results
+    this.gridScrollY = 0;
+    grid.y = 130;
 
-    const CARD_WIDTH = 380;
-    const CARD_HEIGHT = 260;
-    const CARD_SPACING = 20;
-    const COLS = 3;
+    // Reset title visibility
+    const title = this.tag("RightPanel")?.tag("TopResultsTitle");
+    if (title) {
+      title.alpha = 1;
+      title.y = 50;
+      this.isTitleVisible = true;
+    }
+
+    grid.childList.clear();
 
     console.log(`✅ Building ${this.searchResults.length} stock cards`);
 
     this.searchResults.forEach((stock, index) => {
-      const row = Math.floor(index / COLS);
-      const col = index % COLS;
+      const row = Math.floor(index / gridConfig.columns);
+      const col = index % gridConfig.columns;
 
       const isPositive = stock.change && stock.change >= 0;
 
       const card = {
         ref: `Card_${index}`,
-        x: col * (CARD_WIDTH + CARD_SPACING),
-        y: row * (CARD_HEIGHT + CARD_SPACING),
-        w: CARD_WIDTH,
-        h: CARD_HEIGHT,
+        x: col * (gridConfig.cardWidth + gridConfig.spacing),
+        y: row * (gridConfig.cardHeight + gridConfig.spacing),
+        w: gridConfig.cardWidth,
+        h: gridConfig.cardHeight,
         rect: true,
         color: 0xff1a1a1a,
         shader: { type: Lightning.shaders.RoundedRectangle, radius: 24 },
@@ -447,8 +465,8 @@ export default class SearchScreen extends BaseScreen {
         GradientOverlay: {
           x: 0,
           y: 0,
-          w: CARD_WIDTH,
-          h: CARD_HEIGHT,
+          w: gridConfig.cardWidth,
+          h: gridConfig.cardHeight,
           rect: true,
           colorTop: isPositive ? 0x25059669 : 0x25991b1b,
           colorBottom: 0x00000000,
@@ -457,9 +475,9 @@ export default class SearchScreen extends BaseScreen {
 
         GradientAccent: {
           x: 0,
-          y: CARD_HEIGHT * 0.6,
-          w: CARD_WIDTH,
-          h: CARD_HEIGHT * 0.4,
+          y: gridConfig.cardHeight * 0.6,
+          w: gridConfig.cardWidth,
+          h: gridConfig.cardHeight * 0.4,
           rect: true,
           colorTop: 0x00000000,
           colorBottom: isPositive ? 0x85065f46 : 0x85991b1b,
@@ -468,10 +486,10 @@ export default class SearchScreen extends BaseScreen {
         },
 
         Content: {
-          x: 32, // More generous padding
+          x: 32,
           y: 32,
-          w: CARD_WIDTH - 64,
-          h: CARD_HEIGHT - 64,
+          w: gridConfig.cardWidth - 64,
+          h: gridConfig.cardHeight - 64,
 
           // Symbol - Bold and prominent
           Symbol: {
@@ -740,6 +758,66 @@ export default class SearchScreen extends BaseScreen {
     this.fireAncestors("$closeSearch");
   }
 
+  /**
+   * Scrolls the grid to keep the focused card visible
+   */
+  private _scrollGridToCard(): void {
+    if (this.selectedCardIndex < 0) return;
+
+    const grid = this.tag("CardsGrid");
+    if (!grid) return;
+
+    const rowHeight = gridConfig.cardHeight + gridConfig.spacing;
+
+    // Calculate which row the selected card is in
+    const currentRow = Math.floor(this.selectedCardIndex / gridConfig.columns);
+    const cardY = currentRow * rowHeight;
+
+    // Calculate visible range
+    const visibleTop = -this.gridScrollY;
+    const visibleBottom = visibleTop + gridConfig.viewportHeight;
+
+    // Check if card is outside visible area
+    if (cardY < visibleTop) {
+      // Card is above visible area - scroll up
+      this.gridScrollY = -cardY;
+      grid.setSmooth("y", 130 + this.gridScrollY, { duration: 0.3 });
+    } else if (cardY + gridConfig.cardHeight > visibleBottom) {
+      // Card is below visible area - scroll down
+      this.gridScrollY = -(
+        cardY -
+        gridConfig.viewportHeight +
+        gridConfig.cardHeight
+      );
+      grid.setSmooth("y", 130 + this.gridScrollY, { duration: 0.3 });
+    }
+
+    // Update title visibility based on scroll position
+    this._updateTitleVisibility();
+  }
+
+  /**
+   * Shows or hides the "Top Results" title based on scroll position
+   */
+  private _updateTitleVisibility(): void {
+    const title = this.tag("RightPanel")?.tag("TopResultsTitle");
+    if (!title) return;
+
+    const shouldShowTitle = this.gridScrollY === 0;
+
+    if (shouldShowTitle && !this.isTitleVisible) {
+      // Show title when scrolled to top
+      title.setSmooth("alpha", 1, { duration: 0.3 });
+      title.setSmooth("y", 50, { duration: 0.3 });
+      this.isTitleVisible = true;
+    } else if (!shouldShowTitle && this.isTitleVisible) {
+      // Hide title when scrolled away
+      title.setSmooth("alpha", 0, { duration: 0.3 });
+      title.setSmooth("y", 20, { duration: 0.3 });
+      this.isTitleVisible = false;
+    }
+  }
+
   // Navigation
   override _handleUp(): boolean {
     if (this.currentFocus === "keyboard") {
@@ -762,6 +840,7 @@ export default class SearchScreen extends BaseScreen {
       const newIndex = this.selectedCardIndex - 3;
       if (newIndex >= 0) {
         this.selectedCardIndex = newIndex;
+        this._scrollGridToCard();
         this._updateCardFocus();
       }
     }
@@ -789,6 +868,7 @@ export default class SearchScreen extends BaseScreen {
       const newIndex = this.selectedCardIndex + 3;
       if (newIndex < this.searchResults.length) {
         this.selectedCardIndex = newIndex;
+        this._scrollGridToCard();
         this._updateCardFocus();
       }
     }
@@ -811,6 +891,7 @@ export default class SearchScreen extends BaseScreen {
     } else if (this.currentFocus === "cards") {
       if (this.selectedCardIndex % 3 > 0) {
         this.selectedCardIndex--;
+        this._scrollGridToCard();
         this._updateCardFocus();
       } else {
         // Move back to keyboard
@@ -847,6 +928,7 @@ export default class SearchScreen extends BaseScreen {
         // Move to cards
         this.currentFocus = "cards";
         this.selectedCardIndex = 0;
+        this._scrollGridToCard();
         this._updateKeyboardFocus();
         this._updateCardFocus();
       }
@@ -856,6 +938,7 @@ export default class SearchScreen extends BaseScreen {
         this.selectedCardIndex < this.searchResults.length - 1
       ) {
         this.selectedCardIndex++;
+        this._scrollGridToCard();
         this._updateCardFocus();
       }
     }
