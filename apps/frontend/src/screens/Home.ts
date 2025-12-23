@@ -1381,14 +1381,14 @@ export default class Home extends BaseScreen {
 
           if (background) {
             if (isFocused && isSelected) {
-              background.setSmooth("color", Colors.stockGreenBright, {
+              background.setSmooth("color", 0x77ffffff, {
                 duration: 0.3,
               });
               if (label && label.text) {
-                label.text.textColor = Colors.black;
+                label.text.textColor = Colors.white;
               }
             } else if (isSelected) {
-              background.setSmooth("color", Colors.authAccent, {
+              background.setSmooth("color", 0x55ffffff, {
                 duration: 0.3,
               });
               if (label && label.text) {
