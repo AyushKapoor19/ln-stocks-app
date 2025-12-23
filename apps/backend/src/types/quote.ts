@@ -15,6 +15,7 @@ export interface IQuoteData {
   dayLow?: number;
   open?: number;
   previousClose?: number;
+  currency?: string;
 }
 
 export interface IFinnhubQuoteResponse {

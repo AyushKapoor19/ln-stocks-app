@@ -131,21 +131,10 @@ export default class SearchBar extends BaseComponent {
   }
 
   _handleEnter(): boolean {
-    if (this.searchQuery.length > 0 && this.searchResults.length > 0) {
-      const selected = this.searchResults[this.selectedSearchIndex];
-      if (selected) {
-        const event: ISelectStockEvent = {
-          symbol: selected.symbol,
-          name: selected.name,
-        };
-        this.fireAncestors("$selectStock", event);
-        return true;
-      }
-    } else if (this.searchQuery.length === 0) {
-      this._activateSearch();
-      return true;
-    }
-    return false;
+    // Open full-screen search experience
+    console.log("SearchBar: Opening full-screen search");
+    this.fireAncestors("$openSearch");
+    return true;
   }
 
   _handleKey(event: KeyboardEvent): boolean {

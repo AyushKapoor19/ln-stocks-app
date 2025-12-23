@@ -16,6 +16,7 @@ export const Colors = {
   background: 0xff0b0b0c, // Main app background
   cardBackground: 0xff18181b, // Card/panel background (#23232a)
   cardBackgroundFocus: 0xff27272a, // Focused card background
+  cardBackgroundHover: 0xff202024, // Hover card background
   cardBackgroundSelected: 0xff2a2a2e, // Selected item background
   searchBarBackground: 0xee1a1a1a, // Search bar dark gray
 

@@ -3,6 +3,7 @@ import Home from "../screens/Home";
 import SignUpScreen from "../screens/auth/SignUpScreen";
 import SignInScreen from "../screens/auth/SignInScreen";
 import AccountScreen from "../screens/auth/AccountScreen";
+import SearchScreen from "../screens/SearchScreen";
 import { Colors } from "../constants/Colors";
 import { authApi } from "../services/authApi";
 
@@ -58,6 +59,12 @@ export default class App extends Lightning.Component {
         type: AccountScreen,
         alpha: 0,
         zIndex: 2,
+        visible: false,
+      },
+      SearchScreen: {
+        type: SearchScreen,
+        alpha: 0,
+        zIndex: 3,
         visible: false,
       },
     };
@@ -171,7 +178,7 @@ export default class App extends Lightning.Component {
   }
 
   $signOut(): void {
-    console.log("🚪 User signed out");
+    console.log("User signed out");
     this.currentUser = null;
     authApi.clearToken();
 
@@ -184,8 +191,27 @@ export default class App extends Lightning.Component {
     this._showScreen("Home");
   }
 
+  $openSearch(): void {
+    console.log("Opening full-screen search");
+    this._showScreen("SearchScreen");
+  }
+
+  $closeSearch(): void {
+    console.log("Closing search, returning to Home");
+    this._showScreen("Home");
+  }
+
+  $selectStockFromSearch(data: { symbol: string; name: string }): void {
+    console.log("Stock selected from search:", data);
+    // Pass the selected stock to Home screen
+    const homeScreen = this.tag("Home");
+    if (homeScreen && (homeScreen as any).loadStockFromSearch) {
+      (homeScreen as any).loadStockFromSearch(data.symbol, data.name);
+    }
+  }
+
   private _showScreen(screenName: string): void {
-    const screens = ["Home", "SignUpScreen", "SignInScreen", "AccountScreen"];
+    const screens = ["Home", "SignUpScreen", "SignInScreen", "AccountScreen", "SearchScreen"];
 
     screens.forEach((screen) => {
       const screenComponent = this.tag(screen);

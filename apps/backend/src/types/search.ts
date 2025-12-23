@@ -11,6 +11,7 @@ export interface ISearchResult {
   market: string;
   active: boolean;
   primaryExchange: string;
+  currency?: string;
 }
 
 export interface IFinnhubSearchItem {

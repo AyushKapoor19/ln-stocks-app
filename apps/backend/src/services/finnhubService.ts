@@ -21,20 +21,40 @@ class FinnhubService {
     try {
       console.log(`Fetching quote from Finnhub for ${symbol}...`);
 
-      const url = `${this.baseUrl}/quote?symbol=${encodeURIComponent(
-        symbol
-      )}&token=${FINNHUB_KEY}`;
-      const response = await fetch(url);
+      // Fetch quote and currency in parallel
+      const [quoteResponse, profileResponse] = await Promise.all([
+        fetch(
+          `${this.baseUrl}/quote?symbol=${encodeURIComponent(
+            symbol
+          )}&token=${FINNHUB_KEY}`
+        ),
+        fetch(
+          `${this.baseUrl}/stock/profile2?symbol=${encodeURIComponent(
+            symbol
+          )}&token=${FINNHUB_KEY}`
+        ),
+      ]);
 
-      if (!response.ok) {
-        const errorText = await response.text();
+      if (!quoteResponse.ok) {
+        const errorText = await quoteResponse.text();
         console.log(
-          `❌ Finnhub quote failed for ${symbol}: ${response.status} - ${errorText}`
+          `❌ Finnhub quote failed for ${symbol}: ${quoteResponse.status} - ${errorText}`
         );
         return null;
       }
 
-      const data = (await response.json()) as IFinnhubQuoteResponse;
+      const data = (await quoteResponse.json()) as IFinnhubQuoteResponse;
+      let currency = "USD"; // Default to USD
+
+      // Extract currency from profile if available
+      if (profileResponse.ok) {
+        const profile = (await profileResponse.json()) as {
+          currency?: string;
+        };
+        if (profile.currency) {
+          currency = profile.currency;
+        }
+      }
 
       if (data && data.c !== undefined && data.c !== null) {
         const currentPrice = data.c;
@@ -43,7 +63,7 @@ class FinnhubService {
         const changePct = previousClose !== 0 ? change / previousClose : 0;
 
         console.log(
-          `✅ Got quote for ${symbol}: $${currentPrice} (H: ${data.h}, L: ${data.l})`
+          `✅ Got quote for ${symbol}: $${currentPrice} (${currency}) (H: ${data.h}, L: ${data.l})`
         );
 
         return {
@@ -59,6 +79,7 @@ class FinnhubService {
           previousClose: previousClose
             ? Math.round(previousClose * 100) / 100
             : undefined,
+          currency: currency,
         };
       }
 
@@ -95,9 +116,44 @@ class FinnhubService {
       const data = (await response.json()) as IFinnhubSearchResponse;
 
       if (data && data.result && data.result.length > 0) {
-        const results = data.result
-          .filter((item) => item.type === "Common Stock" || item.type === "ETF")
-          .slice(0, 10)
+        // Filter for Common Stock or ETF only
+        const filteredResults = data.result.filter(
+          (item) => item.type === "Common Stock" || item.type === "ETF"
+        );
+
+        // Fetch currency for each stock in parallel (limit to 30 for performance)
+        const resultsWithCurrency = await Promise.all(
+          filteredResults.slice(0, 30).map(async (item) => {
+            try {
+              // Fetch company profile to get currency
+              const profileUrl = `${
+                this.baseUrl
+              }/stock/profile2?symbol=${encodeURIComponent(
+                item.symbol
+              )}&token=${FINNHUB_KEY}`;
+              const profileResponse = await fetch(profileUrl);
+
+              if (profileResponse.ok) {
+                const profile = (await profileResponse.json()) as {
+                  currency?: string;
+                };
+                return {
+                  ...item,
+                  currency: profile.currency || "UNKNOWN",
+                };
+              }
+
+              return { ...item, currency: "UNKNOWN" };
+            } catch (error) {
+              return { ...item, currency: "UNKNOWN" };
+            }
+          })
+        );
+
+        // Filter for USD only
+        const results = resultsWithCurrency
+          .filter((item) => item.currency === "USD")
+          .slice(0, 20)
           .map((item) => ({
             symbol: item.symbol,
             name: item.description,
@@ -105,9 +161,10 @@ class FinnhubService {
             market: "stocks",
             active: true,
             primaryExchange: item.displaySymbol || item.symbol,
+            currency: item.currency,
           }));
 
-        console.log(`✅ Found ${results.length} stocks for "${query}"`);
+        console.log(`✅ Found ${results.length} USD stocks for "${query}"`);
         return results;
       }
 

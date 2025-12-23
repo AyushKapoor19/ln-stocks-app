@@ -1185,17 +1185,10 @@ export default class Home extends BaseScreen {
 
   _handleEnter(): boolean {
     if (this.currentFocusIndex === 0) {
-      const searchBar = this.tag("SearchBar") as SearchBar;
-      const searchResults = this.tag("SearchResults") as SearchResults;
-
-      if (searchBar && searchResults && this.searchResults.length > 0) {
-        const selectedResult = searchResults.getSelectedResult();
-        if (selectedResult) {
-          this._selectStock(selectedResult.symbol, selectedResult.name);
-          return true;
-        }
-      }
-      return false;
+      // Open full-screen search
+      console.log("Opening full-screen search");
+      this.fireAncestors("$openSearch");
+      return true;
     } else if (this.currentFocusIndex === 1) {
       console.log("Opening Account/Auth screen");
       this.fireAncestors("$showAuthFlow");
@@ -1308,6 +1301,34 @@ export default class Home extends BaseScreen {
     this._updateWatchlistStarButton();
 
     await this._loadStockData(symbol);
+  }
+
+  /**
+   * Public method to load a stock from search screen
+   */
+  loadStockFromSearch(symbol: string, name: string): void {
+    console.log(`Loading stock from search: ${symbol} - ${name}`);
+    this.currentSymbol = symbol;
+    this.currentStockName = name;
+
+    const mainDisplay = this.tag("MainDisplay");
+    if (mainDisplay) {
+      const symbolElement = mainDisplay.tag("StockSymbol");
+      if (symbolElement && symbolElement.text) {
+        symbolElement.text.text = symbol;
+      }
+
+      const nameElement = mainDisplay.tag("StockName");
+      if (nameElement && nameElement.text) {
+        nameElement.text.text = name;
+      }
+    }
+
+    // Update star button to reflect new stock's watchlist status
+    this._updateWatchlistStarButton();
+
+    // Load stock data
+    void this._loadStockData(symbol);
   }
 
   _getFocused(): Lightning.Component {

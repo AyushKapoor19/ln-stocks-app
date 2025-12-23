@@ -30,6 +30,9 @@ declare module "@lightningjs/sdk" {
         $navigateSearchResultsUp(event: any): void;
         $navigateSearchResultsDown(event: any): void;
         $clearSearchResults(event: any): void;
+        $openSearch(): void;
+        $closeSearch(): void;
+        $selectStockFromSearch(data: { symbol: string; name: string }): void;
 
         // Keyboard events
         $onKeyPress(event: { key: string }): void;
