@@ -145,7 +145,7 @@ export default class SearchScreen extends BaseScreen {
           x: 40,
           y: 50,
           text: {
-            text: "Top Results",
+            text: "Popular Stocks",
             fontSize: 48,
             fontStyle: FontStyle.Bold,
             textColor: Colors.white,
@@ -433,13 +433,16 @@ export default class SearchScreen extends BaseScreen {
     this.gridScrollY = 0;
     grid.y = 130;
 
-    // Reset title visibility
+    // Reset title visibility and text
     const title = this.tag("RightPanel")?.tag("TopResultsTitle");
     if (title) {
       title.alpha = 1;
       title.y = 50;
       this.isTitleVisible = true;
     }
+
+    // Update title text based on search state
+    this._updateTitleText();
 
     grid.childList.clear();
 
@@ -669,6 +672,28 @@ export default class SearchScreen extends BaseScreen {
           }
         });
       }
+    }
+
+    // Update title text based on search state
+    this._updateTitleText();
+  }
+
+  /**
+   * Updates the title text based on whether user is searching or not
+   */
+  private _updateTitleText(): void {
+    const title = this.tag("RightPanel")?.tag("TopResultsTitle");
+    if (!title || !title.text) return;
+
+    const hasQuery = this.searchQuery.length > 0;
+    const newText = hasQuery ? "Top Results" : "Popular Stocks";
+
+    if (title.text.text !== newText) {
+      title.patch({
+        text: {
+          text: newText,
+        },
+      });
     }
   }
 
