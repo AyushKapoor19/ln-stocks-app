@@ -1,15 +1,14 @@
 /**
- * Hybrid Stock Search Service (Production-Ready for Free Tier)
+ * Hybrid stock search service combining local popular stocks with API fallback.
  *
- * Architecture:
- * 1. Search ~200 popular stocks locally (instant, 95% of queries)
- * 2. Fall back to Finnhub /search API for less common stocks
- * 3. Merge and rank all results intelligently
+ * Implementation uses a two-tier approach:
+ * 1. Search 225 popular stocks locally (instant)
+ * 2. Fetch additional results from Finnhub API
+ * 3. Merge, deduplicate, and rank by relevance
  *
- * Why Hybrid:
- * - Finnhub free tier doesn't support bulk stock fetching
- * - Most users search for popular stocks (AAPL, TSLA, etc.)
- * - API fallback ensures comprehensive coverage
+ * This approach works with Finnhub free tier which doesn't support bulk stock fetching.
+ * The /stock/symbol endpoint returns 401, so we maintain a curated list of popular stocks
+ * and use the /search endpoint for comprehensive coverage.
  */
 
 import { ISearchResult } from "../types/search.js";
@@ -19,21 +18,21 @@ import { POPULAR_US_STOCKS } from "../constants/popularStocks.js";
 class StockIndexService {
   private isInitialized = false;
 
-  /**
-   * Initialize the service (instant, no API calls)
-   */
+  // Initialize service (instant, no API calls required)
   async initialize(): Promise<void> {
     if (this.isInitialized) {
       console.log("✅ Search service already initialized");
       return;
     }
 
-    console.log(`✅ Search service ready (${POPULAR_US_STOCKS.length} popular stocks indexed)`);
+    console.log(
+      `✅ Search service ready (${POPULAR_US_STOCKS.length} popular stocks indexed)`
+    );
     this.isInitialized = true;
   }
 
   /**
-   * Hybrid search: Popular stocks (local) + API fallback
+   * Search stocks using hybrid approach (local index + API fallback)
    */
   async search(query: string, limit: number = 50): Promise<ISearchResult[]> {
     if (!this.isInitialized) {
@@ -50,28 +49,24 @@ class StockIndexService {
     const startTime = Date.now();
 
     try {
-      // STEP 1: Search popular stocks locally (instant)
+      // Search popular stocks locally (instant)
       const popularMatches = this._searchPopularStocks(queryLower);
 
-      // STEP 2: Search via Finnhub API for comprehensive results
+      // Search via Finnhub API for comprehensive results
       const apiResults = await finnhubService.searchSymbols(queryLower);
 
-      // STEP 3: Merge and deduplicate
+      // Merge and deduplicate (popular stocks take priority)
       const allResults = new Map<string, ISearchResult>();
-
-      // Add popular stocks first (priority)
       popularMatches.forEach((result) => {
         allResults.set(result.symbol, result);
       });
-
-      // Add API results (won't override popular stocks)
       apiResults.forEach((result) => {
-        if (!allResults.set(result.symbol, result)) {
+        if (!allResults.has(result.symbol)) {
           allResults.set(result.symbol, result);
         }
       });
 
-      // STEP 4: Rank results intelligently
+      // Rank by relevance
       const mergedResults = Array.from(allResults.values());
       const rankedResults = this._rankResults(mergedResults, queryLower);
 
@@ -84,14 +79,12 @@ class StockIndexService {
       return rankedResults.slice(0, limit);
     } catch (error) {
       console.error(`❌ Search error for "${query}":`, error);
-      // Fallback to popular stocks only
+      // Fallback to popular stocks if API fails
       return this._searchPopularStocks(queryLower).slice(0, limit);
     }
   }
 
-  /**
-   * Search popular stocks locally (instant)
-   */
+  // Search popular stocks locally (instant, no API call)
   private _searchPopularStocks(queryLower: string): ISearchResult[] {
     return POPULAR_US_STOCKS.filter((symbol) =>
       symbol.toLowerCase().includes(queryLower)
@@ -107,7 +100,8 @@ class StockIndexService {
   }
 
   /**
-   * Intelligent ranking algorithm
+   * Rank search results by relevance.
+   * Scoring: exact match (1000), starts with (500), contains (200), popular stock bonus (150)
    */
   private _rankResults(
     results: ISearchResult[],
@@ -127,7 +121,7 @@ class StockIndexService {
         // Symbol starts with query
         else if (symbolLower.startsWith(queryLower)) {
           score += 500;
-          score += Math.max(0, 10 - result.symbol.length) * 10;
+          score += Math.max(0, 10 - result.symbol.length) * 10; // Shorter symbols rank higher
         }
         // Symbol contains query
         else if (symbolLower.includes(queryLower)) {
@@ -155,9 +149,7 @@ class StockIndexService {
       .map((item) => item.result);
   }
 
-  /**
-   * Get service stats for monitoring
-   */
+  // Get service stats for health monitoring
   getStats() {
     return {
       mode: "hybrid",
