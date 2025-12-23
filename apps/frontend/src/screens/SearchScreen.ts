@@ -471,7 +471,7 @@ export default class SearchScreen extends BaseScreen {
           w: gridConfig.cardWidth,
           h: gridConfig.cardHeight,
           rect: true,
-          colorTop: isPositive ? 0x25059669 : 0x25991b1b,
+          colorTop: isPositive ? 0x1a059669 : 0x1a991b1b,
           colorBottom: 0x00000000,
           shader: { type: Lightning.shaders.RoundedRectangle, radius: 24 },
         },
@@ -483,7 +483,7 @@ export default class SearchScreen extends BaseScreen {
           h: gridConfig.cardHeight * 0.4,
           rect: true,
           colorTop: 0x00000000,
-          colorBottom: isPositive ? 0x85065f46 : 0x85991b1b,
+          colorBottom: isPositive ? 0xd9065f46 : 0xd9991b1b,
           shader: { type: Lightning.shaders.RoundedRectangle, radius: 24 },
           alpha: 0,
         },
@@ -626,9 +626,9 @@ export default class SearchScreen extends BaseScreen {
         const isPositive = stock.change && stock.change >= 0;
 
         // Gradient colors - dramatic difference between states
-        const primaryGradientUnfocused = isPositive ? 0x25059669 : 0x25991b1b;
-        const primaryGradientFocused = isPositive ? 0x85047857 : 0x857f1d1d;
-        const accentGradientFocused = isPositive ? 0x85065f46 : 0x85991b1b;
+        const primaryGradientUnfocused = isPositive ? 0x1a059669 : 0x1a991b1b; // 10% opacity
+        const primaryGradientFocused = isPositive ? 0xd9047857 : 0xd97f1d1d; // 85% opacity
+        const accentGradientFocused = isPositive ? 0xd9065f46 : 0xd9991b1b; // 85% opacity
 
         if (gradientOverlay) {
           gradientOverlay.patch({
