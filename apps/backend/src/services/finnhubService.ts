@@ -174,6 +174,69 @@ class FinnhubService {
       return [];
     }
   }
+
+  /**
+   * Fetch all stock symbols from a specific exchange
+   * Used for building the search index
+   */
+  async fetchStocksByExchange(exchange: string): Promise<ISearchResult[]> {
+    if (!FINNHUB_KEY) {
+      throw new Error("No FINNHUB_KEY configured");
+    }
+
+    try {
+      console.log(`  Fetching stocks from ${exchange}...`);
+
+      const url = `${this.baseUrl}/stock/symbol?exchange=${encodeURIComponent(
+        exchange
+      )}&token=${FINNHUB_KEY}`;
+      const response = await fetch(url);
+
+      if (!response.ok) {
+        console.log(
+          `  ❌ Finnhub fetch failed for ${exchange}: ${response.status}`
+        );
+        return [];
+      }
+
+      const data = (await response.json()) as Array<{
+        description: string;
+        displaySymbol: string;
+        symbol: string;
+        type: string;
+        currency?: string;
+      }>;
+
+      if (!data || !Array.isArray(data)) {
+        console.log(`  ❌ Invalid response from Finnhub for ${exchange}`);
+        return [];
+      }
+
+      // Map to ISearchResult format
+      const results: ISearchResult[] = data
+        .filter(
+          (item) =>
+            item.type === "Common Stock" ||
+            item.type === "ETF" ||
+            item.type === "ETP"
+        )
+        .map((item) => ({
+          symbol: item.symbol,
+          name: item.description,
+          type: item.type,
+          market: "stocks",
+          active: true,
+          primaryExchange: exchange,
+          currency: item.currency || "USD", // Default to USD for US exchanges
+        }));
+
+      console.log(`  ✅ ${exchange}: ${results.length} stocks`);
+      return results;
+    } catch (error) {
+      console.log(`  💥 Error fetching from ${exchange}:`, error);
+      return [];
+    }
+  }
 }
 
 export const finnhubService = new FinnhubService();

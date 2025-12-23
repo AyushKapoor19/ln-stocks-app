@@ -13,7 +13,10 @@ import { healthRoute } from "./routes/healthRoute.js";
 import { quotesRoute } from "./routes/quotesRoute.js";
 import { seriesRoute } from "./routes/seriesRoute.js";
 import { searchRoute } from "./routes/searchRoute.js";
+import { enhancedSearchRoute } from "./routes/enhancedSearchRoute.js";
+import { indexStatusRoute } from "./routes/indexStatusRoute.js";
 import { metricsRoute } from "./routes/metricsRoute.js";
+import { stockIndexService } from "./services/stockIndexService.js";
 import {
   signupRoute,
   loginRoute,
@@ -39,11 +42,23 @@ logApiKeysStatus();
 // Test database connection
 await testConnection();
 
+// Initialize stock index for production-grade search (BLOCKING)
+console.log("🚀 Initializing stock search index...");
+try {
+  await stockIndexService.initialize();
+  console.log("✅ Stock index ready!");
+} catch (error) {
+  console.error("❌ Failed to initialize stock index:", error);
+  console.log("⚠️ Search will return empty results until index is ready");
+}
+
 // Register stock data routes
 app.get("/", healthRoute);
 app.get("/v1/quotes", quotesRoute);
 app.get("/v1/series", seriesRoute);
-app.get("/v1/search", searchRoute);
+app.get("/v1/search", searchRoute); // Legacy search (Finnhub direct)
+app.get("/v1/search/enhanced", enhancedSearchRoute); // Production-grade search
+app.get("/v1/search/index-status", indexStatusRoute); // Index health check
 app.get("/v1/metrics", metricsRoute);
 
 // Register auth routes

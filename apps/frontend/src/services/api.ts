@@ -187,14 +187,15 @@ class StocksApiService {
     }
   }
 
-  // In-memory cache for search results (production-grade optimization)
   private searchCache = new Map<
     string,
     { results: SearchResult[]; timestamp: number }
   >();
   private readonly CACHE_TTL = 5 * 60 * 1000; // 5 minutes cache
 
-  // Production-grade search engine with intelligent caching and ranking
+  /**
+   * Search using backend search index
+   */
   async search(query: string): Promise<SearchResult[]> {
     const trimmedQuery = query.trim();
 
@@ -205,7 +206,7 @@ class StocksApiService {
     const cacheKey = trimmedQuery.toLowerCase();
 
     try {
-      // Check cache first for performance optimization
+      // Check cache first
       const cached = this.searchCache.get(cacheKey);
       if (cached && Date.now() - cached.timestamp < this.CACHE_TTL) {
         console.log(
@@ -214,45 +215,40 @@ class StocksApiService {
         return cached.results;
       }
 
-      console.log(`✅ Searching API for: "${trimmedQuery}"`);
+      console.log(`✅ Searching: "${trimmedQuery}"`);
 
-      // Fetch from backend API
+      // Call backend enhanced search endpoint
       const response = await fetch(
-        `${this.baseUrl}/v1/search?q=${encodeURIComponent(trimmedQuery)}`
+        `${this.baseUrl}/v1/search/enhanced?q=${encodeURIComponent(
+          trimmedQuery
+        )}&limit=50`
       );
 
       if (!response.ok) {
-        console.error(`❌ Search API error: ${response.status}`);
+        console.error(
+          `❌ Enhanced search failed: ${response.status} ${response.statusText}`
+        );
         return [];
       }
 
       const data = await response.json();
-      let results: SearchResult[] = data.results || [];
+      const results: SearchResult[] = data.results || [];
 
-      // Filter for USD stocks only (proper currency-based filtering)
-      results = results.filter((result) => result.currency === "USD");
-      console.log(`✅ Found ${results.length} USD stocks from API`);
+      console.log(`✅ Found ${results.length} results`);
 
-      // Apply intelligent ranking algorithm
-      const ranked = this._rankSearchResults(results, trimmedQuery);
+      // Cache successful results
+      if (results.length > 0) {
+        this.searchCache.set(cacheKey, {
+          results,
+          timestamp: Date.now(),
+        });
+      }
 
-      // Cache the results for performance
-      this.searchCache.set(cacheKey, {
-        results: ranked,
-        timestamp: Date.now(),
-      });
-
-      // Clean old cache entries (keep cache size manageable)
       this._cleanCache();
 
-      console.log(
-        `✅ Top 5 results:`,
-        ranked.slice(0, 5).map((r) => `${r.symbol} (${r.name})`)
-      );
-
-      return ranked;
+      return results;
     } catch (error) {
-      console.error(`Failed to search for "${trimmedQuery}":`, error);
+      console.error(`❌ Search failed for "${trimmedQuery}":`, error);
       return [];
     }
   }
@@ -265,110 +261,6 @@ class StocksApiService {
         this.searchCache.delete(key);
       }
     }
-  }
-
-  private _rankSearchResults(
-    results: SearchResult[],
-    query: string
-  ): SearchResult[] {
-    const queryLower = query.toLowerCase().trim();
-
-    // Score each result based on multiple relevance factors
-    const scoredResults = results.map((result) => {
-      const symbolLower = result.symbol.toLowerCase();
-      const nameLower = result.name.toLowerCase();
-
-      let score = 0;
-
-      // === SYMBOL MATCHING (Primary Signal) ===
-
-      // Exact match - Perfect result
-      if (symbolLower === queryLower) {
-        score += 10000;
-      }
-      // Starts with query - Very relevant (e.g., "AA" → "AAPL")
-      else if (symbolLower.startsWith(queryLower)) {
-        score += 5000;
-
-        // Coverage ratio: How much of the symbol is matched
-        const coverage = queryLower.length / symbolLower.length;
-        score += coverage * 2000; // Up to +2000 for high coverage
-      }
-      // Contains query - Moderate relevance
-      else if (symbolLower.includes(queryLower)) {
-        score += 1000;
-
-        // Position bonus: Earlier is better
-        const position = symbolLower.indexOf(queryLower);
-        score += (10 - position) * 50; // Earlier positions score higher
-      }
-
-      // === COMPANY NAME MATCHING (Secondary Signal) ===
-
-      // Exact company name match
-      if (nameLower === queryLower) {
-        score += 8000;
-      }
-      // Name starts with query
-      else if (nameLower.startsWith(queryLower)) {
-        score += 3000;
-      }
-      // Word boundary match (e.g., "micro" → "Microsoft Corporation")
-      else {
-        const words = nameLower.split(" ");
-        for (const word of words) {
-          if (word.startsWith(queryLower)) {
-            score += 2000;
-            break;
-          }
-          // Partial word match
-          if (word.includes(queryLower)) {
-            score += 500;
-          }
-        }
-      }
-
-      // Fuzzy match bonus for name contains query
-      if (nameLower.includes(queryLower)) {
-        score += 400;
-      }
-
-      // === QUALITY SIGNALS ===
-
-      // Symbol length - Shorter symbols often indicate established companies
-      if (result.symbol.length <= 3) {
-        score += 300; // Very short (V, MA, BA)
-      } else if (result.symbol.length === 4) {
-        score += 200; // Short (AAPL, MSFT)
-      } else if (result.symbol.length === 5) {
-        score += 100; // Medium (GOOGL, TSLA)
-      }
-
-      // Avoid complex symbols (usually derivatives/exotic instruments)
-      if (result.symbol.includes("-") || result.symbol.includes(".")) {
-        score -= 500;
-      }
-
-      // === RELEVANCE BOOSTING ===
-
-      // Multi-word query handling: Check if all query words match
-      const queryWords = queryLower.split(" ");
-      if (queryWords.length > 1) {
-        const allWordsMatch = queryWords.every(
-          (qWord) => symbolLower.includes(qWord) || nameLower.includes(qWord)
-        );
-        if (allWordsMatch) {
-          score += 1000; // Boost for matching all words
-        }
-      }
-
-      return { result, score };
-    });
-
-    // Sort by score (highest first) and return results
-    return scoredResults
-      .sort((a, b) => b.score - a.score)
-      .map((item) => item.result);
   }
 }
 
