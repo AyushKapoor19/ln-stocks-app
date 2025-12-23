@@ -372,20 +372,18 @@ export default class SearchScreen extends BaseScreen {
       changeTag.text.textColor = isPositive ? 0xff10b981 : 0xffef4444;
     }
 
-    // Update primary gradient (lighter unfocused state)
     const gradient = card.tag("GradientOverlay");
     if (gradient) {
       gradient.patch({
-        colorTop: isPositive ? 0x30059669 : 0x30991b1b, // Light 30% (unfocused)
+        colorTop: isPositive ? 0x25059669 : 0x25991b1b,
       });
     }
 
-    // Update secondary gradient (hidden by default, appears when focused)
     const gradientAccent = card.tag("GradientAccent");
     if (gradientAccent) {
       gradientAccent.patch({
-        colorBottom: isPositive ? 0x70065f46 : 0x70991b1b, // Rich 70% (focused)
-        alpha: 0, // Keep hidden
+        colorBottom: isPositive ? 0x85065f46 : 0x85991b1b,
+        alpha: 0,
       });
     }
   }
@@ -442,33 +440,31 @@ export default class SearchScreen extends BaseScreen {
         w: CARD_WIDTH,
         h: CARD_HEIGHT,
         rect: true,
-        color: 0xff1a1a1a, // Premium dark background
+        color: 0xff1a1a1a,
         shader: { type: Lightning.shaders.RoundedRectangle, radius: 24 },
-        alpha: 0, // Start invisible for fade-in
+        alpha: 0,
 
-        // Subtle gradient overlay (lighter when unfocused)
         GradientOverlay: {
           x: 0,
           y: 0,
           w: CARD_WIDTH,
           h: CARD_HEIGHT,
           rect: true,
-          colorTop: isPositive ? 0x30059669 : 0x30991b1b, // Lighter 30% opacity (unfocused)
-          colorBottom: 0x00000000, // Fade to transparent
+          colorTop: isPositive ? 0x25059669 : 0x25991b1b,
+          colorBottom: 0x00000000,
           shader: { type: Lightning.shaders.RoundedRectangle, radius: 24 },
         },
 
-        // Secondary gradient (appears on focus for dual-layer depth)
         GradientAccent: {
           x: 0,
-          y: CARD_HEIGHT * 0.6, // Start from 60% down
+          y: CARD_HEIGHT * 0.6,
           w: CARD_WIDTH,
-          h: CARD_HEIGHT * 0.4, // Bottom 40%
+          h: CARD_HEIGHT * 0.4,
           rect: true,
-          colorTop: 0x00000000, // Transparent top
-          colorBottom: isPositive ? 0x70065f46 : 0x70991b1b, // Rich accent (70% opacity when focused)
+          colorTop: 0x00000000,
+          colorBottom: isPositive ? 0x85065f46 : 0x85991b1b,
           shader: { type: Lightning.shaders.RoundedRectangle, radius: 24 },
-          alpha: 0, // Hidden by default
+          alpha: 0,
         },
 
         Content: {
@@ -598,11 +594,10 @@ export default class SearchScreen extends BaseScreen {
         const isPositive = stock.change && stock.change >= 0;
 
         // Gradient colors - dramatic difference between states
-        const primaryGradientUnfocused = isPositive ? 0x30059669 : 0x30991b1b;
-        const primaryGradientFocused = isPositive ? 0x80047857 : 0x807f1d1d;
-        const accentGradientFocused = isPositive ? 0x70065f46 : 0x70991b1b;
+        const primaryGradientUnfocused = isPositive ? 0x25059669 : 0x25991b1b;
+        const primaryGradientFocused = isPositive ? 0x85047857 : 0x857f1d1d;
+        const accentGradientFocused = isPositive ? 0x85065f46 : 0x85991b1b;
 
-        // Update primary gradient (subtle unfocused → dramatic focused)
         if (gradientOverlay) {
           gradientOverlay.patch({
             colorTop: isFocused
@@ -611,7 +606,6 @@ export default class SearchScreen extends BaseScreen {
           });
         }
 
-        // Show/hide secondary gradient layer (dual-layer depth when focused)
         if (gradientAccent) {
           gradientAccent.patch({
             colorBottom: accentGradientFocused,

@@ -211,7 +211,13 @@ export default class App extends Lightning.Component {
   }
 
   private _showScreen(screenName: string): void {
-    const screens = ["Home", "SignUpScreen", "SignInScreen", "AccountScreen", "SearchScreen"];
+    const screens = [
+      "Home",
+      "SignUpScreen",
+      "SignInScreen",
+      "AccountScreen",
+      "SearchScreen",
+    ];
 
     screens.forEach((screen) => {
       const screenComponent = this.tag(screen);
