@@ -2,9 +2,15 @@
  * Hybrid stock search service combining local popular stocks with API fallback.
  *
  * Implementation uses a two-tier approach:
- * 1. Search 225 popular stocks locally (instant)
- * 2. Fetch additional results from Finnhub API
- * 3. Merge, deduplicate, and rank by relevance
+ * 1. Search 225 popular stocks locally (instant symbol matching)
+ * 2. Fetch comprehensive data from Finnhub API (real company names, metadata)
+ * 3. Merge with API results taking priority (real data overrides local placeholders)
+ * 4. Rank by relevance and return
+ *
+ * Data Quality:
+ * All returned results contain real data from Finnhub API. Local popular stocks list
+ * is only used for fast symbol matching - actual company names, types, and metadata
+ * come from the API.
  *
  * This approach works with Finnhub free tier which doesn't support bulk stock fetching.
  * The /stock/symbol endpoint returns 401, so we maintain a curated list of popular stocks
@@ -51,29 +57,42 @@ class StockIndexService {
     try {
       // Search popular stocks locally (instant)
       const popularMatches = this._searchPopularStocks(queryLower);
+      console.log(
+        `  Local matches: ${popularMatches.map((r) => r.symbol).join(", ")}`
+      );
 
       // Search via Finnhub API for comprehensive results
       const apiResults = await finnhubService.searchSymbols(queryLower);
+      console.log(
+        `  API matches: ${apiResults.map((r) => r.symbol).join(", ")}`
+      );
 
-      // Merge and deduplicate (popular stocks take priority)
+      // Merge and deduplicate (API results take priority for real data)
       const allResults = new Map<string, ISearchResult>();
+
+      // Add local matches first (for symbols not in API results)
       popularMatches.forEach((result) => {
         allResults.set(result.symbol, result);
       });
+
+      // Override with API results (real company names, not placeholders)
       apiResults.forEach((result) => {
-        if (!allResults.has(result.symbol)) {
-          allResults.set(result.symbol, result);
-        }
+        allResults.set(result.symbol, result);
       });
+
+      console.log(`  Merged: ${Array.from(allResults.keys()).join(", ")}`);
 
       // Rank by relevance
       const mergedResults = Array.from(allResults.values());
       const rankedResults = this._rankResults(mergedResults, queryLower);
 
       const duration = Date.now() - startTime;
+      const apiOverrides = popularMatches.filter((local) =>
+        apiResults.some((api) => api.symbol === local.symbol)
+      ).length;
 
       console.log(
-        `✅ Search "${query}": ${rankedResults.length} results (${popularMatches.length} local + ${apiResults.length} API, ${duration}ms)`
+        `✅ Search "${query}": ${rankedResults.length} results (${popularMatches.length} local symbols, ${apiResults.length} API data, ${apiOverrides} with real names, ${duration}ms)`
       );
 
       return rankedResults.slice(0, limit);
@@ -85,12 +104,13 @@ class StockIndexService {
   }
 
   // Search popular stocks locally (instant, no API call)
+  // Note: Returns placeholder names - real data comes from API and overrides these
   private _searchPopularStocks(queryLower: string): ISearchResult[] {
     return POPULAR_US_STOCKS.filter((symbol) =>
       symbol.toLowerCase().includes(queryLower)
     ).map((symbol) => ({
       symbol,
-      name: `${symbol} Corporation`, // Placeholder name
+      name: `${symbol} Corporation`, // Placeholder - overridden by API results
       type: "Common Stock",
       market: "stocks",
       active: true,

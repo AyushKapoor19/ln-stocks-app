@@ -150,9 +150,43 @@ class FinnhubService {
           })
         );
 
-        // Filter for USD only
+        // Filter for USD only and exclude international exchange symbols
         const results = resultsWithCurrency
-          .filter((item) => item.currency === "USD")
+          .filter((item) => {
+            // Only USD stocks
+            if (item.currency !== "USD") return false;
+
+            // Exclude international exchange suffixes
+            // Examples: AAPL.RO (Romania), AAPL.L (London), TSLA.SW (Switzerland)
+            // US share classes (BRK.A, BRK.B, BRK.C) are kept - only A/B/C are valid
+            const symbol = item.symbol;
+            if (symbol.includes(".")) {
+              const suffix = symbol.split(".")[1];
+
+              // International exchange suffixes (never used for US share classes):
+              // L=London, RO=Romania, SW=Switzerland, TO=Toronto, AX=Australia,
+              // HK=Hong Kong, PA=Paris, MI=Milan, F=Frankfurt, BE=Berlin
+              const intlSuffixes = [
+                "L",
+                "RO",
+                "SW",
+                "TO",
+                "AX",
+                "HK",
+                "PA",
+                "MI",
+                "F",
+                "BE",
+                "AS",
+                "OL",
+              ];
+              if (intlSuffixes.includes(suffix)) {
+                return false;
+              }
+            }
+
+            return true;
+          })
           .slice(0, 20)
           .map((item) => ({
             symbol: item.symbol,
@@ -164,7 +198,9 @@ class FinnhubService {
             currency: item.currency,
           }));
 
-        console.log(`✅ Found ${results.length} USD stocks for "${query}"`);
+        console.log(
+          `✅ Found ${results.length} USD stocks for "${query}" (international exchanges filtered)`
+        );
         return results;
       }
 
