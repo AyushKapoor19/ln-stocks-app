@@ -61,6 +61,23 @@ class StockIndexService {
         `  Local matches: ${popularMatches.map((r) => r.symbol).join(", ")}`
       );
 
+      // For exact symbol matches, fetch real company name
+      const exactMatch = popularMatches.find(
+        (stock) => stock.symbol.toLowerCase() === queryLower
+      );
+      if (exactMatch) {
+        try {
+          const companyName = await finnhubService.fetchCompanyName(
+            exactMatch.symbol
+          );
+          if (companyName) {
+            exactMatch.name = companyName;
+          }
+        } catch (error) {
+          // Keep placeholder if fetch fails
+        }
+      }
+
       // Search via Finnhub API for comprehensive results
       const apiResults = await finnhubService.searchSymbols(queryLower);
       console.log(

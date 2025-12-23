@@ -38,15 +38,15 @@ export default class SearchScreen extends BaseScreen {
   private gridScrollY = 0;
   private isTitleVisible = true;
 
-  // Compact 6-column keyboard layout
+  // Compact 6-column keyboard layout - Alphabets first for convenience
   private keyboard = [
-    ["1", "2", "3", "4", "5", "6"],
-    ["7", "8", "9", "0", ".", "-"],
     ["a", "b", "c", "d", "e", "f"],
     ["g", "h", "i", "j", "k", "l"],
     ["m", "n", "o", "p", "q", "r"],
     ["s", "t", "u", "v", "w", "x"],
-    ["y", "z", "SPACE", "SPACE", "⌫", "CLR"],
+    ["y", "z", "1", "2", "3", "4"],
+    ["5", "6", "7", "8", "9", "0"],
+    [".", "-", "SPACE", "SPACE", "⌫", "CLR"],
   ];
 
   static override _template(): Lightning.Component.Template {
@@ -210,7 +210,7 @@ export default class SearchScreen extends BaseScreen {
           w: keyWidth,
           h: KEY_SIZE,
           rect: true,
-          color: 0xff2a2a2a,
+          color: 0x35ffffff,
           shader: { type: Lightning.shaders.RoundedRectangle, radius: 8 },
           Label: {
             x: keyWidth / 2,
@@ -593,10 +593,21 @@ export default class SearchScreen extends BaseScreen {
             rowIndex === this.selectedKeyRow &&
             colIndex === this.selectedKeyCol;
 
-          keyTag.setSmooth("color", isFocused ? Colors.success : 0xff2a2a2a, {
+          // White background with black text when focused (like sign in/sign up keyboard)
+          keyTag.setSmooth("color", isFocused ? 0xffffffff : 0x35ffffff, {
             duration: 0.2,
           });
           keyTag.setSmooth("scale", isFocused ? 1.08 : 1, { duration: 0.2 });
+
+          // Update text color
+          const label = keyTag.tag("Label");
+          if (label) {
+            label.patch({
+              text: {
+                textColor: isFocused ? 0xff000000 : 0xffffffff,
+              },
+            });
+          }
         }
       });
     });

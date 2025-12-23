@@ -273,6 +273,30 @@ class FinnhubService {
       return [];
     }
   }
+  /**
+   * Fetch company name for a given symbol (for exact matches)
+   */
+  async fetchCompanyName(symbol: string): Promise<string | null> {
+    if (!FINNHUB_KEY) {
+      return null;
+    }
+
+    try {
+      const url = `${this.baseUrl}/stock/profile2?symbol=${encodeURIComponent(
+        symbol
+      )}&token=${FINNHUB_KEY}`;
+      const response = await fetch(url);
+
+      if (response.ok) {
+        const profile = (await response.json()) as { name?: string };
+        return profile.name || null;
+      }
+
+      return null;
+    } catch (error) {
+      return null;
+    }
+  }
 }
 
 export const finnhubService = new FinnhubService();
