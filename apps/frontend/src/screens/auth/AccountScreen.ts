@@ -32,225 +32,318 @@ export default class AccountScreen extends BaseScreen {
       // Header Section
       Header: {
         x: 120,
-        y: 80,
+        y: 60,
         w: 1680,
 
         Title: {
           y: 0,
           text: {
-            text: "Account",
-            fontSize: 72,
+            text: "Account Overview",
+            fontSize: 64,
             fontStyle: FontStyle.Bold,
-            textColor: Colors.textPrimary,
+            textColor: 0xffffffff,
             fontFace: FontFamily.Default,
           },
         },
 
         Subtitle: {
-          y: 100,
+          y: 85,
           text: {
-            text: "Manage your trading profile",
-            fontSize: FontSize.Large,
-            textColor: Colors.textTertiary,
+            text: "Manage your trading profile and account settings",
+            fontSize: 26,
+            textColor: 0xff888888,
             fontFace: FontFamily.Default,
           },
         },
 
         Divider: {
-          x: 0,
-          y: 140,
+          y: 145,
           w: 1680,
           h: 2,
           rect: true,
-          color: 0x20ffffff,
+          color: 0x33ffffff,
         },
       },
 
-      // Account Info (Simple list, no cards)
-      AccountCard: {
+      // Personal Information Section
+      PersonalInfoSection: {
         x: 120,
-        y: 280,
+        y: 230,
         w: 1680,
-        h: 260,
 
-        // Name Row
-        NameRow: {
-          x: 0,
+        SectionTitle: {
           y: 0,
+          text: {
+            text: "PERSONAL INFORMATION",
+            fontSize: 20,
+            fontStyle: FontStyle.Bold,
+            textColor: 0xff666666,
+            letterSpacing: 2,
+            fontFace: FontFamily.Default,
+          },
+        },
+
+        // Name Field
+        NameField: {
+          y: 60,
+          w: 800,
 
           Label: {
-            x: 0,
             y: 0,
             text: {
-              text: "Name",
-              fontSize: FontSize.Large,
-              textColor: Colors.textTertiary,
+              text: "Full Name",
+              fontSize: 22,
+              textColor: 0xff888888,
               fontFace: FontFamily.Default,
             },
           },
 
           Value: {
-            x: 400,
-            y: 0,
+            y: 38,
             text: {
               text: "—",
-              fontSize: FontSize.Large,
-              textColor: Colors.textPrimary,
+              fontSize: 36,
+              fontStyle: FontStyle.Bold,
+              textColor: 0xffffffff,
               fontFace: FontFamily.Default,
             },
+          },
+
+          Underline: {
+            y: 92,
+            w: 800,
+            h: 1,
+            rect: true,
+            color: 0x33ffffff,
           },
         },
 
-        // Email Row
-        EmailRow: {
-          x: 0,
-          y: 70,
-
-          Label: {
-            x: 0,
-            y: 0,
-            text: {
-              text: "Email",
-              fontSize: FontSize.Large,
-              textColor: Colors.textTertiary,
-              fontFace: FontFamily.Default,
-            },
-          },
-
-          Value: {
-            x: 400,
-            y: 0,
-            text: {
-              text: "—",
-              fontSize: FontSize.Large,
-              textColor: Colors.textPrimary,
-              fontFace: FontFamily.Default,
-            },
-          },
-        },
-
-        // Status Row
-        StatusRow: {
-          x: 0,
-          y: 140,
-
-          Label: {
-            x: 0,
-            y: 0,
-            text: {
-              text: "Status",
-              fontSize: FontSize.Large,
-              textColor: Colors.textTertiary,
-              fontFace: FontFamily.Default,
-            },
-          },
-
-          Value: {
-            x: 400,
-            y: 0,
-            text: {
-              text: "Active",
-              fontSize: FontSize.Large,
-              textColor: Colors.authAccent,
-              fontFace: FontFamily.Default,
-            },
-          },
-        },
-
-        // Member Since Row
-        MemberRow: {
-          x: 0,
+        // Email Field
+        EmailField: {
           y: 210,
+          w: 800,
 
           Label: {
-            x: 0,
             y: 0,
             text: {
-              text: "Member since",
-              fontSize: FontSize.Large,
-              textColor: Colors.textTertiary,
+              text: "Email Address",
+              fontSize: 22,
+              textColor: 0xff888888,
               fontFace: FontFamily.Default,
             },
           },
 
           Value: {
-            x: 400,
-            y: 0,
+            y: 38,
             text: {
               text: "—",
-              fontSize: FontSize.Large,
-              textColor: Colors.textPrimary,
+              fontSize: 36,
+              fontStyle: FontStyle.Bold,
+              textColor: 0xffffffff,
               fontFace: FontFamily.Default,
             },
+          },
+
+          Underline: {
+            y: 92,
+            w: 800,
+            h: 1,
+            rect: true,
+            color: 0x33ffffff,
           },
         },
       },
 
-      // Divider
-      Divider: {
+      // Account Status Section
+      StatusSection: {
         x: 120,
-        y: 580,
-        w: 1680,
-        h: 1,
-        rect: true,
-        color: 0x20ffffff,
-      },
-
-      // Actions Section (minimal buttons)
-      ActionsContainer: {
-        x: 120,
-        y: 640,
+        y: 575,
         w: 1680,
 
-        BackButton: {
-          x: 0,
+        SectionTitle: {
           y: 0,
-
-          Label: {
-            x: 0,
-            y: 0,
-            text: {
-              text: "← Back",
-              fontSize: FontSize.Large,
-              textColor: Colors.textTertiary,
-              fontFace: FontFamily.Default,
-            },
-          },
-
-          Indicator: {
-            x: 0,
-            y: 38,
-            w: 98,
-            h: 3,
-            rect: true,
-            color: Colors.authAccent,
-            alpha: 0,
+          text: {
+            text: "ACCOUNT STATUS",
+            fontSize: 20,
+            fontStyle: FontStyle.Bold,
+            textColor: 0xff666666,
+            letterSpacing: 2,
+            fontFace: FontFamily.Default,
           },
         },
 
-        SignOutButton: {
-          x: 180,
-          y: 0,
+        InfoGrid: {
+          y: 60,
+          w: 1680,
 
-          Label: {
+          // Status Column
+          StatusColumn: {
             x: 0,
             y: 0,
-            text: {
-              text: "Sign Out →",
-              fontSize: FontSize.Large,
-              textColor: Colors.textTertiary,
-              fontFace: FontFamily.Default,
+
+            Label: {
+              y: 0,
+              text: {
+                text: "Status",
+                fontSize: 22,
+                textColor: 0xff888888,
+                fontFace: FontFamily.Default,
+              },
+            },
+
+            Value: {
+              y: 38,
+              text: {
+                text: "Active",
+                fontSize: 32,
+                fontStyle: FontStyle.Bold,
+                textColor: 0xff10b981,
+                fontFace: FontFamily.Default,
+              },
+            },
+
+            StatusBadge: {
+              x: 115,
+              y: 45,
+              w: 16,
+              h: 16,
+              rect: true,
+              color: 0xff10b981,
+              shader: { type: Lightning.shaders.RoundedRectangle, radius: 8 },
             },
           },
 
-          Indicator: {
+          // Member Since Column
+          MemberColumn: {
+            x: 400,
+            y: 0,
+
+            Label: {
+              y: 0,
+              text: {
+                text: "Member Since",
+                fontSize: 22,
+                textColor: 0xff888888,
+                fontFace: FontFamily.Default,
+              },
+            },
+
+            Value: {
+              y: 38,
+              text: {
+                text: "—",
+                fontSize: 32,
+                fontStyle: FontStyle.Bold,
+                textColor: 0xffffffff,
+                fontFace: FontFamily.Default,
+              },
+            },
+          },
+
+          // Last Login Column
+          LastLoginColumn: {
+            x: 800,
+            y: 0,
+
+            Label: {
+              y: 0,
+              text: {
+                text: "Last Login",
+                fontSize: 22,
+                textColor: 0xff888888,
+                fontFace: FontFamily.Default,
+              },
+            },
+
+            Value: {
+              y: 38,
+              text: {
+                text: "—",
+                fontSize: 32,
+                fontStyle: FontStyle.Bold,
+                textColor: 0xffffffff,
+                fontFace: FontFamily.Default,
+              },
+            },
+          },
+        },
+
+        Divider: {
+          y: 140,
+          w: 1680,
+          h: 1,
+          rect: true,
+          color: 0x33ffffff,
+        },
+      },
+
+      // Action Buttons Section
+      ActionsSection: {
+        x: 120,
+        y: 760,
+        w: 1680,
+
+        SectionTitle: {
+          y: 0,
+          text: {
+            text: "ACTIONS",
+            fontSize: 20,
+            fontStyle: FontStyle.Bold,
+            textColor: 0xff666666,
+            letterSpacing: 2,
+            fontFace: FontFamily.Default,
+          },
+        },
+
+        ButtonContainer: {
+          y: 60,
+
+          BackButton: {
             x: 0,
-            y: 38,
-            w: 145,
-            h: 3,
+            y: 0,
+            w: 220,
+            h: 80,
             rect: true,
-            color: 0xffef4444,
-            alpha: 0,
+            color: 0xff333333,
+            alpha: 0.5,
+            shader: { type: Lightning.shaders.RoundedRectangle, radius: 12 },
+
+            Label: {
+              x: 110,
+              y: 40,
+              mount: 0.5,
+              text: {
+                text: "← Back",
+                fontSize: 32,
+                fontStyle: FontStyle.Bold,
+                textColor: 0xff999999,
+                fontFace: FontFamily.Default,
+              },
+            },
+          },
+
+          SignOutButton: {
+            x: 260,
+            y: 0,
+            w: 340,
+            h: 80,
+            rect: true,
+            color: 0xff992222,
+            alpha: 0.5,
+            shader: { type: Lightning.shaders.RoundedRectangle, radius: 12 },
+
+            Label: {
+              x: 170,
+              y: 40,
+              mount: 0.5,
+              text: {
+                text: "Sign Out",
+                fontSize: 32,
+                fontStyle: FontStyle.Bold,
+                textColor: 0xffcccccc,
+                fontFace: FontFamily.Default,
+              },
+            },
           },
         },
       },
@@ -265,38 +358,74 @@ export default class AccountScreen extends BaseScreen {
   private _updateUserDisplay(): void {
     if (!this.user) return;
 
-    const accountCard = this.tag("AccountCard");
-    if (!accountCard) return;
+    // Update Personal Information Section
+    const personalSection = this.tag("PersonalInfoSection");
+    if (personalSection) {
+      // Update name
+      const nameField = personalSection.tag("NameField");
+      if (nameField) {
+        const nameValue = nameField.tag("Value");
+        if (nameValue && nameValue.text) {
+          nameValue.text.text = this.user.display_name || "Not Set";
+        }
+      }
 
-    // Update name
-    const nameRow = accountCard.tag("NameRow");
-    if (nameRow) {
-      const nameValue = nameRow.tag("Value");
-      if (nameValue && nameValue.text) {
-        nameValue.text.text = this.user.display_name || "—";
+      // Update email
+      const emailField = personalSection.tag("EmailField");
+      if (emailField) {
+        const emailValue = emailField.tag("Value");
+        if (emailValue && emailValue.text) {
+          emailValue.text.text = this.user.email;
+        }
       }
     }
 
-    // Update email
-    const emailRow = accountCard.tag("EmailRow");
-    if (emailRow) {
-      const emailValue = emailRow.tag("Value");
-      if (emailValue && emailValue.text) {
-        emailValue.text.text = this.user.email;
-      }
-    }
+    // Update Status Section
+    const statusSection = this.tag("StatusSection");
+    if (statusSection) {
+      const infoGrid = statusSection.tag("InfoGrid");
+      if (infoGrid) {
+        // Update member since
+        const memberColumn = infoGrid.tag("MemberColumn");
+        if (memberColumn) {
+          const memberValue = memberColumn.tag("Value");
+          if (memberValue && memberValue.text && this.user.created_at) {
+            const date = new Date(this.user.created_at);
+            const formattedDate = date.toLocaleDateString("en-US", {
+              month: "short",
+              year: "numeric",
+            });
+            memberValue.text.text = formattedDate;
+          }
+        }
 
-    // Update member since
-    const memberRow = accountCard.tag("MemberRow");
-    if (memberRow) {
-      const memberValue = memberRow.tag("Value");
-      if (memberValue && memberValue.text && this.user.created_at) {
-        const date = new Date(this.user.created_at);
-        const formattedDate = date.toLocaleDateString("en-US", {
-          month: "short",
-          year: "numeric",
-        });
-        memberValue.text.text = formattedDate;
+        // Update last login
+        const lastLoginColumn = infoGrid.tag("LastLoginColumn");
+        if (lastLoginColumn) {
+          const lastLoginValue = lastLoginColumn.tag("Value");
+          if (lastLoginValue && lastLoginValue.text) {
+            if (this.user.last_login) {
+              const loginDate = new Date(this.user.last_login);
+              const now = new Date();
+              const diffMs = now.getTime() - loginDate.getTime();
+              const diffMins = Math.floor(diffMs / 60000);
+              const diffHours = Math.floor(diffMs / 3600000);
+              const diffDays = Math.floor(diffMs / 86400000);
+
+              let timeAgo = "";
+              if (diffMins < 60) {
+                timeAgo = `${diffMins} min ago`;
+              } else if (diffHours < 24) {
+                timeAgo = `${diffHours} hour${diffHours > 1 ? "s" : ""} ago`;
+              } else {
+                timeAgo = `${diffDays} day${diffDays > 1 ? "s" : ""} ago`;
+              }
+              lastLoginValue.text.text = timeAgo;
+            } else {
+              lastLoginValue.text.text = "Just now";
+            }
+          }
+        }
       }
     }
 
@@ -304,30 +433,32 @@ export default class AccountScreen extends BaseScreen {
   }
 
   private _updateFocus(): void {
-    const actionsContainer = this.tag("ActionsContainer");
-    if (!actionsContainer) return;
+    const actionsSection = this.tag("ActionsSection");
+    if (!actionsSection) return;
 
-    const backButton = actionsContainer.tag("BackButton");
-    const signOutButton = actionsContainer.tag("SignOutButton");
+    const buttonContainer = actionsSection.tag("ButtonContainer");
+    if (!buttonContainer) return;
+
+    const backButton = buttonContainer.tag("BackButton");
+    const signOutButton = buttonContainer.tag("SignOutButton");
 
     // Back button focus states
     if (backButton) {
       const backLabel = backButton.tag("Label");
-      const backIndicator = backButton.tag("Indicator");
 
       if (this.focusedButton === "back") {
+        backButton.setSmooth("alpha", 1, { duration: 0.2 });
+        backButton.setSmooth("color", 0xff666666, { duration: 0.2 });
+        backButton.setSmooth("scale", 1.05, { duration: 0.2 });
         if (backLabel && backLabel.text) {
-          backLabel.text.textColor = Colors.white;
-        }
-        if (backIndicator) {
-          backIndicator.setSmooth("alpha", 1, { duration: 0.3 });
+          backLabel.text.textColor = 0xffffffff;
         }
       } else {
+        backButton.setSmooth("alpha", 0.5, { duration: 0.2 });
+        backButton.setSmooth("color", 0xff333333, { duration: 0.2 });
+        backButton.setSmooth("scale", 1, { duration: 0.2 });
         if (backLabel && backLabel.text) {
-          backLabel.text.textColor = Colors.textTertiary;
-        }
-        if (backIndicator) {
-          backIndicator.setSmooth("alpha", 0, { duration: 0.3 });
+          backLabel.text.textColor = 0xff999999;
         }
       }
     }
@@ -335,21 +466,20 @@ export default class AccountScreen extends BaseScreen {
     // Sign Out button focus states
     if (signOutButton) {
       const signOutLabel = signOutButton.tag("Label");
-      const signOutIndicator = signOutButton.tag("Indicator");
 
       if (this.focusedButton === "signout") {
+        signOutButton.setSmooth("alpha", 1, { duration: 0.2 });
+        signOutButton.setSmooth("color", 0xffff4444, { duration: 0.2 });
+        signOutButton.setSmooth("scale", 1.05, { duration: 0.2 });
         if (signOutLabel && signOutLabel.text) {
-          signOutLabel.text.textColor = Colors.white;
-        }
-        if (signOutIndicator) {
-          signOutIndicator.setSmooth("alpha", 1, { duration: 0.3 });
+          signOutLabel.text.textColor = 0xffffffff;
         }
       } else {
+        signOutButton.setSmooth("alpha", 0.5, { duration: 0.2 });
+        signOutButton.setSmooth("color", 0xff992222, { duration: 0.2 });
+        signOutButton.setSmooth("scale", 1, { duration: 0.2 });
         if (signOutLabel && signOutLabel.text) {
-          signOutLabel.text.textColor = Colors.textTertiary;
-        }
-        if (signOutIndicator) {
-          signOutIndicator.setSmooth("alpha", 0, { duration: 0.3 });
+          signOutLabel.text.textColor = 0xffcccccc;
         }
       }
     }
