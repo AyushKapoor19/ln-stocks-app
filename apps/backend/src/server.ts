@@ -47,7 +47,7 @@ console.log("🚀 Initializing stock search index...");
 try {
   await stockIndexService.initialize();
   console.log("✅ Stock index ready!");
-} catch (error) {
+    } catch (error) {
   console.error("❌ Failed to initialize stock index:", error);
   console.log("⚠️ Search will return empty results until index is ready");
 }

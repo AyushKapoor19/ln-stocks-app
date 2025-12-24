@@ -18,7 +18,11 @@ interface StockQuote {
 }
 
 interface TemplateSpec extends Lightning.Component.TemplateSpec {
-  Title: object;
+  Border: object;
+  Header: {
+    Title: object;
+  };
+  Divider: object;
   EmptyStateNotSignedIn: {
     Icon: object;
     Message: object;
@@ -32,6 +36,8 @@ interface TemplateSpec extends Lightning.Component.TemplateSpec {
   StocksContainer: {
     StocksList: object;
   };
+  ScrollIndicator: object;
+  InteractiveBadge: object;
 }
 
 export default class WatchlistPanel
@@ -41,67 +47,94 @@ export default class WatchlistPanel
   private stocks: StockQuote[] = [];
   private selectedStockIndex = 0;
   private scrollY = 0;
-  private readonly ITEM_HEIGHT = 43;
+  private readonly ITEM_HEIGHT = 55;
   private readonly VISIBLE_ITEMS = 3;
-  private readonly CONTAINER_HEIGHT = 115;
+  private readonly CONTAINER_HEIGHT = 185;
   private isFocused = false;
 
   static override _template(): Lightning.Component.Template<TemplateSpec> {
     return {
       w: 520,
-      h: 200,
+      h: 280,
       rect: true,
-      color: Colors.cardBackground,
-      shader: { type: Lightning.shaders.RoundedRectangle, radius: 16 },
-      Title: {
-        x: 25,
-        y: 22,
-        text: {
-          text: "Watchlist",
-          fontFace: FontFamily.Default,
-          fontSize: 36,
-          fontStyle: FontStyle.Bold,
-          textColor: Colors.textPrimary,
+      color: 0xff0f0f0f,
+      shader: {
+        type: Lightning.shaders.RoundedRectangle,
+        radius: 24,
+      },
+      Border: {
+        w: 520,
+        h: 280,
+        rect: true,
+        color: 0x00000000,
+        shader: {
+          type: Lightning.shaders.RoundedRectangle,
+          radius: 24,
+          stroke: 2,
+          strokeColor: 0xff252525,
         },
+      },
+      Header: {
+        x: 35,
+        y: 30,
+        Title: {
+          x: 0,
+          y: 0,
+          text: {
+            text: "Watchlist",
+            fontFace: FontFamily.Default,
+            fontSize: 28,
+            fontStyle: FontStyle.Bold,
+            textColor: 0xffffffff,
+          },
+        },
+      },
+      Divider: {
+        x: 35,
+        y: 75,
+        w: 450,
+        h: 1,
+        rect: true,
+        color: 0xff252525,
       },
       // Empty state for non-signed-in users
       EmptyStateNotSignedIn: {
         alpha: 0,
         Icon: {
           x: 260,
-          y: 85,
+          y: 140,
           mount: 0.5,
           text: {
             text: "⭐",
             fontFace: FontFamily.Default,
-            fontSize: 32,
-            textColor: Colors.textTertiary,
+            fontSize: 47,
+            textColor: 0xff555555,
           },
         },
         Message: {
           x: 260,
-          y: 115,
+          y: 195,
           mount: 0.5,
           text: {
             text: "Sign in to track your favorite stocks",
             fontFace: FontFamily.Default,
-            fontSize: 20,
-            fontStyle: FontStyle.Medium,
-            textColor: Colors.textSecondary,
+            fontSize: 19,
+            fontStyle: FontStyle.SemiBold,
+            textColor: 0xffdddddd,
             textAlign: "center",
-            wordWrapWidth: 450,
+            wordWrapWidth: 420,
           },
         },
         Subtitle: {
           x: 260,
-          y: 145,
+          y: 230,
           mount: 0.5,
           text: {
             text: "Build a personalized watchlist",
             fontFace: FontFamily.Default,
-            fontSize: 18,
+            fontSize: 16,
             fontStyle: FontStyle.Regular,
-            textColor: Colors.textTertiary,
+            textColor: 0xff888888,
             textAlign: "center",
           },
         },
@@ -111,52 +144,79 @@ export default class WatchlistPanel
         alpha: 0,
         Icon: {
           x: 260,
-          y: 85,
+          y: 140,
           mount: 0.5,
           text: {
-            text: "📊",
+            text: "☆",
             fontFace: FontFamily.Default,
-            fontSize: 32,
-            textColor: Colors.textTertiary,
+            fontSize: 72,
+            textColor: 0xff555555,
           },
         },
         Message: {
           x: 260,
-          y: 115,
+          y: 195,
           mount: 0.5,
           text: {
             text: "Your watchlist is empty",
             fontFace: FontFamily.Default,
-            fontSize: 20,
-            fontStyle: FontStyle.Medium,
-            textColor: Colors.textSecondary,
+            fontSize: 19,
+            fontStyle: FontStyle.SemiBold,
+            textColor: 0xffdddddd,
             textAlign: "center",
           },
         },
         Subtitle: {
           x: 260,
-          y: 145,
+          y: 230,
           mount: 0.5,
           text: {
             text: "Search and add stocks to track",
             fontFace: FontFamily.Default,
-            fontSize: 18,
+            fontSize: 16,
             fontStyle: FontStyle.Regular,
-            textColor: Colors.textTertiary,
+            textColor: 0xff888888,
             textAlign: "center",
           },
         },
       },
       // Scrollable watchlist container
       StocksContainer: {
-        x: 25,
-        y: 75,
-        w: 470,
-        h: 115,
+        x: 35,
+        y: 90,
+        w: 450,
+        h: 185,
         clipping: true,
         alpha: 0,
         StocksList: {
           y: 0,
+        },
+      },
+      // Scroll indicator
+      ScrollIndicator: {
+        x: 490,
+        y: 90,
+        w: 3,
+        h: 50,
+        rect: true,
+        color: 0xff888888,
+        alpha: 0,
+        shader: {
+          type: Lightning.shaders.RoundedRectangle,
+          radius: 2,
+        },
+      },
+      // Interactive hint badge
+      InteractiveBadge: {
+        x: 340,
+        y: 35,
+        alpha: 0,
+        text: {
+          text: "Press ↓ to focus",
+          fontFace: FontFamily.Default,
+          fontSize: 20,
+          fontStyle: FontStyle.SemiBold,
+          textColor: 0xff999999,
         },
       },
     };
@@ -177,11 +237,15 @@ export default class WatchlistPanel
     const emptyStateNotSignedIn = this.tag("EmptyStateNotSignedIn");
     const emptyStateSignedIn = this.tag("EmptyStateSignedIn");
     const stocksContainer = this.tag("StocksContainer");
+    const scrollIndicator = this.tag("ScrollIndicator");
+    const interactiveBadge = this.tag("InteractiveBadge");
 
     // Hide all states initially
     if (emptyStateNotSignedIn) emptyStateNotSignedIn.alpha = 0;
     if (emptyStateSignedIn) emptyStateSignedIn.alpha = 0;
     if (stocksContainer) stocksContainer.alpha = 0;
+    if (scrollIndicator) scrollIndicator.alpha = 0;
+    if (interactiveBadge) interactiveBadge.alpha = 0;
 
     // Determine which state to show
     if (!isLoggedIn) {
@@ -278,6 +342,24 @@ export default class WatchlistPanel
           delay: 0.8,
         });
       }
+
+      // Show scroll indicator if there are more than 3 items
+      const scrollIndicator = this.tag("ScrollIndicator");
+      if (scrollIndicator && this.stocks.length > 3) {
+        scrollIndicator.setSmooth("alpha", 1, {
+          duration: 0.3,
+          delay: 1.0,
+        });
+      }
+
+      // Show interactive badge
+      const interactiveBadge = this.tag("InteractiveBadge");
+      if (interactiveBadge) {
+        interactiveBadge.setSmooth("alpha", 1, {
+          duration: 0.3,
+          delay: 0.9,
+        });
+      }
     } catch (error) {
       console.error("❌ Failed to fetch watchlist prices:", error);
     }
@@ -300,51 +382,51 @@ export default class WatchlistPanel
       const stockItem = {
         ref: `Stock_${index}`,
         y: index * this.ITEM_HEIGHT,
-        w: 470,
-        h: this.ITEM_HEIGHT,
+        w: 450,
+        h: 50,
         rect: true,
         color: 0x00000000,
-        shader: { type: Lightning.shaders.RoundedRectangle, radius: 8 },
+        shader: { type: Lightning.shaders.RoundedRectangle, radius: 12 },
 
         Symbol: {
-          x: 0,
-          y: 22,
+          x: 15,
+          y: 25,
           mount: 0,
           mountY: 0.5,
           text: {
             text: stock.symbol,
             fontFace: FontFamily.Default,
-            fontSize: FontSize.Body,
-            fontStyle: FontStyle.SemiBold,
-            textColor: Colors.textPrimary,
+            fontSize: 22,
+            fontStyle: FontStyle.Bold,
+            textColor: 0xffffffff,
           },
         },
 
         Price: {
-          x: 170,
-          y: 22,
+          x: 180,
+          y: 25,
           mount: 0,
           mountY: 0.5,
           text: {
             text: stocksApi.formatPrice(stock.price),
             fontFace: FontFamily.Default,
-            fontSize: FontSize.Body,
-            fontStyle: FontStyle.Medium,
-            textColor: Colors.textPrimary,
+            fontSize: 21,
+            fontStyle: FontStyle.SemiBold,
+            textColor: 0xffdddddd,
           },
         },
 
         Change: {
-          x: 360,
-          y: 22,
-          mount: 0,
+          x: 435,
+          y: 25,
+          mount: 1,
           mountY: 0.5,
           text: {
             text: `${sign}${changePct}%`,
             fontFace: FontFamily.Default,
-            fontSize: FontSize.Body,
-            fontStyle: FontStyle.Medium,
-            textColor: isPositive ? Colors.stockGreen : Colors.stockRed,
+            fontSize: 20,
+            fontStyle: FontStyle.Bold,
+            textColor: isPositive ? 0xff00ff88 : 0xffff4444,
           },
         },
       };
@@ -359,7 +441,10 @@ export default class WatchlistPanel
    * Updates the visual focus state of stock items
    */
   private _updateStockFocus(): void {
-    const stocksList = this.tag("StocksContainer")?.tag("StocksList");
+    const stocksContainer = this.tag("StocksContainer");
+    const stocksList = stocksContainer
+      ? (stocksContainer.tag("StocksList") as unknown as Lightning.Element)
+      : null;
     if (!stocksList) {
       console.log("❌ StocksList not found");
       return;
@@ -370,7 +455,9 @@ export default class WatchlistPanel
     );
 
     this.stocks.forEach((stock, index) => {
-      const stockItem = stocksList.tag(`Stock_${index}`);
+      const stockItem = (stocksList as any).tag(
+        `Stock_${index}`
+      ) as Lightning.Element | null;
       if (stockItem) {
         const isFocusedItem =
           this.isFocused && index === this.selectedStockIndex;
@@ -379,11 +466,9 @@ export default class WatchlistPanel
           `  Stock ${index} (${stock.symbol}): focused=${isFocusedItem}`
         );
 
-        stockItem.setSmooth(
-          "color",
-          isFocusedItem ? 0x33ffffff : 0x00000000,
-          { duration: 0.2 }
-        );
+        stockItem.setSmooth("color", isFocusedItem ? 0x44ffffff : 0x00000000, {
+          duration: 0.2,
+        });
       }
     });
   }
@@ -417,15 +502,39 @@ export default class WatchlistPanel
     this.scrollY = Math.max(-maxScroll, Math.min(0, this.scrollY));
 
     stocksList.setSmooth("y", this.scrollY, { duration: 0.2 });
+
+    // Update scroll indicator position
+    const scrollIndicator = this.tag("ScrollIndicator");
+    if (scrollIndicator && maxScroll > 0) {
+      const scrollPercentage = Math.abs(this.scrollY) / maxScroll;
+      const indicatorTravel = this.CONTAINER_HEIGHT - 60; // 60 is indicator height
+      const indicatorY = 90 + scrollPercentage * indicatorTravel;
+      scrollIndicator.setSmooth("y", indicatorY, { duration: 0.2 });
+    }
   }
 
   /**
    * Public methods for focus handling
    */
   setFocused(focused: boolean): void {
-    console.log(`📊 Watchlist setFocused: ${focused}, stocks: ${this.stocks.length}`);
+    console.log(
+      `📊 Watchlist setFocused: ${focused}, stocks: ${this.stocks.length}`
+    );
     this.isFocused = focused;
     this._updateStockFocus();
+
+    // Update border to show focus state
+    const border = this.tag("Border");
+    if (border && this.stocks.length > 0) {
+      border.patch({
+        shader: {
+          type: Lightning.shaders.RoundedRectangle,
+          radius: 24,
+          stroke: 2,
+          strokeColor: focused ? 0xff666666 : 0xff252525,
+        },
+      });
+    }
   }
 
   handleUp(): boolean {

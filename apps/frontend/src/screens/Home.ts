@@ -72,7 +72,7 @@ export default class Home extends BaseScreen {
   private selectedSearchIndex = 0;
   private isSearchActive = false;
   private searchTimeout: NodeJS.Timeout | undefined = undefined;
-  private currentFocusIndex = 1;
+  private currentFocusIndex = 2;
   private focusableElements: string[] = [
     "SearchBar",
     "SignInButton",
@@ -342,279 +342,369 @@ export default class Home extends BaseScreen {
         },
       },
 
-      // Market Indices Panel
+      // PANEL 1: Market Overview
       MarketIndicesPanel: {
         x: 1340,
         y: FRAME_TOP + 70,
         alpha: 0,
         w: 520,
-        h: 220,
+        h: 290,
         rect: true,
-        color: Colors.cardBackground,
-        shader: { type: Lightning.shaders.RoundedRectangle, radius: 16 },
-        Title: {
-          x: 25,
-          y: 22,
-          text: {
-            text: "Market Overview",
-            fontFace: FontFamily.Default,
-            fontSize: 36,
-            fontStyle: FontStyle.Bold,
-            textColor: Colors.textPrimary,
+        color: 0xff0f0f0f,
+        shader: {
+          type: Lightning.shaders.RoundedRectangle,
+          radius: 24,
+        },
+        Border: {
+          w: 520,
+          h: 290,
+          rect: true,
+          color: 0x00000000,
+          shader: {
+            type: Lightning.shaders.RoundedRectangle,
+            radius: 24,
+            stroke: 2,
+            strokeColor: 0xff252525,
           },
         },
-        // S&P 500
-        Index1: {
-          x: 25,
+        Header: {
+          x: 35,
+          y: 30,
+          Title: {
+            x: 0,
+            y: 0,
+            text: {
+              text: "Market Overview",
+              fontFace: FontFamily.Default,
+              fontSize: 28,
+              fontStyle: FontStyle.Bold,
+              textColor: 0xffffffff,
+            },
+          },
+        },
+        Divider: {
+          x: 35,
           y: 75,
-          Symbol: {
-            text: {
-              text: "S&P 500",
-              fontFace: FontFamily.Default,
-              fontSize: FontSize.Body,
-              fontStyle: FontStyle.Medium,
-              textColor: Colors.textSecondary,
-            },
-          },
-          Price: {
-            x: 170,
-            text: {
-              text: "Loading...",
-              fontFace: FontFamily.Default,
-              fontSize: FontSize.Large,
-              fontStyle: FontStyle.SemiBold,
-              textColor: Colors.textPrimary,
-            },
-          },
-          Change: {
-            x: 360,
-            text: {
-              text: "--",
-              fontFace: FontFamily.Default,
-              fontSize: FontSize.Body,
-              fontStyle: FontStyle.Medium,
-              textColor: Colors.textSecondary,
-            },
-          },
+          w: 450,
+          h: 1,
+          rect: true,
+          color: 0xff252525,
         },
-        // Dow Jones
-        Index2: {
-          x: 25,
-          y: 125,
-          Symbol: {
-            text: {
-              text: "Dow Jones",
-              fontFace: FontFamily.Default,
-              fontSize: FontSize.Body,
-              fontStyle: FontStyle.Medium,
-              textColor: Colors.textSecondary,
+        Content: {
+          x: 35,
+          y: 90,
+          Index1: {
+            y: 0,
+            rect: true,
+            w: 450,
+            h: 50,
+            color: 0x00000000,
+            Name: {
+              x: 5,
+              y: 16,
+              text: {
+                text: "S&P 500",
+                fontFace: FontFamily.Default,
+                fontSize: 24,
+                fontStyle: FontStyle.Bold,
+                textColor: 0xffdddddd,
+              },
+            },
+            Price: {
+              x: 200,
+              y: 16,
+              text: {
+                text: "...",
+                fontFace: FontFamily.Default,
+                fontSize: 24,
+                fontStyle: FontStyle.Bold,
+                textColor: 0xffffffff,
+              },
+            },
+            Change: {
+              x: 350,
+              y: 16,
+              mount: 0,
+              text: {
+                text: "--",
+                fontFace: FontFamily.Default,
+                fontSize: 24,
+                fontStyle: FontStyle.Bold,
+                textColor: 0xff00ff88,
+              },
             },
           },
-          Price: {
-            x: 170,
-            text: {
-              text: "Loading...",
-              fontFace: FontFamily.Default,
-              fontSize: FontSize.Large,
-              fontStyle: FontStyle.SemiBold,
-              textColor: Colors.textPrimary,
+          Separator1: {
+            y: 55,
+            w: 450,
+            h: 1,
+            rect: true,
+            color: 0x33ffffff,
+          },
+          Index2: {
+            y: 63,
+            rect: true,
+            w: 450,
+            h: 50,
+            color: 0x00000000,
+            Name: {
+              x: 5,
+              y: 16,
+              text: {
+                text: "Dow Jones",
+                fontFace: FontFamily.Default,
+                fontSize: 24,
+                fontStyle: FontStyle.Bold,
+                textColor: 0xffdddddd,
+              },
+            },
+            Price: {
+              x: 200,
+              y: 16,
+              text: {
+                text: "...",
+                fontFace: FontFamily.Default,
+                fontSize: 24,
+                fontStyle: FontStyle.Bold,
+                textColor: 0xffffffff,
+              },
+            },
+            Change: {
+              x: 350,
+              y: 16,
+              mount: 0,
+              text: {
+                text: "--",
+                fontFace: FontFamily.Default,
+                fontSize: 24,
+                fontStyle: FontStyle.Bold,
+                textColor: 0xff00ff88,
+              },
             },
           },
-          Change: {
-            x: 360,
-            text: {
-              text: "--",
-              fontFace: FontFamily.Default,
-              fontSize: FontSize.Body,
-              fontStyle: FontStyle.Medium,
-              textColor: Colors.textSecondary,
-            },
+          Separator2: {
+            y: 118,
+            w: 450,
+            h: 1,
+            rect: true,
+            color: 0x33ffffff,
           },
-        },
-        // Nasdaq
-        Index3: {
-          x: 25,
-          y: 175,
-          Symbol: {
-            text: {
-              text: "Nasdaq",
-              fontFace: FontFamily.Default,
-              fontSize: FontSize.Body,
-              fontStyle: FontStyle.Medium,
-              textColor: Colors.textSecondary,
+          Index3: {
+            y: 126,
+            rect: true,
+            w: 450,
+            h: 50,
+            color: 0x00000000,
+            Name: {
+              x: 5,
+              y: 16,
+              text: {
+                text: "Nasdaq",
+                fontFace: FontFamily.Default,
+                fontSize: 24,
+                fontStyle: FontStyle.Bold,
+                textColor: 0xffdddddd,
+              },
             },
-          },
-          Price: {
-            x: 170,
-            text: {
-              text: "Loading...",
-              fontFace: FontFamily.Default,
-              fontSize: FontSize.Large,
-              fontStyle: FontStyle.SemiBold,
-              textColor: Colors.textPrimary,
+            Price: {
+              x: 200,
+              y: 16,
+              text: {
+                text: "...",
+                fontFace: FontFamily.Default,
+                fontSize: 24,
+                fontStyle: FontStyle.Bold,
+                textColor: 0xffffffff,
+              },
             },
-          },
-          Change: {
-            x: 360,
-            text: {
-              text: "--",
-              fontFace: FontFamily.Default,
-              fontSize: FontSize.Body,
-              fontStyle: FontStyle.Medium,
-              textColor: Colors.textSecondary,
+            Change: {
+              x: 350,
+              y: 16,
+              mount: 0,
+              text: {
+                text: "--",
+                fontFace: FontFamily.Default,
+                fontSize: 24,
+                fontStyle: FontStyle.Bold,
+                textColor: 0xff00ff88,
+              },
             },
           },
         },
       },
 
-      // Stats Panel
+      // PANEL 2: Stock Details
       StatsPanel: {
         x: 1340,
-        y: FRAME_TOP + 320,
+        y: FRAME_TOP + 380,
         alpha: 0,
         w: 520,
-        h: 420,
+        h: 290,
         rect: true,
-        color: Colors.cardBackground,
-        shader: { type: Lightning.shaders.RoundedRectangle, radius: 16 },
-        Title: {
-          x: 25,
-          y: 22,
-          text: {
-            text: "Stock Details",
-            fontFace: FontFamily.Default,
-            fontSize: 36,
-            fontStyle: FontStyle.Bold,
-            textColor: Colors.textPrimary,
+        color: 0xff0f0f0f,
+        shader: {
+          type: Lightning.shaders.RoundedRectangle,
+          radius: 24,
+        },
+        Border: {
+          w: 520,
+          h: 290,
+          rect: true,
+          color: 0x00000000,
+          shader: {
+            type: Lightning.shaders.RoundedRectangle,
+            radius: 24,
+            stroke: 2,
+            strokeColor: 0xff252525,
           },
         },
-        // Volume
-        Stat1: {
-          x: 25,
-          y: 80,
-          Label: {
+        Header: {
+          x: 35,
+          y: 30,
+          Title: {
+            x: 0,
+            y: 0,
             text: {
-              text: "Volume",
+              text: "Stock Details",
               fontFace: FontFamily.Default,
-              fontSize: FontSize.Body,
-              fontStyle: FontStyle.Regular,
-              textColor: Colors.textTertiary,
-            },
-          },
-          Value: {
-            y: 34,
-            text: {
-              text: "Loading...",
-              fontFace: FontFamily.Default,
-              fontSize: FontSize.Large,
-              fontStyle: FontStyle.SemiBold,
-              textColor: Colors.textSecondary,
+              fontSize: 28,
+              fontStyle: FontStyle.Bold,
+              textColor: 0xffffffff,
             },
           },
         },
-        // Market Cap
-        Stat2: {
-          x: 270,
-          y: 80,
-          Label: {
-            text: {
-              text: "Market Cap",
-              fontFace: FontFamily.Default,
-              fontSize: FontSize.Body,
-              fontStyle: FontStyle.Regular,
-              textColor: Colors.textTertiary,
-            },
-          },
-          Value: {
-            y: 34,
-            text: {
-              text: "Loading...",
-              fontFace: FontFamily.Default,
-              fontSize: FontSize.Large,
-              fontStyle: FontStyle.SemiBold,
-              textColor: Colors.textSecondary,
-            },
-          },
-        },
-        Divider1: {
-          y: 165,
-          x: 25,
-          w: 470,
+        Divider: {
+          x: 35,
+          y: 75,
+          w: 450,
           h: 1,
           rect: true,
-          color: Colors.separator,
+          color: 0xff252525,
         },
-        // Day Range
-        Stat3: {
-          x: 25,
-          y: 190,
-          Label: {
-            text: {
-              text: "Day Range",
-              fontFace: FontFamily.Default,
-              fontSize: FontSize.Body,
-              fontStyle: FontStyle.Regular,
-              textColor: Colors.textTertiary,
+        Content: {
+          x: 35,
+          y: 95,
+          Row1: {
+            y: 0,
+            Stat1: {
+              x: 0,
+              Label: {
+                x: 0,
+                y: 0,
+                text: {
+                  text: "Volume",
+                  fontFace: FontFamily.Default,
+                  fontSize: 16,
+                  fontStyle: FontStyle.Regular,
+                  textColor: 0xff888888,
+                },
+              },
+              Value: {
+                x: 0,
+                y: 28,
+                text: {
+                  text: "...",
+                  fontFace: FontFamily.Default,
+                  fontSize: 26,
+                  fontStyle: FontStyle.Bold,
+                  textColor: 0xffffffff,
+                },
+              },
+            },
+            Stat2: {
+              x: 225,
+              Label: {
+                x: 0,
+                y: 0,
+                text: {
+                  text: "Market Cap",
+                  fontFace: FontFamily.Default,
+                  fontSize: 16,
+                  fontStyle: FontStyle.Regular,
+                  textColor: 0xff888888,
+                },
+              },
+              Value: {
+                x: 0,
+                y: 28,
+                text: {
+                  text: "...",
+                  fontFace: FontFamily.Default,
+                  fontSize: 26,
+                  fontStyle: FontStyle.Bold,
+                  textColor: 0xffffffff,
+                },
+              },
             },
           },
-          Value: {
-            y: 34,
-            text: {
-              text: "Loading...",
-              fontFace: FontFamily.Default,
-              fontSize: FontSize.Large,
-              fontStyle: FontStyle.SemiBold,
-              textColor: Colors.textSecondary,
+          Divider1: {
+            y: 75,
+            w: 450,
+            h: 1,
+            rect: true,
+            color: 0x22ffffff,
+          },
+          Row2: {
+            y: 95,
+            Stat3: {
+              x: 0,
+              Label: {
+                x: 0,
+                y: 0,
+                text: {
+                  text: "Day Range",
+                  fontFace: FontFamily.Default,
+                  fontSize: 16,
+                  fontStyle: FontStyle.Regular,
+                  textColor: 0xff888888,
+                },
+              },
+              Value: {
+                x: 0,
+                y: 28,
+                text: {
+                  text: "...",
+                  fontFace: FontFamily.Default,
+                  fontSize: 22,
+                  fontStyle: FontStyle.Bold,
+                  textColor: 0xffffffff,
+                },
+              },
+            },
+            Stat4: {
+              x: 225,
+              Label: {
+                x: 0,
+                y: 0,
+                text: {
+                  text: "52 Week Range",
+                  fontFace: FontFamily.Default,
+                  fontSize: 16,
+                  fontStyle: FontStyle.Regular,
+                  textColor: 0xff888888,
+                },
+              },
+              Value: {
+                x: 0,
+                y: 28,
+                text: {
+                  text: "...",
+                  fontFace: FontFamily.Default,
+                  fontSize: 22,
+                  fontStyle: FontStyle.Bold,
+                  textColor: 0xffffffff,
+                },
+              },
             },
           },
-        },
-        Divider2: {
-          y: 280,
-          x: 25,
-          w: 470,
-          h: 1,
-          rect: true,
-          color: Colors.separator,
-        },
-        // 52 Week Range
-        Stat4: {
-          x: 25,
-          y: 305,
-          Label: {
-            text: {
-              text: "52 Week Range",
-              fontFace: FontFamily.Default,
-              fontSize: FontSize.Body,
-              fontStyle: FontStyle.Regular,
-              textColor: Colors.textTertiary,
-            },
-          },
-          Value: {
-            y: 34,
-            text: {
-              text: "Loading...",
-              fontFace: FontFamily.Default,
-              fontSize: FontSize.Large,
-              fontStyle: FontStyle.SemiBold,
-              textColor: Colors.textSecondary,
-            },
-          },
-        },
-        Divider3: {
-          y: 395,
-          x: 25,
-          w: 470,
-          h: 1,
-          rect: true,
-          color: Colors.separator,
         },
       },
 
-      // Watchlist Panel
+      // PANEL 3: Watchlist
       WatchlistPanel: {
         type: WatchlistPanel,
         x: 1340,
-        y: FRAME_TOP + 770,
+        y: FRAME_TOP + 690,
         alpha: 0,
       },
     };
@@ -634,7 +724,7 @@ export default class Home extends BaseScreen {
     this._updateWatchlist();
     this._loadStockData(this.currentSymbol);
     this._restoreButtonStates();
-    this.currentFocusIndex = 1;
+    this.currentFocusIndex = 2;
     setTimeout(() => {
       this._updateFocus();
     }, 100);
@@ -857,10 +947,11 @@ export default class Home extends BaseScreen {
           changePct: qqqQuote.changePct,
         };
       }
+      const content = panel.tag("Content");
+      if (!content) return;
 
-      // Update UI with fetched data
       this.marketIndices.forEach((index, i) => {
-        const indexElement = panel.tag(`Index${i + 1}`);
+        const indexElement = content.tag(`Index${i + 1}`);
         if (!indexElement) return;
 
         const priceElement = indexElement.tag("Price");
@@ -884,8 +975,11 @@ export default class Home extends BaseScreen {
     } catch (error) {
       console.error("❌ Failed to fetch market indices:", error);
       // Fall back to displaying existing hardcoded data if API fails
+      const content = panel.tag("Content");
+      if (!content) return;
+
       this.marketIndices.forEach((index, i) => {
-        const indexElement = panel.tag(`Index${i + 1}`);
+        const indexElement = content.tag(`Index${i + 1}`);
         if (!indexElement) return;
 
         const priceElement = indexElement.tag("Price");
@@ -913,7 +1007,7 @@ export default class Home extends BaseScreen {
     if (!statsPanel) return;
 
     statsPanel.setSmooth("alpha", 1, { duration: 0.6, delay: 0.4 });
-    statsPanel.setSmooth("y", FRAME_TOP + 320, { duration: 0.6, delay: 0.4 });
+    statsPanel.setSmooth("y", FRAME_TOP + 380, { duration: 0.6, delay: 0.4 });
 
     try {
       console.log(`Fetching real metrics for ${this.currentSymbol}...`);
@@ -956,29 +1050,35 @@ export default class Home extends BaseScreen {
         )} - ${stocksApi.formatPrice(metrics.week52High)}`;
       }
 
-      // Update UI
-      const stat1Value =
-        statsPanel.tag("Stat1") && statsPanel.tag("Stat1").tag("Value");
-      if (stat1Value && stat1Value.text) {
-        stat1Value.text.text = volume;
+      // Update UI - new path structure
+      const content = statsPanel.tag("Content");
+      if (!content) return;
+
+      const row1 = content.tag("Row1");
+      const row2 = content.tag("Row2");
+
+      if (row1) {
+        const stat1Value = row1.tag("Stat1") && row1.tag("Stat1").tag("Value");
+        if (stat1Value && stat1Value.text) {
+          stat1Value.text.text = volume;
+        }
+
+        const stat2Value = row1.tag("Stat2") && row1.tag("Stat2").tag("Value");
+        if (stat2Value && stat2Value.text) {
+          stat2Value.text.text = marketCap;
+        }
       }
 
-      const stat2Value =
-        statsPanel.tag("Stat2") && statsPanel.tag("Stat2").tag("Value");
-      if (stat2Value && stat2Value.text) {
-        stat2Value.text.text = marketCap;
-      }
+      if (row2) {
+        const stat3Value = row2.tag("Stat3") && row2.tag("Stat3").tag("Value");
+        if (stat3Value && stat3Value.text) {
+          stat3Value.text.text = dayRange;
+        }
 
-      const stat3Value =
-        statsPanel.tag("Stat3") && statsPanel.tag("Stat3").tag("Value");
-      if (stat3Value && stat3Value.text) {
-        stat3Value.text.text = dayRange;
-      }
-
-      const stat4Value =
-        statsPanel.tag("Stat4") && statsPanel.tag("Stat4").tag("Value");
-      if (stat4Value && stat4Value.text) {
-        stat4Value.text.text = week52Range;
+        const stat4Value = row2.tag("Stat4") && row2.tag("Stat4").tag("Value");
+        if (stat4Value && stat4Value.text) {
+          stat4Value.text.text = week52Range;
+        }
       }
 
       console.log(
@@ -988,21 +1088,27 @@ export default class Home extends BaseScreen {
       console.error(`❌ Failed to update stats panel:`, error);
 
       // Fall back to N/A values
-      const stat1Value =
-        statsPanel.tag("Stat1") && statsPanel.tag("Stat1").tag("Value");
-      if (stat1Value && stat1Value.text) stat1Value.text.text = "N/A";
+      const content = statsPanel.tag("Content");
+      if (!content) return;
 
-      const stat2Value =
-        statsPanel.tag("Stat2") && statsPanel.tag("Stat2").tag("Value");
-      if (stat2Value && stat2Value.text) stat2Value.text.text = "N/A";
+      const row1 = content.tag("Row1");
+      const row2 = content.tag("Row2");
 
-      const stat3Value =
-        statsPanel.tag("Stat3") && statsPanel.tag("Stat3").tag("Value");
-      if (stat3Value && stat3Value.text) stat3Value.text.text = "N/A";
+      if (row1) {
+        const stat1Value = row1.tag("Stat1") && row1.tag("Stat1").tag("Value");
+        if (stat1Value && stat1Value.text) stat1Value.text.text = "N/A";
 
-      const stat4Value =
-        statsPanel.tag("Stat4") && statsPanel.tag("Stat4").tag("Value");
-      if (stat4Value && stat4Value.text) stat4Value.text.text = "N/A";
+        const stat2Value = row1.tag("Stat2") && row1.tag("Stat2").tag("Value");
+        if (stat2Value && stat2Value.text) stat2Value.text.text = "N/A";
+      }
+
+      if (row2) {
+        const stat3Value = row2.tag("Stat3") && row2.tag("Stat3").tag("Value");
+        if (stat3Value && stat3Value.text) stat3Value.text.text = "N/A";
+
+        const stat4Value = row2.tag("Stat4") && row2.tag("Stat4").tag("Value");
+        if (stat4Value && stat4Value.text) stat4Value.text.text = "N/A";
+      }
     }
   }
 
@@ -1018,7 +1124,7 @@ export default class Home extends BaseScreen {
 
     // Animate panel appearance
     watchlistPanel.setSmooth("alpha", 1, { duration: 0.6, delay: 0.6 });
-    watchlistPanel.setSmooth("y", FRAME_TOP + 770, {
+    watchlistPanel.setSmooth("y", FRAME_TOP + 690, {
       duration: 0.6,
       delay: 0.6,
     });
@@ -1054,38 +1160,15 @@ export default class Home extends BaseScreen {
   }
 
   _handleUp(): boolean {
-    if (this.currentFocusIndex === 0) {
-      const searchBar = this.tag("SearchBar") as SearchBar;
-      const searchResults = this.tag("SearchResults") as SearchResults;
-
-      if (searchBar && searchResults && this.searchResults.length > 0) {
-        if (searchResults._handleUp && searchResults._handleUp()) {
-          this.selectedSearchIndex = searchResults.getSelectedIndex();
-          if (searchBar.setSelectedIndex) {
-            searchBar.setSelectedIndex(this.selectedSearchIndex);
-          }
-          return true;
-        }
-      }
-      return false;
-    } else if (this.currentFocusIndex === 1) {
-      // From Sign In button, go to Search
-      this.currentFocusIndex = 0;
-      this._updateFocus();
-      return true;
-    } else if (this.currentFocusIndex === 2 + TIME_PERIODS.length + 1) {
-      // From watchlist, try to navigate within it first
+    // From watchlist, navigate within it first
+    if (this.currentFocusIndex === 6) {
       const watchlist = this.tag("WatchlistPanel") as WatchlistPanel;
       if (watchlist && watchlist.handleUp()) {
         return true;
       }
-      // If at top of watchlist, go back to star button
-      this.currentFocusIndex = 2 + TIME_PERIODS.length;
-      this._updateFocus();
-      return true;
-    } else if (this.currentFocusIndex >= 2) {
-      // From time period buttons or star, go to Sign In button
-      this.currentFocusIndex = 1;
+      // If at top of watchlist, exit to 1M button
+      console.log("🔙 Exiting watchlist, returning to 1M button");
+      this.currentFocusIndex = 2;
       this._updateFocus();
       return true;
     }
@@ -1093,34 +1176,12 @@ export default class Home extends BaseScreen {
   }
 
   _handleDown(): boolean {
-    if (this.currentFocusIndex === 0) {
-      const searchBar = this.tag("SearchBar") as SearchBar;
-      const searchResults = this.tag("SearchResults") as SearchResults;
-
-      if (searchBar && searchResults && this.searchResults.length > 0) {
-        if (searchResults._handleDown && searchResults._handleDown()) {
-          this.selectedSearchIndex = searchResults.getSelectedIndex();
-          if (searchBar.setSelectedIndex) {
-            searchBar.setSelectedIndex(this.selectedSearchIndex);
-          }
-          return true;
-        }
-      }
-      // From Search, go to Sign In button
-      this.currentFocusIndex = 1;
-      this._updateFocus();
-      return true;
-    } else if (this.currentFocusIndex === 1) {
-      // From Sign In button, go to first time period button
-      this.currentFocusIndex = 2;
-      this._updateFocus();
-      return true;
-    } else if (this.currentFocusIndex === 2 + TIME_PERIODS.length) {
-      // From star button, try to go to watchlist if user has stocks
+    // From any button (Search, Sign In, 1M, 3M, 1Y, Star), go to watchlist
+    if (this.currentFocusIndex >= 0 && this.currentFocusIndex <= 5) {
       const token = localStorage.getItem("auth_token");
       const watchlistData = localStorage.getItem("user_watchlist");
 
-      console.log("🔍 Attempting to focus watchlist:", {
+      console.log("🔍 Attempting to focus watchlist from button:", {
         hasToken: !!token,
         hasWatchlistData: !!watchlistData,
         currentFocus: this.currentFocusIndex,
@@ -1135,7 +1196,7 @@ export default class Home extends BaseScreen {
               watchlist.length,
               "stocks"
             );
-            this.currentFocusIndex = 2 + TIME_PERIODS.length + 1;
+            this.currentFocusIndex = 6; // Watchlist index
             this._updateFocus();
             return true;
           } else {
@@ -1148,7 +1209,7 @@ export default class Home extends BaseScreen {
         if (!token) console.log("❌ Not signed in");
         if (!watchlistData) console.log("❌ No watchlist data");
       }
-    } else if (this.currentFocusIndex === 2 + TIME_PERIODS.length + 1) {
+    } else if (this.currentFocusIndex === 6) {
       // Navigate within watchlist
       const watchlist = this.tag("WatchlistPanel") as WatchlistPanel;
       if (watchlist && watchlist.handleDown()) {
@@ -1162,38 +1223,38 @@ export default class Home extends BaseScreen {
     const token = localStorage.getItem("auth_token");
     const isLoggedIn = !!token;
 
-    if (this.currentFocusIndex === 1) {
-      // From Sign In button, go to Search
+    // Workflow (reverse): 1M ← 3M ← 1Y ← Star ← Search ← SignIn (no loop, 1M is the end)
+    if (this.currentFocusIndex === 3) {
+      // From 3M, go to 1M
+      this.currentFocusIndex = 2;
+      this._updateFocus();
+      return true;
+    } else if (this.currentFocusIndex === 4) {
+      // From 1Y, go to 3M
+      this.currentFocusIndex = 3;
+      this._updateFocus();
+      return true;
+    } else if (this.currentFocusIndex === 5 && isLoggedIn) {
+      // From Star, go to 1Y
+      this.currentFocusIndex = 4;
+      this._updateFocus();
+      return true;
+    } else if (this.currentFocusIndex === 0) {
+      // From Search, go to Star if logged in, else go to 1Y
+      if (isLoggedIn) {
+        this.currentFocusIndex = 5;
+      } else {
+        this.currentFocusIndex = 4;
+      }
+      this._updateFocus();
+      return true;
+    } else if (this.currentFocusIndex === 1) {
+      // From Sign In, go to Search
       this.currentFocusIndex = 0;
       this._updateFocus();
       return true;
-    } else if (this.currentFocusIndex === 2 + TIME_PERIODS.length) {
-      // From star button, go to last time button
-      this.currentFocusIndex = 2 + TIME_PERIODS.length - 1;
-      this._updateFocus();
-      return true;
-    } else if (
-      this.currentFocusIndex >= 3 &&
-      this.currentFocusIndex <= 2 + TIME_PERIODS.length - 1
-    ) {
-      // Navigate left through time period buttons
-      const currentButtonIndex = this.currentFocusIndex - 2;
-      if (currentButtonIndex > 0) {
-        this.currentFocusIndex--;
-        this._updateFocus();
-      }
-      return true;
-    } else if (this.currentFocusIndex === 2) {
-      // From first time button, wrap to star button if logged in, otherwise to last time button
-      if (isLoggedIn) {
-        this.currentFocusIndex = 2 + TIME_PERIODS.length;
-        this._updateFocus();
-      } else {
-        this.currentFocusIndex = 2 + TIME_PERIODS.length - 1;
-        this._updateFocus();
-      }
-      return true;
     }
+    // At 1M (index 2), can't go further left
     return false;
   }
 
@@ -1201,35 +1262,38 @@ export default class Home extends BaseScreen {
     const token = localStorage.getItem("auth_token");
     const isLoggedIn = !!token;
 
-    if (this.currentFocusIndex === 0) {
-      // From Search, go to Sign In button
+    // Workflow: 1M → 3M → 1Y → Star → Search → SignIn (no loop, Sign In is the end)
+    if (this.currentFocusIndex === 2) {
+      // From 1M, go to 3M
+      this.currentFocusIndex = 3;
+      this._updateFocus();
+      return true;
+    } else if (this.currentFocusIndex === 3) {
+      // From 3M, go to 1Y
+      this.currentFocusIndex = 4;
+      this._updateFocus();
+      return true;
+    } else if (this.currentFocusIndex === 4) {
+      // From 1Y, go to Star if logged in, else go to Search
+      if (isLoggedIn) {
+        this.currentFocusIndex = 5;
+      } else {
+        this.currentFocusIndex = 0;
+      }
+      this._updateFocus();
+      return true;
+    } else if (this.currentFocusIndex === 5 && isLoggedIn) {
+      // From Star, go to Search
+      this.currentFocusIndex = 0;
+      this._updateFocus();
+      return true;
+    } else if (this.currentFocusIndex === 0) {
+      // From Search, go to Sign In
       this.currentFocusIndex = 1;
       this._updateFocus();
       return true;
-    } else if (
-      this.currentFocusIndex >= 2 &&
-      this.currentFocusIndex < 2 + TIME_PERIODS.length - 1
-    ) {
-      // Navigate right through time period buttons
-      this.currentFocusIndex++;
-      this._updateFocus();
-      return true;
-    } else if (this.currentFocusIndex === 2 + TIME_PERIODS.length - 1) {
-      // From last time button, go to star button if logged in, otherwise wrap
-      if (isLoggedIn) {
-        this.currentFocusIndex = 2 + TIME_PERIODS.length;
-        this._updateFocus();
-      } else {
-        this.currentFocusIndex = 2;
-        this._updateFocus();
-      }
-      return true;
-    } else if (this.currentFocusIndex === 2 + TIME_PERIODS.length) {
-      // From star button, wrap to first time button
-      this.currentFocusIndex = 2;
-      this._updateFocus();
-      return true;
     }
+    // At Sign In (index 1), can't go further right
     return false;
   }
 
@@ -1243,12 +1307,12 @@ export default class Home extends BaseScreen {
       console.log("Opening Account/Auth screen");
       this.fireAncestors("$showAuthFlow");
       return true;
-    } else if (this.currentFocusIndex === 2 + TIME_PERIODS.length) {
+    } else if (this.currentFocusIndex === 5) {
       // Star button pressed - toggle watchlist
       console.log("Toggling watchlist for", this.currentSymbol);
       this._toggleWatchlist();
       return true;
-    } else if (this.currentFocusIndex === 2 + TIME_PERIODS.length + 1) {
+    } else if (this.currentFocusIndex === 6) {
       // Watchlist item selected - load that stock
       const watchlist = this.tag("WatchlistPanel") as WatchlistPanel;
       if (watchlist) {
@@ -1272,12 +1336,22 @@ export default class Home extends BaseScreen {
           return true;
         }
       }
-    } else {
+    } else if (this.currentFocusIndex >= 2 && this.currentFocusIndex <= 4) {
+      // Time period buttons (1M=2, 3M=3, 1Y=4)
       const buttonIndex = this.currentFocusIndex - 2;
-      if (buttonIndex >= 0 && buttonIndex < TIME_PERIODS.length) {
-        this._selectTimePeriod(buttonIndex);
-        return true;
-      }
+      this._selectTimePeriod(buttonIndex);
+      return true;
+    }
+    return false;
+  }
+
+  _handleBack(): boolean {
+    // Back button exits watchlist and returns to 1M button
+    if (this.currentFocusIndex === 6) {
+      console.log("🔙 Back button pressed, exiting watchlist to 1M");
+      this.currentFocusIndex = 2;
+      this._updateFocus();
+      return true;
     }
     return false;
   }
@@ -1368,7 +1442,7 @@ export default class Home extends BaseScreen {
       searchBar._unfocus();
     }
 
-    this.currentFocusIndex = 1;
+    this.currentFocusIndex = 2;
     this._updateFocus();
 
     // Update star button to reflect new stock's watchlist status
@@ -1493,7 +1567,7 @@ export default class Home extends BaseScreen {
     if (starButton) {
       const background = starButton.tag("Background");
       const starIcon = starButton.tag("StarIcon");
-      const isFocused = this.currentFocusIndex === 2 + TIME_PERIODS.length;
+      const isFocused = this.currentFocusIndex === 5;
 
       if (background) {
         if (isFocused) {
@@ -1510,8 +1584,7 @@ export default class Home extends BaseScreen {
 
     // Update watchlist focus
     const watchlist = this.tag("WatchlistPanel") as WatchlistPanel;
-    const isWatchlistFocused =
-      this.currentFocusIndex === 2 + TIME_PERIODS.length + 1;
+    const isWatchlistFocused = this.currentFocusIndex === 6;
     console.log(
       `🎯 Home._updateFocus: watchlist=${!!watchlist}, isWatchlistFocused=${isWatchlistFocused}, currentFocus=${
         this.currentFocusIndex
