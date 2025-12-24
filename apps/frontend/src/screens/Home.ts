@@ -165,45 +165,55 @@ export default class Home extends BaseScreen {
         },
       },
 
-      // Market Status Indicator
+      // Market Status Indicator - Circle Badge Next to Text
       MarketStatus: {
         x: FRAME_LEFT,
         y: FRAME_TOP,
-        StatusDot: {
-          w: 10,
-          h: 10,
+
+        // Small Circle Badge
+        StatusCircle: {
+          x: 0,
+          y: 6,
+          w: 12,
+          h: 12,
           rect: true,
-          color: Colors.stockGreenBright,
-          shader: { type: Lightning.shaders.RoundedRectangle, radius: 5 },
+          color: 0xff10b981,
+          shader: { type: Lightning.shaders.RoundedRectangle, radius: 6 },
         },
+
+        // Status Text
         StatusText: {
-          x: 20,
-          y: -2,
+          x: 22,
+          y: 1,
           text: {
             text: "Market Open",
             fontFace: FontFamily.Default,
             fontSize: 20,
-            fontStyle: FontStyle.SemiBold,
-            textColor: Colors.textPrimary,
+            fontStyle: FontStyle.Bold,
+            textColor: 0xffffffff,
           },
         },
+
+        // Separator
         Separator: {
-          x: 140,
-          y: -8,
-          w: 3,
-          h: 35,
+          x: 155,
+          y: -6,
+          w: 2,
+          h: 32,
           rect: true,
-          color: 0x55ffffff,
+          color: 0x33ffffff,
         },
+
+        // Time Text
         TimeText: {
-          x: 156,
-          y: -2,
+          x: 172,
+          y: 1,
           text: {
             text: "9:30 AM - 4:00 PM EST",
             fontFace: FontFamily.Default,
             fontSize: 20,
             fontStyle: FontStyle.Regular,
-            textColor: Colors.textTertiary,
+            textColor: 0xff888888,
           },
         },
       },
@@ -880,30 +890,33 @@ export default class Home extends BaseScreen {
     const layout = StockUtils.getMarketStatusLayout(status.isOpen);
 
     const marketStatus = this.tag("MarketStatus");
-    if (marketStatus) {
-      const statusDot = marketStatus.tag("StatusDot");
-      const statusText = marketStatus.tag("StatusText");
-      const separator = marketStatus.tag("Separator");
-      const timeText = marketStatus.tag("TimeText");
+    if (!marketStatus) return;
 
-      if (statusDot) {
-        statusDot.color = status.isOpen
-          ? Colors.stockGreenBright
-          : Colors.stockRed;
-      }
+    const statusCircle = marketStatus.tag("StatusCircle");
+    const statusText = marketStatus.tag("StatusText");
+    const separator = marketStatus.tag("Separator");
+    const timeText = marketStatus.tag("TimeText");
 
-      if (statusText && statusText.text) {
-        statusText.text.text = status.statusText;
-        statusText.text.textColor = Colors.textPrimary;
+    // Define colors based on market status
+    const circleColor = status.isOpen ? 0xff10b981 : 0xffef4444; // Green : Red
 
-        if (separator) {
-          separator.x = layout.separatorX;
-        }
+    // Update circle color
+    if (statusCircle) {
+      statusCircle.color = circleColor;
+    }
 
-        if (timeText) {
-          timeText.x = layout.timeTextX;
-        }
-      }
+    // Update status text
+    if (statusText && statusText.text) {
+      statusText.text.text = status.statusText;
+    }
+
+    // Update separator and time text positions based on text width
+    if (separator) {
+      separator.x = layout.separatorX;
+    }
+
+    if (timeText) {
+      timeText.x = layout.timeTextX;
     }
   }
 
@@ -1318,6 +1331,9 @@ export default class Home extends BaseScreen {
   }
 
   _handleEnter(): boolean {
+    const token = localStorage.getItem("auth_token");
+    const isLoggedIn = !!token;
+
     if (this.currentFocusIndex === 0) {
       // Open full-screen search
       console.log("Opening full-screen search");
@@ -1327,8 +1343,8 @@ export default class Home extends BaseScreen {
       console.log("Opening Account/Auth screen");
       this.fireAncestors("$showAuthFlow");
       return true;
-    } else if (this.currentFocusIndex === 5) {
-      // Star button pressed - toggle watchlist
+    } else if (this.currentFocusIndex === 5 && isLoggedIn) {
+      // Star button pressed - toggle watchlist (only if logged in)
       console.log("Toggling watchlist for", this.currentSymbol);
       this._toggleWatchlist();
       return true;
@@ -1559,9 +1575,12 @@ export default class Home extends BaseScreen {
       });
     }
 
-    // Update star button focus
+    // Update star button focus (only if logged in)
+    const token = localStorage.getItem("auth_token");
+    const isLoggedIn = !!token;
+
     const starButton = this.tag("WatchlistStarButton");
-    if (starButton) {
+    if (starButton && isLoggedIn) {
       const background = starButton.tag("Background");
       const starIcon = starButton.tag("StarIcon");
       const isFocused = this.currentFocusIndex === 5;
@@ -1634,8 +1653,15 @@ export default class Home extends BaseScreen {
 
   $signOut(): void {
     console.log("🚪 User signed out, clearing watchlist");
+
+    // If currently focused on star button or watchlist, move focus to 1M button
+    if (this.currentFocusIndex === 5 || this.currentFocusIndex === 6) {
+      this.currentFocusIndex = 2; // Move to 1M button
+    }
+
     this._updateWatchlistStarButton();
     this._updateWatchlist();
+    this._updateFocus();
   }
 
   /**

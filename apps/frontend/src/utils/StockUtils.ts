@@ -123,10 +123,10 @@ export class StockUtils {
     separatorX: number;
     timeTextX: number;
   } {
-    // "Market Open" ≈ 122px, "Market Closed" ≈ 145px at 20px font
+    // With pill badge (12px) + "Market Open" ≈ 122px, "Market Closed" ≈ 145px at 20px font
     return {
-      separatorX: isOpen ? 150 : 165,
-      timeTextX: isOpen ? 164 : 179,
+      separatorX: isOpen ? 155 : 175,
+      timeTextX: isOpen ? 172 : 192,
     };
   }
 
