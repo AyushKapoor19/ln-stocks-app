@@ -54,10 +54,9 @@ export default class SearchBar extends BaseComponent {
         x: 24,
         y: 28,
         mount: 0.5,
-        text: {
-          text: "🔍",
-          fontSize: FontSize.Small,
-        },
+        w: 24,
+        h: 24,
+        src: "assets/icons/search-icon-white.svg",
       },
       SearchLabel: {
         x: 60,

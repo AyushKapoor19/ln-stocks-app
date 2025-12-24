@@ -1,8 +1,6 @@
 import { Lightning } from "@lightningjs/sdk";
 import BaseScreen from "./BaseScreen";
 import StockChart from "../components/charts/StockChart";
-import SearchBar from "../components/SearchBar";
-import SearchResults from "../components/SearchResults";
 import WatchlistPanel from "../components/WatchlistPanel";
 import { stocksApi } from "../services/api";
 import { Colors } from "../constants/Colors";
@@ -74,7 +72,7 @@ export default class Home extends BaseScreen {
   private searchTimeout: NodeJS.Timeout | undefined = undefined;
   private currentFocusIndex = 2;
   private focusableElements: string[] = [
-    "SearchBar",
+    "SearchButton",
     "SignInButton",
     "TimeButton_1M",
     "TimeButton_3M",
@@ -119,10 +117,28 @@ export default class Home extends BaseScreen {
       color: Colors.black,
 
       // Top Bar
-      SearchBar: {
-        type: SearchBar,
-        x: FRAME_LEFT + CONTENT_WIDTH - 470,
+      SearchButton: {
+        x: FRAME_LEFT + CONTENT_WIDTH - 150,
         y: FRAME_TOP,
+        w: 70,
+        h: 56,
+        rect: true,
+        color: Colors.transparent,
+        Background: {
+          w: 70,
+          h: 56,
+          rect: true,
+          color: Colors.buttonUnfocused,
+          shader: { type: Lightning.shaders.RoundedRectangle, radius: 28 },
+        },
+        Icon: {
+          x: 35,
+          y: 28,
+          mount: 0.5,
+          w: 40,
+          h: 40,
+          src: "assets/icons/search-icon-white.png",
+        },
       },
 
       SignInButton: {
@@ -143,19 +159,10 @@ export default class Home extends BaseScreen {
           x: 35,
           y: 28,
           mount: 0.5,
-          text: {
-            text: "👤",
-            fontSize: FontSize.Medium,
-            textColor: Colors.textPrimary,
-          },
+          w: 40,
+          h: 40,
+          src: "assets/icons/user-icon-white.png",
         },
-      },
-
-      SearchResults: {
-        type: SearchResults,
-        x: FRAME_LEFT + CONTENT_WIDTH - 470,
-        y: FRAME_TOP + 66,
-        alpha: 0,
       },
 
       // Market Status Indicator
@@ -1379,20 +1386,20 @@ export default class Home extends BaseScreen {
     if (!signInButton) return;
 
     const icon = signInButton.tag("Icon");
-    if (icon && icon.text) {
-      icon.text.text = isLoggedIn ? "⚙" : "👤";
+    if (icon) {
+      // Always show user icon, regardless of login status
+      icon.patch({
+        src: "assets/icons/user-icon-white.png",
+        w: 40,
+        h: 40,
+      });
     }
 
     this.stage.update();
   }
 
   _handleKey(event: KeyboardEvent): boolean {
-    if (this.currentFocusIndex === 0) {
-      const searchBar = this.tag("SearchBar");
-      if (searchBar) {
-        return false;
-      }
-    }
+    // No special key handling needed for simple buttons
     return false;
   }
 
@@ -1409,35 +1416,11 @@ export default class Home extends BaseScreen {
     this._loadStockData(this.currentSymbol);
   }
 
-  private _showSearchResults(): void {
-    const resultsContainer = this.tag("SearchResults") as SearchResults;
-    if (!resultsContainer) return;
+  private _showSearchResults(): void {}
 
-    resultsContainer.setSmooth("alpha", 1, { duration: 0.2 });
-
-    if (resultsContainer.setResults) {
-      resultsContainer.setResults(this.searchResults);
-      resultsContainer.setSelectedIndex(this.selectedSearchIndex);
-    }
-  }
-
-  private _updateSearchSelection(): void {
-    const resultsContainer = this.tag("SearchResults") as SearchResults;
-    if (!resultsContainer) return;
-
-    if (resultsContainer.setSelectedIndex) {
-      resultsContainer.setSelectedIndex(this.selectedSearchIndex);
-    }
-  }
+  private _updateSearchSelection(): void {}
 
   private _clearSearchResults(): void {
-    const resultsContainer = this.tag("SearchResults") as SearchResults;
-    if (resultsContainer) {
-      resultsContainer.setSmooth("alpha", 0, { duration: 0.2 });
-      if (resultsContainer.clearResults) {
-        resultsContainer.clearResults();
-      }
-    }
     this.searchResults = [];
   }
 
@@ -1453,11 +1436,6 @@ export default class Home extends BaseScreen {
       if (titleElement) {
         titleElement.text.text = `${symbol} - ${name}`;
       }
-    }
-
-    const searchBar = this.tag("SearchBar") as SearchBar;
-    if (searchBar && searchBar._unfocus) {
-      searchBar._unfocus();
     }
 
     this.currentFocusIndex = 2;
@@ -1498,27 +1476,28 @@ export default class Home extends BaseScreen {
   }
 
   _getFocused(): Lightning.Component {
-    if (this.currentFocusIndex === 0) {
-      const searchBar = this.tag("SearchBar");
-      if (searchBar) {
-        return searchBar as Lightning.Component;
-      }
-    } else if (this.currentFocusIndex === 1) {
-      return this as Lightning.Component;
-    }
     return this as Lightning.Component;
   }
 
   private _updateFocus(): void {
-    const searchBar = this.tag("SearchBar") as SearchBar;
-    if (searchBar) {
-      if (this.currentFocusIndex === 0) {
-        if (searchBar._focus) searchBar._focus();
-      } else {
-        if (searchBar._unfocus) searchBar._unfocus();
+    // Update search button focus
+    const searchButton = this.tag("SearchButton");
+    if (searchButton) {
+      const background = searchButton.tag("Background");
+      if (background) {
+        if (this.currentFocusIndex === 0) {
+          background.setSmooth("color", Colors.buttonFocused, {
+            duration: 0.3,
+          });
+        } else {
+          background.setSmooth("color", Colors.buttonUnfocused, {
+            duration: 0.3,
+          });
+        }
       }
     }
 
+    // Update sign in button focus
     const signInButton = this.tag("SignInButton");
     if (signInButton) {
       const background = signInButton.tag("Background");
@@ -1629,51 +1608,13 @@ export default class Home extends BaseScreen {
     console.log("Search deactivated from SearchBar component");
   }
 
-  $showSearchResults(event: IShowSearchResultsEvent): void {
-    this.searchResults = event.results || [];
-    this.selectedSearchIndex = event.selectedIndex || 0;
-    const searchResults = this.tag("SearchResults") as SearchResults;
-    if (searchResults && searchResults.setResults) {
-      searchResults.setResults(this.searchResults);
-      searchResults.setSelectedIndex(this.selectedSearchIndex);
-    }
-    const resultsContainer = this.tag("SearchResults");
-    if (resultsContainer) {
-      resultsContainer.setSmooth("alpha", 1, { duration: 0.2 });
-    }
-  }
+  $showSearchResults(event: IShowSearchResultsEvent): void {}
 
-  $updateSearchSelection(event: IUpdateSearchSelectionEvent): void {
-    this.selectedSearchIndex = event.selectedIndex || 0;
-    const searchResults = this.tag("SearchResults") as SearchResults;
-    if (searchResults && searchResults.setSelectedIndex) {
-      searchResults.setSelectedIndex(this.selectedSearchIndex);
-    }
-  }
+  $updateSearchSelection(event: IUpdateSearchSelectionEvent): void {}
 
-  $navigateSearchResultsUp(event: INavigateSearchResultsEvent): void {
-    const searchResults = this.tag("SearchResults") as SearchResults;
-    if (searchResults && searchResults._handleUp) {
-      searchResults._handleUp();
-      this.selectedSearchIndex = searchResults.getSelectedIndex();
-      const searchBar = this.tag("SearchBar") as SearchBar;
-      if (searchBar && searchBar.setSelectedIndex) {
-        searchBar.setSelectedIndex(this.selectedSearchIndex);
-      }
-    }
-  }
+  $navigateSearchResultsUp(event: INavigateSearchResultsEvent): void {}
 
-  $navigateSearchResultsDown(event: INavigateSearchResultsEvent): void {
-    const searchResults = this.tag("SearchResults") as SearchResults;
-    if (searchResults && searchResults._handleDown) {
-      searchResults._handleDown();
-      this.selectedSearchIndex = searchResults.getSelectedIndex();
-      const searchBar = this.tag("SearchBar") as SearchBar;
-      if (searchBar && searchBar.setSelectedIndex) {
-        searchBar.setSelectedIndex(this.selectedSearchIndex);
-      }
-    }
-  }
+  $navigateSearchResultsDown(event: INavigateSearchResultsEvent): void {}
 
   $clearSearchResults(): void {
     this._clearSearchResults();
