@@ -1160,6 +1160,9 @@ export default class Home extends BaseScreen {
   }
 
   _handleUp(): boolean {
+    const token = localStorage.getItem("auth_token");
+    const isLoggedIn = !!token;
+
     // From watchlist, navigate within it first
     if (this.currentFocusIndex === 6) {
       const watchlist = this.tag("WatchlistPanel") as WatchlistPanel;
@@ -1169,6 +1172,16 @@ export default class Home extends BaseScreen {
       // If at top of watchlist, exit to 1M button
       console.log("🔙 Exiting watchlist, returning to 1M button");
       this.currentFocusIndex = 2;
+      this._updateFocus();
+      return true;
+    } else if (this.currentFocusIndex === 5 && isLoggedIn) {
+      // From Star button, go to Search
+      this.currentFocusIndex = 0;
+      this._updateFocus();
+      return true;
+    } else if (this.currentFocusIndex === 4 && !isLoggedIn) {
+      // From 1Y button (when not logged in, no star), go to Search
+      this.currentFocusIndex = 0;
       this._updateFocus();
       return true;
     }
@@ -1330,6 +1343,10 @@ export default class Home extends BaseScreen {
             }
           }
 
+          // Exit watchlist and switch focus to 1M button
+          this.currentFocusIndex = 2;
+          this._updateFocus();
+
           // Update star button and load data
           this._updateWatchlistStarButton();
           void this._loadStockData(selectedStock);
@@ -1346,14 +1363,15 @@ export default class Home extends BaseScreen {
   }
 
   _handleBack(): boolean {
-    // Back button exits watchlist and returns to 1M button
+    // Back button only works from watchlist to exit to 1M button
     if (this.currentFocusIndex === 6) {
-      console.log("🔙 Back button pressed, exiting watchlist to 1M");
       this.currentFocusIndex = 2;
       this._updateFocus();
       return true;
     }
-    return false;
+    // For all other buttons (1M, 3M, 1Y, Star, Search, Sign In), consume the event but do nothing
+    // This prevents the back button from navigating away from the home screen
+    return true;
   }
 
   updateAuthButton(isLoggedIn: boolean): void {
