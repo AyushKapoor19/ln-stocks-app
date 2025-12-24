@@ -171,6 +171,16 @@ export default class SearchScreen extends BaseScreen {
     this._loadPopularStocks();
   }
 
+  override _attach(): void {
+    super._attach();
+    // Reset focus to first key (row 0, col 0 - letter "a") whenever screen is opened
+    this.selectedKeyRow = 0;
+    this.selectedKeyCol = 0;
+    this.currentFocus = "keyboard";
+    this.selectedCardIndex = -1;
+    this._updateKeyboardFocus();
+  }
+
   override _detach(): void {
     if (this.cursorBlinkInterval) {
       clearInterval(this.cursorBlinkInterval);
@@ -987,9 +997,29 @@ export default class SearchScreen extends BaseScreen {
   }
 
   override _handleBack(): boolean {
-    console.log("✅ Closing search screen");
-    this.fireAncestors("$closeSearch");
-    return true;
+    // Cards (index > 0) → Cards (index 0) --> Keyboard --> Home
+    if (this.currentFocus === "cards") {
+      if (this.selectedCardIndex > 0) {
+        // Go to first card (index 0)
+        this.selectedCardIndex = 0;
+        this._scrollGridToCard();
+        this._updateCardFocus();
+        return true;
+      } else {
+        // Already on first card, go back to keyboard
+        this.currentFocus = "keyboard";
+        this.selectedCardIndex = -1;
+        this._updateKeyboardFocus();
+        this._updateCardFocus();
+        return true;
+      }
+    } else if (this.currentFocus === "keyboard") {
+      // On keyboard, close search and go to home
+      console.log("✅ Closing search screen");
+      this.fireAncestors("$closeSearch");
+      return true;
+    }
+    return false;
   }
 
   // Laptop keyboard support
@@ -997,10 +1027,15 @@ export default class SearchScreen extends BaseScreen {
     const key = event.key;
 
     if (key === "Backspace" && this.currentFocus === "keyboard") {
-      this.searchQuery = this.searchQuery.slice(0, -1);
-      this._updateQueryDisplay();
-      this._debouncedSearch();
-      return true;
+      // Only capture backspace if there's text to delete
+      // Otherwise, let it pass through to _handleBack for navigation
+      if (this.searchQuery.length > 0) {
+        this.searchQuery = this.searchQuery.slice(0, -1);
+        this._updateQueryDisplay();
+        this._debouncedSearch();
+        return true;
+      }
+      return false;
     } else if (key === " " && this.currentFocus === "keyboard") {
       this.searchQuery += " ";
       this._updateQueryDisplay();
