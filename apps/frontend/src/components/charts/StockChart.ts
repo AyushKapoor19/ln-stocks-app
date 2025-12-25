@@ -2,6 +2,48 @@ import { Lightning } from "@lightningjs/sdk";
 import BaseComponent from "../BaseComponent";
 import { Colors } from "../../constants/Colors";
 import { ISeriesData, ISeriesPoint } from "../../types/events";
+import {
+  Chart,
+  LineController,
+  LineElement,
+  PointElement,
+  LinearScale,
+  TimeScale,
+  Filler,
+  Tooltip,
+  Legend,
+  CategoryScale,
+} from "chart.js";
+
+// Register Chart.js components
+Chart.register(
+  LineController,
+  LineElement,
+  PointElement,
+  LinearScale,
+  TimeScale,
+  CategoryScale,
+  Filler,
+  Tooltip,
+  Legend
+);
+
+// Plugin to draw black background
+const backgroundColorPlugin = {
+  id: "customCanvasBackgroundColor",
+  beforeDraw: (chart: Chart) => {
+    const { ctx, chartArea } = chart;
+    if (!chartArea) return;
+
+    ctx.save();
+    ctx.fillStyle = "#000000"; // Pure black
+    ctx.fillRect(0, 0, chart.width, chart.height);
+    ctx.restore();
+  },
+};
+
+// Register the background plugin
+Chart.register(backgroundColorPlugin);
 
 interface ChartConfiguration {
   chartWidth?: number;
@@ -14,23 +56,16 @@ interface ChartConfiguration {
 }
 
 /**
- * StockChart Component
- *
- * All dimensions are defined in 1080p coordinates.
- * Canvas is automatically scaled based on device resolution and precision.
+ * StockChart Component using Chart.js
  */
 export default class StockChart extends BaseComponent {
   private canvas: HTMLCanvasElement | null = null;
-  private ctx: CanvasRenderingContext2D | null = null;
+  private chart: Chart | null = null;
   private chartData: number[] = [];
   private timestamps: number[] = [];
-  private animationProgress = 0;
 
   private chartWidth = 1600;
   private chartHeight = 520;
-  private padding = 40;
-  private bottomPadding = 60;
-  private rightPadding = 80;
   private _lineColor = "#00ff88";
   private canvasLeft = 134;
   private canvasTop = 380;
@@ -47,7 +82,7 @@ export default class StockChart extends BaseComponent {
 
   _init(): void {
     this._readConfiguration();
-    this.createCanvasChart();
+    this.createChartJsChart();
   }
 
   showCanvas(): void {
@@ -58,7 +93,12 @@ export default class StockChart extends BaseComponent {
 
   hideCanvas(): void {
     if (this.canvas) {
-      this.canvas.style.display = "none";
+      this.canvas.style.opacity = "0";
+      setTimeout(() => {
+        if (this.canvas) {
+          this.canvas.style.display = "none";
+        }
+      }, 300);
     }
   }
 
@@ -66,24 +106,52 @@ export default class StockChart extends BaseComponent {
     const config = this as unknown as ChartConfiguration;
     this.chartWidth = config.chartWidth || this.chartWidth;
     this.chartHeight = config.chartHeight || this.chartHeight;
-    this.padding = config.padding || this.padding;
-    this.bottomPadding = config.bottomPadding || this.bottomPadding;
     this._lineColor = config.lineColor || this._lineColor;
     this.canvasLeft = config.canvasLeft || this.canvasLeft;
     this.canvasTop = config.canvasTop || this.canvasTop;
 
-    console.log("Chart Configuration:", {
+    console.log("📊 Chart.js Configuration:", {
       chartWidth: this.chartWidth,
       chartHeight: this.chartHeight,
-      padding: this.padding,
-      bottomPadding: this.bottomPadding,
       lineColor: this._lineColor,
       canvasLeft: this.canvasLeft,
       canvasTop: this.canvasTop,
     });
   }
 
-  private createCanvasChart(): void {
+  private createGradient(
+    ctx: CanvasRenderingContext2D,
+    chartArea: any,
+    lineColor: string
+  ): CanvasGradient {
+    const gradient = ctx.createLinearGradient(
+      0,
+      chartArea.top,
+      0,
+      chartArea.bottom
+    );
+    const isPositive = lineColor.includes("00ff88");
+
+    if (isPositive) {
+      // Green gradient - fills entire chart area from line to bottom
+      gradient.addColorStop(0, "rgba(0, 255, 136, 0.5)");
+      gradient.addColorStop(0.25, "rgba(0, 255, 136, 0.35)");
+      gradient.addColorStop(0.5, "rgba(0, 255, 136, 0.2)");
+      gradient.addColorStop(0.75, "rgba(0, 255, 136, 0.1)");
+      gradient.addColorStop(1, "rgba(0, 255, 136, 0.02)");
+    } else {
+      // Red gradient - fills entire chart area from line to bottom
+      gradient.addColorStop(0, "rgba(255, 70, 70, 0.5)");
+      gradient.addColorStop(0.25, "rgba(255, 70, 70, 0.35)");
+      gradient.addColorStop(0.5, "rgba(255, 70, 70, 0.2)");
+      gradient.addColorStop(0.75, "rgba(255, 70, 70, 0.1)");
+      gradient.addColorStop(1, "rgba(255, 70, 70, 0.02)");
+    }
+
+    return gradient;
+  }
+
+  private createChartJsChart(): void {
     const stagePrecision = this.precision;
     const stageDevicePixelRatio =
       (this.stage.getOption("devicePixelRatio") as number) || 1;
@@ -104,35 +172,127 @@ export default class StockChart extends BaseComponent {
     this.canvas.style.top = `${this.canvasTop}px`;
     this.canvas.style.zIndex = "10";
     this.canvas.style.opacity = "0";
+    this.canvas.style.backgroundColor = "#000000"; // Pure black background
 
     const baseTransform = `scale(${stagePrecision})`;
-    this.canvas.style.transform = `${baseTransform} translateY(20px)`;
+    this.canvas.style.transform = baseTransform;
     this.canvas.style.transformOrigin = "0 0";
-    this.canvas.style.transition = "all 1.2s cubic-bezier(0.4, 0, 0.2, 1)";
+    this.canvas.style.transition = "opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1)";
 
-    this.ctx = this.canvas.getContext("2d");
-
-    if (this.ctx) {
-      this.ctx.scale(renderDpr, renderDpr);
-      this.ctx.imageSmoothingEnabled = true;
-      this.ctx.imageSmoothingQuality = "high";
-      // @ts-ignore - textRendering is not in CanvasRenderingContext2D types but works in browsers
-      this.ctx.textRendering = "optimizeLegibility";
+    const appContainer = document.getElementById("app");
+    if (appContainer && appContainer.parentNode) {
+      appContainer.parentNode.appendChild(this.canvas);
     }
 
-    const canvasContainer = document.getElementById("app") as HTMLCanvasElement;
-    if (canvasContainer && canvasContainer.parentNode) {
-      canvasContainer.parentNode.appendChild(this.canvas);
+    const ctx = this.canvas.getContext("2d");
+    if (!ctx) {
+      console.error("Failed to get canvas context");
+      return;
     }
 
-    console.log(
-      `📊 Canvas created with precision: ${stagePrecision.toFixed(
-        3
-      )}, renderDpr: ${renderDpr.toFixed(3)}`
-    );
-    console.log(
-      `📐 Design size: ${designWidth}x${designHeight}, Canvas pixels: ${this.canvas.width}x${this.canvas.height}`
-    );
+    // Scale context for high DPI
+    ctx.scale(renderDpr, renderDpr);
+
+    this.chart = new Chart(ctx, {
+      type: "line",
+      data: {
+        labels: [],
+        datasets: [
+          {
+            label: "Price",
+            data: [],
+            borderColor: this._lineColor,
+            backgroundColor: (context: any) => {
+              const chart = context.chart;
+              const { ctx, chartArea } = chart;
+
+              if (!chartArea) {
+                return "transparent";
+              }
+
+              return this.createGradient(ctx, chartArea, this._lineColor);
+            },
+            borderWidth: 2.5,
+            fill: "origin",
+            tension: 0.4,
+            pointRadius: 0,
+            pointHoverRadius: 6,
+            pointHoverBackgroundColor: this._lineColor,
+            pointHoverBorderColor: "#000000",
+            pointHoverBorderWidth: 3,
+          },
+        ],
+      },
+      options: {
+        responsive: false,
+        maintainAspectRatio: false,
+        animation: {
+          duration: 1500,
+          easing: "easeOutQuart",
+          delay: 100,
+          onComplete: () => {
+            console.log("✅ Chart animation complete");
+          },
+        },
+        interaction: {
+          intersect: false,
+          mode: "index",
+        },
+        plugins: {
+          legend: {
+            display: false,
+          },
+          tooltip: {
+            enabled: false,
+          },
+        },
+        layout: {
+          padding: 0,
+        },
+        backgroundColor: "#000000", // Pure black background
+        scales: {
+          x: {
+            type: "category",
+            grid: {
+              display: false,
+            },
+            ticks: {
+              color: "#888888",
+              font: {
+                size: 14,
+              },
+              maxRotation: 0,
+              autoSkip: true,
+              maxTicksLimit: 8,
+            },
+            border: {
+              display: false,
+            },
+          },
+          y: {
+            position: "right",
+            grid: {
+              color: "rgba(255, 255, 255, 0.08)",
+            },
+            ticks: {
+              color: "#888888",
+              font: {
+                size: 14,
+              },
+              callback: function (value: any) {
+                return "$" + value.toFixed(2);
+              },
+            },
+            border: {
+              display: false,
+            },
+            grace: "5%", // Add 5% padding top/bottom for better gradient visibility
+          },
+        },
+      },
+    });
+
+    console.log("✅ Chart.js initialized successfully");
   }
 
   set points(data: number[]) {
@@ -141,8 +301,7 @@ export default class StockChart extends BaseComponent {
     if (!data || data.length === 0) return;
 
     this.chartData = data;
-    this.animationProgress = 0;
-    this.animateChart();
+    this.updateChartData();
   }
 
   set seriesData(data: ISeriesData) {
@@ -151,19 +310,37 @@ export default class StockChart extends BaseComponent {
     this.currentPeriod = data.period || "1W";
     this.timestamps = data.points.map((p: ISeriesPoint) => p.t);
     this.chartData = data.points.map((p: ISeriesPoint) => p.c);
-    this.animationProgress = 0;
 
     console.log(
       `📊 Chart loaded ${this.chartData.length} points for period ${this.currentPeriod}`
     );
 
-    this.animateChart();
+    this.updateChartData();
   }
 
   set lineColor(newColor: string) {
     this._lineColor = newColor;
-    if (this.chartData && this.chartData.length > 0) {
-      this.drawChart();
+
+    if (this.chart && this.chart.data.datasets[0]) {
+      this.chart.data.datasets[0].borderColor = newColor;
+      (this.chart.data.datasets[0] as any).pointHoverBackgroundColor = newColor;
+
+      // Update backgroundColor function to use new color
+      this.chart.data.datasets[0].backgroundColor = (context: any) => {
+        const chart = context.chart;
+        const { ctx, chartArea } = chart;
+
+        if (!chartArea) {
+          return "transparent";
+        }
+
+        return this.createGradient(ctx, chartArea, newColor);
+      };
+
+      // Re-animate with new colors
+      if (this.chartData.length > 0) {
+        this.updateChartData();
+      }
     }
   }
 
@@ -171,286 +348,45 @@ export default class StockChart extends BaseComponent {
     return this._lineColor;
   }
 
-  private animateChart(): void {
-    if (!this.canvas) return;
+  private updateChartData(): void {
+    if (!this.chart || !this.chartData.length) return;
 
-    const stagePrecision = this.precision;
-    const baseTransform = `scale(${stagePrecision})`;
+    // Generate time labels based on period
+    const labels = this.generateTimeLabels();
 
-    setTimeout(() => {
-      if (this.canvas) {
-        this.canvas.style.opacity = "1";
-        this.canvas.style.transform = `${baseTransform} translateY(0)`;
-      }
-    }, 100);
+    // Update chart data
+    this.chart.data.labels = labels;
+    this.chart.data.datasets[0].data = this.chartData;
 
-    this.animateDrawing();
+    // Trigger smooth animation
+    this.chart.update("active");
+
+    // Fade in canvas
+    this.animateFadeIn();
   }
 
-  private animateDrawing(): void {
-    const animate = () => {
-      this.animationProgress += 0.03;
-      if (this.animationProgress > 1) {
-        this.animationProgress = 1;
-      }
-
-      this.drawChart();
-
-      if (this.animationProgress < 1) {
-        requestAnimationFrame(animate);
-      }
-    };
-
-    animate();
-  }
-
-  private drawChart(): void {
-    if (!this.ctx || !this.chartData.length) return;
-
-    const width = this.chartWidth;
-    const height = this.chartHeight;
-    const padding = this.padding;
-    const bottomPadding = this.bottomPadding;
-    const rightPadding = this.rightPadding;
-
-    // Clear canvas with black background
-    this.ctx.clearRect(0, 0, width, height);
-    this.ctx.fillStyle = "#000000";
-    this.ctx.fillRect(0, 0, width, height);
-
-    const min = Math.min.apply(null, this.chartData);
-    const max = Math.max.apply(null, this.chartData);
-    const range = Math.max(max - min, 1);
-
-    this.drawGridLines(
-      width,
-      height,
-      padding,
-      rightPadding,
-      bottomPadding,
-      min,
-      max
-    );
-
-    const visiblePoints = Math.floor(
-      this.chartData.length * this.animationProgress
-    );
-    if (visiblePoints < 2) return;
-
-    const data = this.chartData.slice(0, visiblePoints);
-
-    const gradient = this.ctx.createLinearGradient(
-      0,
-      padding,
-      0,
-      height - bottomPadding
-    );
-
-    const isPositive = this._lineColor.includes("00ff88");
-
-    if (isPositive) {
-      gradient.addColorStop(0, `rgba(0, 100, 80, 0.3)`);
-      gradient.addColorStop(0.5, `rgba(0, 60, 50, 0.15)`);
-      gradient.addColorStop(1, `rgba(0, 30, 25, 0.0)`);
-    } else {
-      gradient.addColorStop(0, `rgba(100, 30, 30, 0.3)`);
-      gradient.addColorStop(0.5, `rgba(60, 20, 20, 0.15)`);
-      gradient.addColorStop(1, `rgba(30, 10, 10, 0.0)`);
+  private generateTimeLabels(): string[] {
+    if (!this.timestamps.length) {
+      return this.chartData.map((_, i) => i.toString());
     }
 
-    this.ctx.beginPath();
-    data.forEach((point, index) => {
-      const x =
-        padding +
-        (index / (data.length - 1)) * (width - padding - rightPadding);
-      const y =
-        padding +
-        (1 - (point - min) / range) * (height - padding - bottomPadding);
+    const monthNames = [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
+    ];
 
-      if (index === 0) {
-        if (this.ctx) {
-          this.ctx.moveTo(x, y);
-        }
-      } else {
-        if (this.ctx) {
-          this.ctx.lineTo(x, y);
-        }
-      }
-    });
-
-    const lastX =
-      padding +
-      ((data.length - 1) / (data.length - 1)) *
-        (width - padding - rightPadding);
-    const bottomY = height - bottomPadding;
-    this.ctx.lineTo(lastX, bottomY);
-    this.ctx.lineTo(padding, bottomY);
-    this.ctx.closePath();
-    this.ctx.fillStyle = gradient;
-    this.ctx.fill();
-
-    this.ctx.beginPath();
-
-    if (data.length > 2) {
-      const points = data.map((point, index) => ({
-        x:
-          padding +
-          (index / (data.length - 1)) * (width - padding - rightPadding),
-        y:
-          padding +
-          (1 - (point - min) / range) * (height - padding - bottomPadding),
-      }));
-
-      this.ctx.moveTo(points[0].x, points[0].y);
-
-      for (let i = 1; i < points.length - 1; i++) {
-        const currentPoint = points[i];
-        const nextPoint = points[i + 1];
-
-        const controlPointX = (currentPoint.x + nextPoint.x) / 2;
-        const controlPointY = (currentPoint.y + nextPoint.y) / 2;
-
-        this.ctx.quadraticCurveTo(
-          currentPoint.x,
-          currentPoint.y,
-          controlPointX,
-          controlPointY
-        );
-      }
-
-      const lastPoint = points[points.length - 1];
-      this.ctx.lineTo(lastPoint.x, lastPoint.y);
-    } else {
-      data.forEach((point, index) => {
-        const x =
-          padding +
-          (index / (data.length - 1)) * (width - padding - rightPadding);
-        const y =
-          padding +
-          (1 - (point - min) / range) * (height - padding - bottomPadding);
-
-        if (index === 0) {
-          if (this.ctx) {
-            this.ctx.moveTo(x, y);
-          }
-        } else {
-          if (this.ctx) {
-            this.ctx.lineTo(x, y);
-          }
-        }
-      });
-    }
-
-    this.ctx.lineWidth = 2.5;
-    this.ctx.strokeStyle = this._lineColor;
-    this.ctx.lineCap = "round";
-    this.ctx.lineJoin = "round";
-
-    this.ctx.shadowColor = this._lineColor;
-    this.ctx.shadowBlur = 3;
-    this.ctx.shadowOffsetX = 0;
-    this.ctx.shadowOffsetY = 0;
-
-    this.ctx.stroke();
-    this.ctx.shadowBlur = 0;
-
-    this.drawMonthLabels(width, height, padding, rightPadding, bottomPadding);
-    this.drawPriceLabels(
-      width,
-      height,
-      padding,
-      rightPadding,
-      bottomPadding,
-      min,
-      max
-    );
-  }
-
-  private drawGridLines(
-    width: number,
-    height: number,
-    padding: number,
-    rightPadding: number,
-    bottomPadding: number,
-    min: number,
-    max: number
-  ): void {
-    if (!this.ctx) return;
-
-    const labelCount = 5;
-
-    this.ctx.strokeStyle = "rgba(255, 255, 255, 0.1)";
-    this.ctx.lineWidth = 1;
-
-    for (let i = 0; i < labelCount; i++) {
-      const y =
-        padding +
-        (1 - i / (labelCount - 1)) * (height - padding - bottomPadding);
-
-      this.ctx.beginPath();
-      this.ctx.moveTo(padding, y);
-      this.ctx.lineTo(width - rightPadding, y);
-      this.ctx.stroke();
-    }
-  }
-
-  private drawMonthLabels(
-    width: number,
-    height: number,
-    padding: number,
-    rightPadding: number,
-    bottomPadding: number
-  ): void {
-    if (!this.ctx || !this.chartData || this.chartData.length === 0) return;
-
-    this.ctx.fillStyle = "#888888";
-    this.ctx.font = "16px Arial";
-    this.ctx.textAlign = "center";
-
-    const labelCount = 8;
-
-    for (let i = 0; i < labelCount; i++) {
-      const x =
-        padding + (i / (labelCount - 1)) * (width - padding - rightPadding);
-      const y = height - bottomPadding + 40;
-
-      const dataIndex = Math.floor(
-        (i / (labelCount - 1)) * (this.chartData.length - 1)
-      );
-
-      const labelText = this.generateTimeLabel(
-        dataIndex,
-        this.chartData.length
-      );
-
-      if (this.ctx && labelText) {
-        this.ctx.fillText(labelText, x, y);
-      }
-    }
-  }
-
-  private generateTimeLabel(
-    dataIndex: number,
-    totalDataPoints: number
-  ): string {
-    if (this.timestamps && this.timestamps[dataIndex]) {
-      const timestamp = this.timestamps[dataIndex];
+    return this.timestamps.map((timestamp) => {
       const date = new Date(timestamp);
-
-      const monthNames = [
-        "Jan",
-        "Feb",
-        "Mar",
-        "Apr",
-        "May",
-        "Jun",
-        "Jul",
-        "Aug",
-        "Sep",
-        "Oct",
-        "Nov",
-        "Dec",
-      ];
 
       switch (this.currentPeriod) {
         case "1D":
@@ -472,50 +408,38 @@ export default class StockChart extends BaseComponent {
         default:
           return date.toLocaleDateString();
       }
-    }
-
-    return "";
+    });
   }
 
-  private drawPriceLabels(
-    width: number,
-    height: number,
-    padding: number,
-    rightPadding: number,
-    bottomPadding: number,
-    min: number,
-    max: number
-  ): void {
-    if (!this.ctx) return;
+  private animateFadeIn(): void {
+    if (!this.canvas) return;
 
-    const range = max - min;
-    const labelCount = 5;
-    const step = range / (labelCount - 1);
+    // Reset opacity
+    this.canvas.style.opacity = "0";
 
-    this.ctx.fillStyle = "#888888";
-    this.ctx.font = "14px Arial";
-    this.ctx.textAlign = "right";
-
-    for (let i = 0; i < labelCount; i++) {
-      const price = min + i * step;
-      const y =
-        padding +
-        (1 - i / (labelCount - 1)) * (height - padding - bottomPadding);
-
-      const formattedPrice = price.toFixed(2);
-
-      if (this.ctx) {
-        this.ctx.fillText(formattedPrice, width - rightPadding + 60, y + 5);
+    // Smooth fade in with slight delay
+    setTimeout(() => {
+      if (this.canvas) {
+        this.canvas.style.opacity = "1";
       }
-    }
+    }, 50);
   }
 
   _detach(): void {
     this.hideCanvas();
+
+    if (this.chart) {
+      this.chart.destroy();
+      this.chart = null;
+    }
+
     if (this.canvas && this.canvas.parentNode) {
-      this.canvas.parentNode.removeChild(this.canvas);
-      this.canvas = null;
-      this.ctx = null;
+      setTimeout(() => {
+        if (this.canvas && this.canvas.parentNode) {
+          this.canvas.parentNode.removeChild(this.canvas);
+          this.canvas = null;
+        }
+      }, 300);
     }
   }
 }
