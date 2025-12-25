@@ -259,7 +259,7 @@ export default class StockChart extends BaseComponent {
             ticks: {
               color: "#888888",
               font: {
-                size: 14,
+                size: 30,
               },
               maxRotation: 0,
               autoSkip: true,
@@ -277,7 +277,7 @@ export default class StockChart extends BaseComponent {
             ticks: {
               color: "#888888",
               font: {
-                size: 14,
+                size: 20,
               },
               callback: function (value: any) {
                 return "$" + value.toFixed(2);
