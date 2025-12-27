@@ -1,11 +1,11 @@
 /**
  * Database Cache Service
- * 
+ *
  * Stores API responses in PostgreSQL for 24h to handle rate limits
  */
 
-import { pool } from '../utils/db.js';
-import type { ISeriesData } from '../types/series.js';
+import { pool } from "../utils/db.js";
+import type { ISeriesData } from "../types/series.js";
 
 class DBCacheService {
   /**
@@ -22,14 +22,16 @@ class DBCacheService {
       );
 
       if (result.rows.length > 0) {
-        console.log(`✅ DB cache HIT for ${symbol} ${period} - serving real data!`);
+        console.log(
+          `✅ DB cache HIT for ${symbol} ${period} - serving real data!`
+        );
         return result.rows[0].data as ISeriesData;
       }
 
       console.log(`📭 DB cache MISS for ${symbol} ${period} - will try API`);
       return null;
     } catch (error) {
-      console.error('DB cache read error:', error);
+      console.error("DB cache read error:", error);
       return null;
     }
   }
@@ -37,7 +39,11 @@ class DBCacheService {
   /**
    * Store series data in database with 24h expiry
    */
-  async setSeries(symbol: string, period: string, data: ISeriesData): Promise<void> {
+  async setSeries(
+    symbol: string,
+    period: string,
+    data: ISeriesData
+  ): Promise<void> {
     try {
       await pool.query(
         `INSERT INTO stock_series_cache (symbol, period, data, fetched_at, expires_at)
@@ -52,7 +58,7 @@ class DBCacheService {
 
       console.log(`💾 Cached ${symbol} ${period} to DB (24h TTL)`);
     } catch (error) {
-      console.error('DB cache write error:', error);
+      console.error("DB cache write error:", error);
     }
   }
 
@@ -66,10 +72,9 @@ class DBCacheService {
       );
       console.log(`🧹 Cleaned ${result.rowCount} expired cache entries`);
     } catch (error) {
-      console.error('DB cache cleanup error:', error);
+      console.error("DB cache cleanup error:", error);
     }
   }
 }
 
 export const dbCacheService = new DBCacheService();
-
