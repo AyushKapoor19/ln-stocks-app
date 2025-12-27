@@ -153,6 +153,48 @@ export default class SearchScreen extends BaseScreen {
           },
         },
 
+        NoResultsMessage: {
+          x: 640,
+          y: 400,
+          mountX: 0.5,
+          alpha: 0,
+          w: 800,
+
+          Icon: {
+            x: 400,
+            y: 0,
+            w: 80,
+            h: 80,
+            mountX: 0.5,
+            src: "assets/icons/no-results-icon.png",
+          },
+
+          Message: {
+            x: 400,
+            y: 120,
+            mountX: 0.5,
+            text: {
+              text: "No results found",
+              fontSize: 42,
+              fontStyle: FontStyle.Bold,
+              textColor: 0xff888888,
+              fontFace: FontFamily.Default,
+            },
+          },
+
+          Suggestion: {
+            x: 400,
+            y: 180,
+            mountX: 0.5,
+            text: {
+              text: "Try a different search term",
+              fontSize: 28,
+              textColor: 0xff666666,
+              fontFace: FontFamily.Default,
+            },
+          },
+        },
+
         CardsGrid: {
           x: 40,
           y: 130,
@@ -447,6 +489,27 @@ export default class SearchScreen extends BaseScreen {
     this._updateTitleText();
 
     grid.childList.clear();
+
+    // Show/hide "No results found" message
+    const noResultsMessage = this.tag("RightPanel")?.tag("NoResultsMessage");
+    const hasQuery = this.searchQuery.length > 0;
+    const hasResults = this.searchResults.length > 0;
+
+    if (noResultsMessage) {
+      if (hasQuery && !hasResults) {
+        // Show no results message
+        noResultsMessage.setSmooth("alpha", 1, { duration: 0.3 });
+      } else {
+        // Hide no results message
+        noResultsMessage.setSmooth("alpha", 0, { duration: 0.2 });
+      }
+    }
+
+    // If no results and user has searched, don't build cards
+    if (hasQuery && !hasResults) {
+      console.log("📭 No results found for:", this.searchQuery);
+      return;
+    }
 
     console.log(`✅ Building ${this.searchResults.length} stock cards`);
 
