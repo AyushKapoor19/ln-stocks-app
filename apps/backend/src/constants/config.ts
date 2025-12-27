@@ -25,7 +25,8 @@ export const DEVICE_CODE_EXPIRES_IN = 15 * 60 * 1000; // 15 minutes
 export const DEVICE_CODE_POLL_INTERVAL = 3000; // 3 seconds
 
 // Cache Configuration
-export const CACHE_DURATION = 30000; // 30 seconds
+// PostgreSQL (24h) provides backup if server restarts
+export const CACHE_DURATION = 15 * 60 * 1000; // 15 minutes
 
 // API Limits
 export const MAX_SYMBOLS_PER_REQUEST = 30;

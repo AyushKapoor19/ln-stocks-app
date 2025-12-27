@@ -6,6 +6,8 @@
 
 import { polygonService } from "./polygonService.js";
 import { finnhubService } from "./finnhubService.js";
+import { cacheService } from "./cacheService.js";
+import { dbCacheService } from "./dbCacheService.js";
 import { FINNHUB_KEY } from "../constants/config.js";
 import type { IStockMetrics, IFinnhubMetricsResponse } from "../types/metrics.js";
 import fetch from "node-fetch";
@@ -61,11 +63,28 @@ class MetricsService {
    * Get metrics from Polygon historical data
    * - Volume: from latest 1D candle
    * - 52-week range: from 1Y historical data
+   * 
+   * Uses caching layer to avoid redundant API calls
    */
   private async _getPolygonMetrics(symbol: string): Promise<Partial<IStockMetrics>> {
     try {
-      // Fetch 1Y data to calculate 52-week range and get recent volume
-      const yearData = await polygonService.fetchSeries(symbol, "1Y");
+      // Check cache first (in-memory → PostgreSQL)
+      let yearData = cacheService.getSeries(symbol, "1Y");
+      
+      if (!yearData) {
+        yearData = await dbCacheService.getSeries(symbol, "1Y");
+      }
+      
+      // Only hit API if not cached
+      if (!yearData) {
+        yearData = await polygonService.fetchSeries(symbol, "1Y");
+        
+        // Cache the result for future use
+        if (yearData) {
+          cacheService.setSeries(symbol, "1Y", yearData);
+          await dbCacheService.setSeries(symbol, "1Y", yearData);
+        }
+      }
       
       if (!yearData || !yearData.points || yearData.points.length === 0) {
         console.log(`No Polygon data for ${symbol}`);

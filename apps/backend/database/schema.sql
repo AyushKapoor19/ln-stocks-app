@@ -1,3 +1,7 @@
+-- Initial Database Schema
+-- Run this manually in Neon SQL Editor
+-- For subsequent changes, use: npm run migrate
+
 -- Users table
 CREATE TABLE IF NOT EXISTS users (
   id SERIAL PRIMARY KEY,
