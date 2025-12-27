@@ -399,14 +399,6 @@ export default class SearchScreen extends BaseScreen {
         colorTop: isPositive ? 0x25059669 : 0x25991b1b,
       });
     }
-
-    const gradientAccent = card.tag("GradientAccent");
-    if (gradientAccent) {
-      gradientAccent.patch({
-        colorBottom: isPositive ? 0x85065f46 : 0x85991b1b,
-        alpha: 0,
-      });
-    }
   }
 
   private _buildStockCards(): void {
@@ -484,18 +476,6 @@ export default class SearchScreen extends BaseScreen {
           colorTop: isPositive ? 0x1a059669 : 0x1a991b1b,
           colorBottom: 0x00000000,
           shader: { type: Lightning.shaders.RoundedRectangle, radius: 24 },
-        },
-
-        GradientAccent: {
-          x: 0,
-          y: gridConfig.cardHeight * 0.6,
-          w: gridConfig.cardWidth,
-          h: gridConfig.cardHeight * 0.4,
-          rect: true,
-          colorTop: 0x00000000,
-          colorBottom: isPositive ? 0xd9065f46 : 0xd9991b1b,
-          shader: { type: Lightning.shaders.RoundedRectangle, radius: 24 },
-          alpha: 0,
         },
 
         Content: {
@@ -628,7 +608,6 @@ export default class SearchScreen extends BaseScreen {
       const card = this.tag(`Card_${index}`);
       if (card) {
         const gradientOverlay = card.tag("GradientOverlay");
-        const gradientAccent = card.tag("GradientAccent");
         const isFocused =
           this.currentFocus === "cards" && index === this.selectedCardIndex;
 
@@ -638,22 +617,12 @@ export default class SearchScreen extends BaseScreen {
         // Gradient colors - dramatic difference between states
         const primaryGradientUnfocused = isPositive ? 0x1a059669 : 0x1a991b1b; // 10% opacity
         const primaryGradientFocused = isPositive ? 0xd9047857 : 0xd97f1d1d; // 85% opacity
-        const accentGradientFocused = isPositive ? 0xd9065f46 : 0xd9991b1b; // 85% opacity
 
         if (gradientOverlay) {
           gradientOverlay.patch({
             colorTop: isFocused
               ? primaryGradientFocused
               : primaryGradientUnfocused,
-          });
-        }
-
-        if (gradientAccent) {
-          gradientAccent.patch({
-            colorBottom: accentGradientFocused,
-          });
-          gradientAccent.setSmooth("alpha", isFocused ? 1 : 0, {
-            duration: 0.2,
           });
         }
 
