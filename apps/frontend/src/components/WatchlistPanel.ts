@@ -147,9 +147,9 @@ export default class WatchlistPanel
           y: 140,
           mount: 0.5,
           text: {
-            text: "☆",
+            text: "⭐",
             fontFace: FontFamily.Default,
-            fontSize: 72,
+            fontSize: 47,
             textColor: 0xff555555,
           },
         },
