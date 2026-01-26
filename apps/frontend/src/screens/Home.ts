@@ -40,7 +40,7 @@ interface LightningComponent {
   setSmooth(
     property: string,
     value: number,
-    options: { duration: number }
+    options: { duration: number },
   ): void;
 }
 
@@ -80,6 +80,7 @@ export default class Home extends BaseScreen {
     "WatchlistStarButton",
     "WatchlistPanel",
   ];
+
   private marketIndices: MarketIndex[] = [
     {
       symbol: "SPY",
@@ -303,8 +304,8 @@ export default class Home extends BaseScreen {
             };
             return acc;
           },
-          {}
-        )
+          {},
+        ),
       ),
 
       // Watchlist Star Button (Add/Remove from watchlist)
@@ -730,11 +731,6 @@ export default class Home extends BaseScreen {
   _init(): void {
     super._init();
 
-    console.log("Initializing Stock Dashboard...");
-    console.log(
-      `📐 Screen dimensions: ${this.coordsWidth}x${this.coordsHeight} (1080p design)`
-    );
-
     this._updateMarketStatus();
     this._updateMarketIndices();
     this._updateWatchlistStarButton();
@@ -769,16 +765,13 @@ export default class Home extends BaseScreen {
 
   async _active(): Promise<void> {
     try {
-      console.log(`Stock Dashboard ready (${this.currentSymbol})`);
       this._updateMarketStatus();
       this._updateMarketIndices();
       this._updateWatchlist();
       this._loadStockData(this.currentSymbol);
       this._restoreButtonStates();
       this._updateFocus();
-    } catch (error) {
-      console.error("❌ Failed to initialize:", error);
-    }
+    } catch (error) {}
   }
 
   private _restoreButtonStates(): void {
@@ -789,9 +782,6 @@ export default class Home extends BaseScreen {
     if (this.isLoading) return;
 
     this.isLoading = true;
-    console.log(
-      `📈 Loading ${symbol} data for period: ${this.currentTimePeriod.id}`
-    );
 
     try {
       const [quote, series] = await Promise.all([
@@ -801,7 +791,6 @@ export default class Home extends BaseScreen {
 
       if (quote) {
         this.currentPrice = quote.price;
-        console.log(`✅ Using REAL Polygon.io price: $${quote.price}`);
       }
 
       if (series && series.points && series.points.length > 0) {
@@ -818,22 +807,10 @@ export default class Home extends BaseScreen {
 
         this._updatePriceDisplay();
 
-        console.log(
-          `📊 Calculated change for ${
-            this.currentTimePeriod.id
-          }: $${startingPrice} → $${currentPrice} = ${
-            this.currentChange >= 0 ? "+" : ""
-          }${this.currentChange} (${(this.currentChangePct * 100).toFixed(2)}%)`
-        );
-
         const chartData = stocksApi.formatSeriesForChart(series);
         if (chartData.length > 0) {
           this._updateChartWithTimestamps(series);
-          console.log(
-            `✅ Loaded ${chartData.length} chart points from ${series.source}`
-          );
         } else {
-          console.warn("⚠️ No chart data available");
         }
       } else {
         if (quote) {
@@ -841,10 +818,8 @@ export default class Home extends BaseScreen {
           this.currentChangePct = quote.changePct;
           this._updatePriceDisplay();
         }
-        console.warn("⚠️ No series data available");
       }
     } catch (error) {
-      console.error("❌ Failed to load stock data:", error);
     } finally {
       this.isLoading = false;
     }
@@ -876,7 +851,7 @@ export default class Home extends BaseScreen {
       if (changeElement) {
         changeElement.text.text = stocksApi.formatChange(
           this.currentChange,
-          this.currentChangePct
+          this.currentChangePct,
         );
         changeElement.text.textColor = priceColor;
       }
@@ -930,7 +905,6 @@ export default class Home extends BaseScreen {
 
     // Fetch real market data for major indices
     try {
-      console.log("Fetching real market indices data...");
       const [spyQuote, diaQuote, qqqQuote] = await Promise.all([
         stocksApi.getQuote("SPY"), // S&P 500 ETF
         stocksApi.getQuote("DIA"), // Dow Jones ETF
@@ -985,15 +959,12 @@ export default class Home extends BaseScreen {
             index.change >= 0 ? Colors.stockGreenBright : Colors.stockRed;
           const sign = index.change >= 0 ? "+" : "";
           changeElement.text.text = `${sign}${(index.changePct * 100).toFixed(
-            2
+            2,
           )}%`;
           changeElement.text.textColor = changeColor;
         }
       });
-
-      console.log("✅ Market indices updated with real data");
     } catch (error) {
-      console.error("❌ Failed to fetch market indices:", error);
       // Fall back to displaying existing hardcoded data if API fails
       const content = panel.tag("Content");
       if (!content) return;
@@ -1013,7 +984,7 @@ export default class Home extends BaseScreen {
             index.change >= 0 ? Colors.stockGreenBright : Colors.stockRed;
           const sign = index.change >= 0 ? "+" : "";
           changeElement.text.text = `${sign}${(index.changePct * 100).toFixed(
-            2
+            2,
           )}%`;
           changeElement.text.textColor = changeColor;
         }
@@ -1030,8 +1001,6 @@ export default class Home extends BaseScreen {
     statsPanel.setSmooth("y", FRAME_TOP + 380, { duration: 0.6, delay: 0.4 });
 
     try {
-      console.log(`Fetching real metrics for ${this.currentSymbol}...`);
-
       // Fetch real stock metrics and quote in parallel
       const [metrics, quote] = await Promise.all([
         stocksApi.getMetrics(this.currentSymbol),
@@ -1054,7 +1023,7 @@ export default class Home extends BaseScreen {
       let dayRange = "N/A";
       if (quote && quote.dayLow !== undefined && quote.dayHigh !== undefined) {
         dayRange = `${stocksApi.formatPrice(
-          quote.dayLow
+          quote.dayLow,
         )} - ${stocksApi.formatPrice(quote.dayHigh)}`;
       }
 
@@ -1066,7 +1035,7 @@ export default class Home extends BaseScreen {
         metrics.week52High !== undefined
       ) {
         week52Range = `${stocksApi.formatPrice(
-          metrics.week52Low
+          metrics.week52Low,
         )} - ${stocksApi.formatPrice(metrics.week52High)}`;
       }
 
@@ -1100,13 +1069,7 @@ export default class Home extends BaseScreen {
           stat4Value.text.text = week52Range;
         }
       }
-
-      console.log(
-        `✅ Stats panel updated with real data for ${this.currentSymbol}`
-      );
     } catch (error) {
-      console.error(`❌ Failed to update stats panel:`, error);
-
       // Fall back to N/A values
       const content = statsPanel.tag("Content");
       if (!content) return;
@@ -1190,7 +1153,7 @@ export default class Home extends BaseScreen {
         return true;
       }
       // If at top of watchlist, exit to 1M button
-      console.log("🔙 Exiting watchlist, returning to 1M button");
+
       this.currentFocusIndex = 2;
       this._updateFocus();
       return true;
@@ -1214,33 +1177,21 @@ export default class Home extends BaseScreen {
       const token = localStorage.getItem("auth_token");
       const watchlistData = localStorage.getItem("user_watchlist");
 
-      console.log("🔍 Attempting to focus watchlist from button:", {
-        hasToken: !!token,
-        hasWatchlistData: !!watchlistData,
-        currentFocus: this.currentFocusIndex,
-      });
-
       if (token && watchlistData) {
         try {
           const watchlist = JSON.parse(watchlistData);
           if (Array.isArray(watchlist) && watchlist.length > 0) {
-            console.log(
-              "✅ Focusing watchlist with",
-              watchlist.length,
-              "stocks"
-            );
             this.currentFocusIndex = 6; // Watchlist index
             this._updateFocus();
             return true;
           } else {
-            console.log("📭 Watchlist is empty");
           }
-        } catch (error) {
-          console.error("❌ Error parsing watchlist:", error);
-        }
+        } catch (error) {}
       } else {
-        if (!token) console.log("❌ Not signed in");
-        if (!watchlistData) console.log("❌ No watchlist data");
+        if (!token) {
+        }
+        if (!watchlistData) {
+        }
       }
     } else if (this.currentFocusIndex === 6) {
       // Navigate within watchlist
@@ -1336,16 +1287,15 @@ export default class Home extends BaseScreen {
 
     if (this.currentFocusIndex === 0) {
       // Open full-screen search
-      console.log("Opening full-screen search");
+
       this.fireAncestors("$openSearch");
       return true;
     } else if (this.currentFocusIndex === 1) {
-      console.log("Opening Account/Auth screen");
       this.fireAncestors("$showAuthFlow");
       return true;
     } else if (this.currentFocusIndex === 5 && isLoggedIn) {
       // Star button pressed - toggle watchlist (only if logged in)
-      console.log("Toggling watchlist for", this.currentSymbol);
+
       this._toggleWatchlist();
       return true;
     } else if (this.currentFocusIndex === 6) {
@@ -1354,7 +1304,6 @@ export default class Home extends BaseScreen {
       if (watchlist) {
         const selectedStock = watchlist.getSelectedStock();
         if (selectedStock) {
-          console.log(`Loading stock from watchlist: ${selectedStock}`);
           this.currentSymbol = selectedStock;
 
           // Update UI with symbol
@@ -1428,7 +1377,6 @@ export default class Home extends BaseScreen {
 
     this._updateFocus();
 
-    console.log(`🕐 Time period changed to: ${newPeriod.label}`);
     this._loadStockData(this.currentSymbol);
   }
 
@@ -1441,8 +1389,6 @@ export default class Home extends BaseScreen {
   }
 
   private async _selectStock(symbol: string, name: string): Promise<void> {
-    console.log(`✅ Selected stock: ${symbol} - ${name}`);
-
     this.currentSymbol = symbol;
     this.currentStockName = name;
 
@@ -1467,7 +1413,6 @@ export default class Home extends BaseScreen {
    * Public method to load a stock from search screen
    */
   loadStockFromSearch(symbol: string, name: string): void {
-    console.log(`Loading stock from search: ${symbol} - ${name}`);
     this.currentSymbol = symbol;
     this.currentStockName = name;
 
@@ -1601,15 +1546,10 @@ export default class Home extends BaseScreen {
     // Update watchlist focus
     const watchlist = this.tag("WatchlistPanel") as WatchlistPanel;
     const isWatchlistFocused = this.currentFocusIndex === 6;
-    console.log(
-      `🎯 Home._updateFocus: watchlist=${!!watchlist}, isWatchlistFocused=${isWatchlistFocused}, currentFocus=${
-        this.currentFocusIndex
-      }`
-    );
+
     if (watchlist && watchlist.setFocused) {
       watchlist.setFocused(isWatchlistFocused);
     } else if (!watchlist) {
-      console.log("❌ WatchlistPanel component not found!");
     }
 
     this.stage.update();
@@ -1617,14 +1557,12 @@ export default class Home extends BaseScreen {
 
   $searchActivated(event: ISearchActivatedEvent): void {
     this.isSearchActive = true;
-    console.log("Search activated from SearchBar component");
   }
 
   $searchDeactivated(event: ISearchDeactivatedEvent): void {
     this.isSearchActive = false;
     this.searchResults = [];
     this._clearSearchResults();
-    console.log("Search deactivated from SearchBar component");
   }
 
   $showSearchResults(event: IShowSearchResultsEvent): void {}
@@ -1646,14 +1584,11 @@ export default class Home extends BaseScreen {
   }
 
   $authenticationSuccess(): void {
-    console.log("User authenticated, refreshing watchlist");
     this._updateWatchlistStarButton();
     this._updateWatchlist();
   }
 
   $signOut(): void {
-    console.log("🚪 User signed out, clearing watchlist");
-
     // If currently focused on star button or watchlist, move focus to 1M button
     if (this.currentFocusIndex === 5 || this.currentFocusIndex === 6) {
       this.currentFocusIndex = 2; // Move to 1M button

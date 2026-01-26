@@ -18,6 +18,7 @@ declare module "@lightningjs/sdk" {
 
         // Auth events
         $authSuccess(data: { user: any; token: string }): void;
+        $authenticationSuccess(data: { user: any; token: string }): void;
         $signOut(): void;
         $focusBackToTab(): void;
 

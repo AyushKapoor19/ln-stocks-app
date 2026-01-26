@@ -14,7 +14,7 @@ import type { IQueryParams } from "../types/api.js";
 
 export async function quotesRoute(
   request: FastifyRequest<{ Querystring: IQueryParams }>,
-  reply: FastifyReply
+  reply: FastifyReply,
 ): Promise<IQuotesResponse> {
   const symbols = parseSymbols(request.query.symbols);
 
@@ -47,7 +47,6 @@ export async function quotesRoute(
       cacheService.setQuote(symbol, fallback);
       out[symbol] = fallback;
     } catch (error) {
-      console.log(`💥 Error processing ${symbol}:`, error);
       out[symbol] = {
         symbol: symbol,
         price: 100,

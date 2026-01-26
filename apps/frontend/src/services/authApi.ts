@@ -17,7 +17,7 @@ class AuthApiService {
   async signup(
     email: string,
     password: string,
-    displayName?: string
+    displayName?: string,
   ): Promise<IAuthResponse> {
     try {
       const response = await fetch(`${this.baseUrl}/auth/signup`, {
@@ -29,7 +29,6 @@ class AuthApiService {
       const data = await response.json();
       return data;
     } catch (error) {
-      console.error("Signup failed:", error);
       return { success: false, error: "Network error" };
     }
   }
@@ -45,20 +44,19 @@ class AuthApiService {
       const result = await response.json();
       return result;
     } catch (error) {
-      console.error("Login failed:", error);
       return { success: false, error: "Network error" };
     }
   }
 
   async generateDeviceCode(
-    authType: "signin" | "signup" = "signin"
+    authType: "signin" | "signup" = "signin",
   ): Promise<IDeviceCodeResponse | null> {
     try {
       const response = await fetch(
         `${this.baseUrl}/auth/device-code/generate?authType=${authType}`,
         {
           method: "POST",
-        }
+        },
       );
 
       if (!response.ok) {
@@ -68,19 +66,18 @@ class AuthApiService {
       const data = await response.json();
       return data;
     } catch (error) {
-      console.error("Device code generation failed:", error);
       return null;
     }
   }
 
   async checkDeviceCodeStatus(
-    code: string
+    code: string,
   ): Promise<IDeviceCodeStatusResponse | null> {
     try {
       const response = await fetch(
         `${this.baseUrl}/auth/device-code/status?code=${encodeURIComponent(
-          code
-        )}`
+          code,
+        )}`,
       );
 
       if (!response.ok) {
@@ -90,7 +87,6 @@ class AuthApiService {
       const data = await response.json();
       return data;
     } catch (error) {
-      console.error("Device code status check failed:", error);
       return null;
     }
   }
@@ -104,7 +100,6 @@ class AuthApiService {
       const data = await response.json();
       return data;
     } catch (error) {
-      console.error("Token verification failed:", error);
       return { success: false, error: "Network error" };
     }
   }

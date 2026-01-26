@@ -14,7 +14,7 @@ interface SearchQuery {
 
 export async function enhancedSearchRoute(
   request: FastifyRequest<{ Querystring: SearchQuery }>,
-  reply: FastifyReply
+  reply: FastifyReply,
 ): Promise<void> {
   const { q: query, limit } = request.query;
 
@@ -54,7 +54,6 @@ export async function enhancedSearchRoute(
       results,
     });
   } catch (error) {
-    console.error(`❌ Enhanced search error:`, error);
     reply.code(500).send({
       error: "Internal Server Error",
       message: "Failed to search stocks",

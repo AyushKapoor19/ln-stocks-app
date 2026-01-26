@@ -265,13 +265,10 @@ export default class QRCodeScreen extends BaseScreen {
   }
 
   private async _generateDeviceCode(): Promise<void> {
-    console.log("🔄 Generating device code...");
-
     const response: IDeviceCodeResponse | null =
       await authApi.generateDeviceCode();
 
     if (!response) {
-      console.error("❌ Failed to generate device code");
       return;
     }
 
@@ -281,8 +278,6 @@ export default class QRCodeScreen extends BaseScreen {
     this._displayDeviceCode(response.code);
     this._displayQRCode(response.qrCodeDataUrl);
     this._startPolling(response.pollInterval);
-
-    console.log(`✅ Device code generated: ${response.code}`);
   }
 
   private _displayDeviceCode(code: string): void {
@@ -322,15 +317,12 @@ export default class QRCodeScreen extends BaseScreen {
     this.pollInterval = setInterval(async () => {
       await this._checkCodeStatus();
     }, interval);
-
-    console.log(`📡 Polling started (every ${interval}ms)`);
   }
 
   private _stopPolling(): void {
     if (this.pollInterval) {
       clearInterval(this.pollInterval);
       this.pollInterval = null;
-      console.log("📡 Polling stopped");
     }
   }
 
@@ -342,7 +334,6 @@ export default class QRCodeScreen extends BaseScreen {
     if (!status) return;
 
     if (status.status === "approved" && status.token && status.user) {
-      console.log("✅ Authentication approved!");
       this._stopPolling();
       authApi.saveToken(status.token);
       this.signal("$authenticationSuccess", {
@@ -350,7 +341,6 @@ export default class QRCodeScreen extends BaseScreen {
         token: status.token,
       });
     } else if (status.status === "expired") {
-      console.log("⏰ Device code expired");
       this._stopPolling();
     }
   }

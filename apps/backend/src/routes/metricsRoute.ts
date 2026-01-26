@@ -12,7 +12,7 @@ import type { IQueryParams } from "../types/api.js";
 
 export async function metricsRoute(
   request: FastifyRequest<{ Querystring: IQueryParams }>,
-  reply: FastifyReply
+  reply: FastifyReply,
 ): Promise<IMetricsResponse> {
   const symbols = parseSymbols(request.query.symbols);
 
@@ -29,7 +29,6 @@ export async function metricsRoute(
       const metrics = await metricsService.fetchMetrics(symbol);
       out[symbol] = metrics;
     } catch (error) {
-      console.log(`💥 Error processing metrics for ${symbol}:`, error);
       out[symbol] = {
         symbol,
         source: "estimated",
@@ -41,4 +40,3 @@ export async function metricsRoute(
 
   return out;
 }
-

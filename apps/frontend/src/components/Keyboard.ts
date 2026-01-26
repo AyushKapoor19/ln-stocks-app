@@ -42,6 +42,7 @@ export default class Keyboard extends Lightning.Component {
       "y",
       "z",
     ],
+
     ABC: [
       "A",
       "B",

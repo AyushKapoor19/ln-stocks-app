@@ -332,7 +332,6 @@ export default class SignUpScreen extends BaseScreen {
   }
 
   $authSuccess(data: { user: unknown; token: string }): void {
-    console.log("✅ Sign up successful");
     this.fireAncestors("$authSuccess", data);
   }
 
@@ -399,7 +398,7 @@ export default class SignUpScreen extends BaseScreen {
           this.currentTab === "mobile" ? 1 : 0,
           {
             duration: 0.3,
-          }
+          },
         );
       }
     }

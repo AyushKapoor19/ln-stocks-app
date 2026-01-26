@@ -523,7 +523,6 @@ export default class AccountScreen extends BaseScreen {
   }
 
   private _handleSignOut(): void {
-    console.log("🚪 Signing out...");
     // Clear stored token
     authApi.clearToken();
     this.fireAncestors("$signOut");

@@ -8,7 +8,7 @@ import { stockIndexService } from "../services/stockIndexService.js";
 
 export async function indexStatusRoute(
   request: FastifyRequest,
-  reply: FastifyReply
+  reply: FastifyReply,
 ): Promise<void> {
   try {
     const stats = stockIndexService.getStats();
@@ -18,7 +18,6 @@ export async function indexStatusRoute(
       stats,
     });
   } catch (error) {
-    console.error("❌ Index status error:", error);
     reply.code(500).send({
       status: "error",
       message: "Failed to get index status",

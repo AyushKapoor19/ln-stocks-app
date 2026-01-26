@@ -207,7 +207,7 @@ export default class SearchScreen extends BaseScreen {
 
   override _init(): void {
     super._init();
-    console.log("✅ SearchScreen initialized");
+
     this._buildKeyboard();
     this._startCursorBlink();
     this._loadPopularStocks();
@@ -302,7 +302,6 @@ export default class SearchScreen extends BaseScreen {
 
   private async _loadPopularStocks(): Promise<void> {
     try {
-      console.log("✅ Loading popular stocks...");
       const popularSymbols = [
         "AAPL",
         "MSFT",
@@ -329,13 +328,8 @@ export default class SearchScreen extends BaseScreen {
         name: this._getStockName(symbol),
       }));
 
-      console.log(
-        `✅ Loading details for ${popularStocks.length} popular stocks`
-      );
       await this._loadStockDetails(popularStocks);
-    } catch (error) {
-      console.error("❌ Failed to load popular stocks:", error);
-    }
+    } catch (error) {}
   }
 
   private _getStockName(symbol: string): string {
@@ -363,8 +357,6 @@ export default class SearchScreen extends BaseScreen {
   }
 
   private async _loadStockDetails(results: SearchResult[]): Promise<void> {
-    console.log(`✅ Fetching details for ${results.length} stocks`);
-
     // Show cards immediately with "Loading..." state
     this.searchResults = results.slice(0, 18).map((result) => ({
       ...result,
@@ -389,15 +381,11 @@ export default class SearchScreen extends BaseScreen {
 
         // Update just this card
         this._updateSingleCard(index);
-        console.log(`✅ Loaded ${result.symbol}: $${quote?.price}`);
-      } catch (error) {
-        console.error(`❌ Failed to load ${result.symbol}:`, error);
-      }
+      } catch (error) {}
     });
 
     // Wait for all prices to load
     await Promise.all(pricePromises);
-    console.log(`✅ All stock prices loaded`);
   }
 
   private _updateSingleCard(index: number): void {
@@ -429,7 +417,7 @@ export default class SearchScreen extends BaseScreen {
       changeTag.text.text =
         stock.change && stock.changePct
           ? `${stock.change >= 0 ? "+" : ""}${stock.change.toFixed(
-              2
+              2,
             )} (${stock.changePct.toFixed(2)}%)`
           : "";
       changeTag.text.textColor = isPositive ? 0xff10b981 : 0xffef4444;
@@ -446,7 +434,6 @@ export default class SearchScreen extends BaseScreen {
   private _buildStockCards(): void {
     const grid = this.tag("CardsGrid");
     if (!grid) {
-      console.error("❌ CardsGrid not found");
       return;
     }
 
@@ -507,11 +494,8 @@ export default class SearchScreen extends BaseScreen {
 
     // If no results and user has searched, don't build cards
     if (hasQuery && !hasResults) {
-      console.log("📭 No results found for:", this.searchQuery);
       return;
     }
-
-    console.log(`✅ Building ${this.searchResults.length} stock cards`);
 
     this.searchResults.forEach((stock, index) => {
       const row = Math.floor(index / gridConfig.columns);
@@ -598,7 +582,7 @@ export default class SearchScreen extends BaseScreen {
               text:
                 stock.change && stock.changePct
                   ? `${stock.change >= 0 ? "+" : ""}${stock.change.toFixed(
-                      2
+                      2,
                     )} (${stock.changePct.toFixed(2)}%)`
                   : "",
               fontSize: 22,
@@ -612,8 +596,6 @@ export default class SearchScreen extends BaseScreen {
 
       grid.childList.a(card);
     });
-
-    console.log(`✅ ${this.searchResults.length} cards built successfully`);
 
     // Quick fade-in animation for new cards
     requestAnimationFrame(() => {
@@ -791,12 +773,9 @@ export default class SearchScreen extends BaseScreen {
 
     // Single character or more - search immediately!
     try {
-      console.log(`✅ Searching for: "${this.searchQuery}"`);
       const results = await stocksApi.search(this.searchQuery);
-      console.log(`✅ Found ${results.length} results`);
 
       if (results.length === 0) {
-        console.log("📭 No results found");
         this.searchResults = [];
         this._buildStockCards();
         return;
@@ -805,7 +784,6 @@ export default class SearchScreen extends BaseScreen {
       // Limit to 18 cards for performance
       await this._loadStockDetails(results.slice(0, 18));
     } catch (error) {
-      console.error("❌ Search failed:", error);
       this.searchResults = [];
       this._buildStockCards();
     }
@@ -828,7 +806,6 @@ export default class SearchScreen extends BaseScreen {
   }
 
   private _fireStockSelection(stock: SearchResult): void {
-    console.log(`✅ Selected stock: ${stock.symbol} - ${stock.name}`);
     this.fireAncestors("$selectStockFromSearch", {
       symbol: stock.symbol,
       name: stock.name,
@@ -867,6 +844,7 @@ export default class SearchScreen extends BaseScreen {
         gridConfig.viewportHeight +
         gridConfig.cardHeight
       );
+
       grid.setSmooth("y", 130 + this.gridScrollY, { duration: 0.3 });
     }
 
@@ -1047,7 +1025,7 @@ export default class SearchScreen extends BaseScreen {
       }
     } else if (this.currentFocus === "keyboard") {
       // On keyboard, close search and go to home
-      console.log("✅ Closing search screen");
+
       this.fireAncestors("$closeSearch");
       return true;
     }

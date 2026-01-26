@@ -103,7 +103,7 @@ function SignUpContent() {
     try {
       const response = await authService.approveDeviceCodeWithSignUp(
         code,
-        formData
+        formData,
       );
 
       if (response.success) {
@@ -119,7 +119,6 @@ function SignUpContent() {
         ...errors,
         backend: "Something went wrong. Please try again.",
       });
-      console.error("Sign up error:", err);
     } finally {
       setIsLoading(false);
     }

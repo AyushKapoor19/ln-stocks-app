@@ -29,7 +29,7 @@ interface IVerifyHeaders {
 
 export async function signupRoute(
   request: FastifyRequest<{ Body: ISignupBody }>,
-  reply: FastifyReply
+  reply: FastifyReply,
 ): Promise<IAuthResponse> {
   const { email, password, displayName } = request.body;
 
@@ -45,7 +45,7 @@ export async function signupRoute(
 
 export async function loginRoute(
   request: FastifyRequest<{ Body: ILoginBody }>,
-  reply: FastifyReply
+  reply: FastifyReply,
 ): Promise<IAuthResponse> {
   const { email, password } = request.body;
 
@@ -61,7 +61,7 @@ export async function loginRoute(
 
 export async function verifyTokenRoute(
   request: FastifyRequest<{ Headers: IVerifyHeaders }>,
-  reply: FastifyReply
+  reply: FastifyReply,
 ): Promise<IAuthResponse> {
   const authHeader = request.headers.authorization;
 

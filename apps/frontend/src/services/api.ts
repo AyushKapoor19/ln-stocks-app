@@ -60,7 +60,7 @@ class StocksApiService {
   async getQuote(symbol: string): Promise<QuoteResponse | null> {
     try {
       const response = await fetch(
-        `${this.baseUrl}/v1/quotes?symbols=${encodeURIComponent(symbol)}`
+        `${this.baseUrl}/v1/quotes?symbols=${encodeURIComponent(symbol)}`,
       );
 
       if (!response.ok) {
@@ -70,7 +70,6 @@ class StocksApiService {
       const data: ApiResponse<QuoteResponse> = await response.json();
       return data[symbol] || null;
     } catch (error) {
-      console.error(`Failed to fetch quote for ${symbol}:`, error);
       return null;
     }
   }
@@ -78,13 +77,13 @@ class StocksApiService {
   // Get historical series data for VOO with specific time period
   async getSeries(
     symbol: string,
-    period: string
+    period: string,
   ): Promise<SeriesResponse | null> {
     try {
       const response = await fetch(
         `${this.baseUrl}/v1/series?symbols=${encodeURIComponent(
-          symbol
-        )}&period=${encodeURIComponent(period)}`
+          symbol,
+        )}&period=${encodeURIComponent(period)}`,
       );
 
       if (!response.ok) {
@@ -94,14 +93,13 @@ class StocksApiService {
       const data: ApiResponse<SeriesResponse> = await response.json();
       return data[symbol] || null;
     } catch (error) {
-      console.error(`Failed to fetch series for ${symbol} (${period}):`, error);
       return null;
     }
   }
 
   // Get both quote and series data for VOO
   async getVooData(
-    period: string
+    period: string,
   ): Promise<{ quote: QuoteResponse | null; series: SeriesResponse | null }> {
     try {
       // Fetch both quote and series data in parallel
@@ -112,7 +110,6 @@ class StocksApiService {
 
       return { quote, series };
     } catch (error) {
-      console.error(`Failed to fetch VOO data for period ${period}:`, error);
       return { quote: null, series: null };
     }
   }
@@ -149,11 +146,11 @@ class StocksApiService {
 
   // Search for stocks by symbol or name
   async searchStocks(
-    query: string
+    query: string,
   ): Promise<Array<{ symbol: string; name: string }>> {
     try {
       const response = await fetch(
-        `${this.baseUrl}/v1/search?q=${encodeURIComponent(query)}`
+        `${this.baseUrl}/v1/search?q=${encodeURIComponent(query)}`,
       );
 
       if (!response.ok) {
@@ -163,7 +160,6 @@ class StocksApiService {
       const data = await response.json();
       return data.results || [];
     } catch (error) {
-      console.error(`Failed to search for "${query}":`, error);
       return [];
     }
   }
@@ -172,7 +168,7 @@ class StocksApiService {
   async getMetrics(symbol: string): Promise<MetricsResponse | null> {
     try {
       const response = await fetch(
-        `${this.baseUrl}/v1/metrics?symbols=${encodeURIComponent(symbol)}`
+        `${this.baseUrl}/v1/metrics?symbols=${encodeURIComponent(symbol)}`,
       );
 
       if (!response.ok) {
@@ -182,7 +178,6 @@ class StocksApiService {
       const data: ApiResponse<MetricsResponse> = await response.json();
       return data[symbol] || null;
     } catch (error) {
-      console.error(`Failed to fetch metrics for ${symbol}:`, error);
       return null;
     }
   }
@@ -209,32 +204,22 @@ class StocksApiService {
       // Check cache first
       const cached = this.searchCache.get(cacheKey);
       if (cached && Date.now() - cached.timestamp < this.CACHE_TTL) {
-        console.log(
-          `✅ Cache hit for "${trimmedQuery}": ${cached.results.length} results`
-        );
         return cached.results;
       }
-
-      console.log(`✅ Searching: "${trimmedQuery}"`);
 
       // Call backend enhanced search endpoint
       const response = await fetch(
         `${this.baseUrl}/v1/search/enhanced?q=${encodeURIComponent(
-          trimmedQuery
-        )}&limit=50`
+          trimmedQuery,
+        )}&limit=50`,
       );
 
       if (!response.ok) {
-        console.error(
-          `❌ Enhanced search failed: ${response.status} ${response.statusText}`
-        );
         return [];
       }
 
       const data = await response.json();
       const results: SearchResult[] = data.results || [];
-
-      console.log(`✅ Found ${results.length} results`);
 
       // Cache successful results
       if (results.length > 0) {
@@ -248,7 +233,6 @@ class StocksApiService {
 
       return results;
     } catch (error) {
-      console.error(`❌ Search failed for "${trimmedQuery}":`, error);
       return [];
     }
   }

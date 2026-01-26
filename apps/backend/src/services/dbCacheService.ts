@@ -18,20 +18,15 @@ class DBCacheService {
          WHERE symbol = $1 AND period = $2 
          AND expires_at > NOW()
          LIMIT 1`,
-        [symbol, period]
+        [symbol, period],
       );
 
       if (result.rows.length > 0) {
-        console.log(
-          `✅ DB cache HIT for ${symbol} ${period} - serving real data!`
-        );
         return result.rows[0].data as ISeriesData;
       }
 
-      console.log(`📭 DB cache MISS for ${symbol} ${period} - will try API`);
       return null;
     } catch (error) {
-      console.error("DB cache read error:", error);
       return null;
     }
   }
@@ -42,7 +37,7 @@ class DBCacheService {
   async setSeries(
     symbol: string,
     period: string,
-    data: ISeriesData
+    data: ISeriesData,
   ): Promise<void> {
     try {
       await pool.query(
@@ -53,13 +48,9 @@ class DBCacheService {
            data = $3,
            fetched_at = NOW(),
            expires_at = NOW() + INTERVAL '24 hours'`,
-        [symbol, period, JSON.stringify(data)]
+        [symbol, period, JSON.stringify(data)],
       );
-
-      console.log(`💾 Cached ${symbol} ${period} to DB (24h TTL)`);
-    } catch (error) {
-      console.error("DB cache write error:", error);
-    }
+    } catch (error) {}
   }
 
   /**
@@ -68,12 +59,9 @@ class DBCacheService {
   async cleanExpired(): Promise<void> {
     try {
       const result = await pool.query(
-        `DELETE FROM stock_series_cache WHERE expires_at < NOW()`
+        `DELETE FROM stock_series_cache WHERE expires_at < NOW()`,
       );
-      console.log(`🧹 Cleaned ${result.rowCount} expired cache entries`);
-    } catch (error) {
-      console.error("DB cache cleanup error:", error);
-    }
+    } catch (error) {}
   }
 }
 

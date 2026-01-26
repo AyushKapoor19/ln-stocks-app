@@ -42,23 +42,4 @@ export const PERIOD_SETTINGS: Record<Period, IPeriodSettings> = {
 };
 
 // Log API key status
-export function logApiKeysStatus(): void {
-  console.log(
-    "🔑 FINNHUB_KEY loaded:",
-    FINNHUB_KEY ? "✅ EXISTS" : "❌ MISSING"
-  );
-  console.log(
-    "🔑 POLYGON_KEY loaded:",
-    POLYGON_KEY ? "✅ EXISTS (for historical candles)" : "❌ MISSING"
-  );
-  console.log(
-    "🔑 JWT_SECRET loaded:",
-    JWT_SECRET !== "change-this-secret-in-production"
-      ? "✅ CUSTOM"
-      : "⚠️  DEFAULT (change in production)"
-  );
-  console.log(
-    "🔑 DATABASE_URL loaded:",
-    process.env.DATABASE_URL ? "✅ EXISTS" : "❌ MISSING"
-  );
-}
+export function logApiKeysStatus(): void {}

@@ -20,7 +20,7 @@ import { authService } from "./authService.js";
 
 class DeviceCodeService {
   async generateDeviceCode(
-    authType: "signin" | "signup" = "signin"
+    authType: "signin" | "signup" = "signin",
   ): Promise<IDeviceCodeResponse> {
     const code = this.generateRandomCode(DEVICE_CODE_LENGTH);
     const expiresAt = new Date(Date.now() + DEVICE_CODE_EXPIRES_IN);
@@ -28,7 +28,7 @@ class DeviceCodeService {
     try {
       await pool.query(
         "INSERT INTO device_codes (code, status, auth_type, expires_at) VALUES ($1, $2, $3, $4::timestamptz)",
-        [code, "pending", authType, expiresAt.toISOString()]
+        [code, "pending", authType, expiresAt.toISOString()],
       );
 
       const mobileWebUrl =
@@ -43,8 +43,6 @@ class DeviceCodeService {
         },
       });
 
-      console.log(`✅ Generated device code: ${code} (${authType})`);
-
       return {
         code,
         qrCodeDataUrl,
@@ -52,18 +50,17 @@ class DeviceCodeService {
         pollInterval: DEVICE_CODE_POLL_INTERVAL,
       };
     } catch (error) {
-      console.error("❌ Error generating device code:", error);
       throw new Error("Failed to generate device code");
     }
   }
 
   async checkDeviceCodeStatus(
-    code: string
+    code: string,
   ): Promise<IDeviceCodeStatusResponse> {
     try {
       const result = await pool.query<IDeviceCode>(
         "SELECT * FROM device_codes WHERE code = $1",
-        [code]
+        [code],
       );
 
       if (result.rows.length === 0) {
@@ -83,10 +80,6 @@ class DeviceCodeService {
           const token = authService.generateToken(user);
           await this.markDeviceCodeUsed(code);
 
-          console.log(
-            `✅ Device code ${code} authenticated for user: ${user.email}`
-          );
-
           return {
             status: "approved",
             token,
@@ -97,7 +90,6 @@ class DeviceCodeService {
 
       return { status: deviceCode.status };
     } catch (error) {
-      console.error("❌ Error checking device code status:", error);
       return { status: "expired" };
     }
   }
@@ -106,18 +98,15 @@ class DeviceCodeService {
     try {
       const result = await pool.query(
         "UPDATE device_codes SET status = $1, user_id = $2 WHERE code = $3 AND status = $4 AND expires_at > NOW() RETURNING *",
-        ["approved", userId, code, "pending"]
+        ["approved", userId, code, "pending"],
       );
 
       if (result.rows.length === 0) {
-        console.error(`❌ Device code ${code} not found or already used`);
         return false;
       }
 
-      console.log(`✅ Device code ${code} approved for user ID: ${userId}`);
       return true;
     } catch (error) {
-      console.error("❌ Error approving device code:", error);
       return false;
     }
   }
@@ -128,34 +117,27 @@ class DeviceCodeService {
         "expired",
         code,
       ]);
-    } catch (error) {
-      console.error("❌ Error marking device code expired:", error);
-    }
+    } catch (error) {}
   }
 
   async markDeviceCodeUsed(code: string): Promise<void> {
     try {
       await pool.query(
         "UPDATE device_codes SET used_at = CURRENT_TIMESTAMP WHERE code = $1",
-        [code]
+        [code],
       );
-    } catch (error) {
-      console.error("❌ Error marking device code used:", error);
-    }
+    } catch (error) {}
   }
 
   async cleanupExpiredCodes(): Promise<void> {
     try {
       const result = await pool.query(
-        "DELETE FROM device_codes WHERE expires_at < NOW()"
+        "DELETE FROM device_codes WHERE expires_at < NOW()",
       );
 
       if (result.rowCount && result.rowCount > 0) {
-        console.log(`🧹 Cleaned up ${result.rowCount} expired device codes`);
       }
-    } catch (error) {
-      console.error("❌ Error cleaning up expired codes:", error);
-    }
+    } catch (error) {}
   }
 
   private generateRandomCode(length: number): string {
@@ -173,6 +155,9 @@ class DeviceCodeService {
 
 export const deviceCodeService = new DeviceCodeService();
 
-setInterval(() => {
-  deviceCodeService.cleanupExpiredCodes();
-}, 5 * 60 * 1000);
+setInterval(
+  () => {
+    deviceCodeService.cleanupExpiredCodes();
+  },
+  5 * 60 * 1000,
+);

@@ -9,8 +9,6 @@ import type { IQuoteData } from "../types/quote.js";
 import type { ISeriesData, Period } from "../types/series.js";
 
 export function generateFallbackQuote(symbol: string): IQuoteData {
-  console.log(`Using calculated fallback for ${symbol}`);
-
   const basePrice = 50 + ((symbol.charCodeAt(0) * 7) % 800);
   const change = basePrice * ((Math.random() - 0.5) * 0.01);
 
@@ -27,12 +25,8 @@ export function generateFallbackQuote(symbol: string): IQuoteData {
 export function generateFallbackSeries(
   symbol: string,
   period: Period,
-  currentPrice?: number
+  currentPrice?: number,
 ): ISeriesData {
-  console.log(
-    `📊 Generating professional chart data for ${symbol} (${period})`
-  );
-
   const basePrice = currentPrice || 50 + ((symbol.charCodeAt(0) * 7) % 800);
   const settings = PERIOD_SETTINGS[period] || PERIOD_SETTINGS["1W"];
 

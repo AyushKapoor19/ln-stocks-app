@@ -73,7 +73,6 @@ export default class SearchResults extends BaseComponent {
   _init(): void {
     // Component initialized
   }
-
   _handleUp(): boolean {
     if (this.results.length === 0) return false;
 
@@ -137,8 +136,8 @@ export default class SearchResults extends BaseComponent {
     const scrollContainer = this.tag("ScrollContainer");
     if (scrollContainer) {
       const resultsList = scrollContainer.tag("ResultsList");
-    if (resultsList) {
-      resultsList.children = [];
+      if (resultsList) {
+        resultsList.children = [];
       }
     }
   }
@@ -248,7 +247,7 @@ export default class SearchResults extends BaseComponent {
         resultItem.setSmooth(
           "color",
           isSelected ? Colors.cardBackgroundSelected : Colors.cardBackground,
-          { duration: 0.15 }
+          { duration: 0.15 },
         );
 
         const accent = resultItem.tag("AccentBar");
@@ -256,7 +255,7 @@ export default class SearchResults extends BaseComponent {
           accent.setSmooth(
             "color",
             isSelected ? Colors.stockGreenBright : Colors.transparent,
-            { duration: 0.15 }
+            { duration: 0.15 },
           );
         }
 

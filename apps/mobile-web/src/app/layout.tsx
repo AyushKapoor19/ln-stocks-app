@@ -1,9 +1,9 @@
-import type { Metadata } from 'next';
-import './globals.css';
+import type { Metadata } from "next";
+import "./globals.css";
 
 export const metadata: Metadata = {
-  title: 'LN Stocks - Activate Your TV',
-  description: 'Activate your LN Stocks TV app',
+  title: "LN Stocks - Activate Your TV",
+  description: "Activate your LN Stocks TV app",
 };
 
 export default function RootLayout({
@@ -19,4 +19,3 @@ export default function RootLayout({
     </html>
   );
 }
-

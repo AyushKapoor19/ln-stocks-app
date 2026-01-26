@@ -164,7 +164,7 @@ export default class MobileAuthTab extends Lightning.Component {
 
   private _updateDeviceCodeStyle(): void {
     const deviceCodeContainer = this.tag("LeftSection")?.tag(
-      "DeviceCodeContainer"
+      "DeviceCodeContainer",
     );
     if (deviceCodeContainer) {
       deviceCodeContainer.patch({
@@ -188,14 +188,11 @@ export default class MobileAuthTab extends Lightning.Component {
   }
 
   private async _loadDeviceCode(): Promise<void> {
-    console.log(`Loading device code for ${this.authType}...`);
-
     // Fade out animation
     await this._fadeOutCode();
 
     const response = await authApi.generateDeviceCode(this.authType);
     if (!response) {
-      console.error("❌ Failed to load device code");
       return;
     }
 
@@ -230,7 +227,7 @@ export default class MobileAuthTab extends Lightning.Component {
 
   private async _fadeOutCode(): Promise<void> {
     const deviceCodeContainer = this.tag("LeftSection")?.tag(
-      "DeviceCodeContainer"
+      "DeviceCodeContainer",
     );
     const qrCodeCard = this.tag("RightSection")?.tag("QRCodeCard");
 
@@ -247,7 +244,7 @@ export default class MobileAuthTab extends Lightning.Component {
 
   private async _fadeInCode(): Promise<void> {
     const deviceCodeContainer = this.tag("LeftSection")?.tag(
-      "DeviceCodeContainer"
+      "DeviceCodeContainer",
     );
     const qrCodeCard = this.tag("RightSection")?.tag("QRCodeCard");
 
@@ -270,7 +267,6 @@ export default class MobileAuthTab extends Lightning.Component {
 
     // Set timer to auto-refresh code before expiry
     this.expiryTimer = setTimeout(() => {
-      console.log("⏰ Code expired - generating new code...");
       void this._loadDeviceCode();
     }, this.codeExpiresIn);
   }
@@ -283,7 +279,6 @@ export default class MobileAuthTab extends Lightning.Component {
       if (!response) return;
 
       if (response.status === "approved" && response.token && response.user) {
-        console.log("✅ Device code approved!");
         this.fireAncestors("$authSuccess", {
           user: response.user,
           token: response.token,

@@ -7,15 +7,12 @@ import "dotenv/config";
 import { pool } from "../src/utils/db";
 
 async function runMigration() {
-  console.log("🔄 Running database migrations...\n");
-
   try {
     // Migration 1: auth_type column
     await pool.query(`
       ALTER TABLE device_codes ADD COLUMN IF NOT EXISTS auth_type VARCHAR(10) DEFAULT 'signin';
       UPDATE device_codes SET auth_type = 'signin' WHERE auth_type IS NULL;
     `);
-    console.log("✅ Migration 1: auth_type column");
 
     // Migration 2: Stock series cache table
     await pool.query(`
@@ -35,13 +32,10 @@ async function runMigration() {
       CREATE INDEX IF NOT EXISTS idx_stock_series_expires 
         ON stock_series_cache(expires_at);
     `);
-    console.log("✅ Migration 2: stock_series_cache table\n");
 
-    console.log("✅ All migrations completed successfully!");
     await pool.end();
     process.exit(0);
   } catch (error) {
-    console.error("❌ Migration failed:", error);
     await pool.end();
     process.exit(1);
   }

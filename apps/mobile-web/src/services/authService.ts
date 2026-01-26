@@ -18,10 +18,9 @@ class AuthService {
     try {
       return await apiService.post<IDeviceCodeVerifyResponse>(
         "/auth/device-code/verify",
-        { code }
+        { code },
       );
     } catch (error) {
-      console.error("Error verifying device code:", error);
       return {
         success: false,
         error: error instanceof Error ? error.message : "Failed to verify code",
@@ -33,7 +32,6 @@ class AuthService {
     try {
       return await apiService.post<IAuthResponse>("/auth/signup", data);
     } catch (error) {
-      console.error("Error signing up:", error);
       return {
         success: false,
         error: error instanceof Error ? error.message : "Failed to sign up",
@@ -45,7 +43,6 @@ class AuthService {
     try {
       return await apiService.post<IAuthResponse>("/auth/login", data);
     } catch (error) {
-      console.error("Error signing in:", error);
       return {
         success: false,
         error: error instanceof Error ? error.message : "Failed to sign in",
@@ -56,15 +53,14 @@ class AuthService {
   async approveDeviceCode(
     code: string,
     email: string,
-    password: string
+    password: string,
   ): Promise<IDeviceCodeApprovalResponse> {
     try {
       return await apiService.post<IDeviceCodeApprovalResponse>(
         "/auth/device-code/approve",
-        { code, email, password }
+        { code, email, password },
       );
     } catch (error) {
-      console.error("Error approving device code:", error);
       return {
         success: false,
         error:
@@ -75,15 +71,14 @@ class AuthService {
 
   async approveDeviceCodeWithSignUp(
     code: string,
-    signUpData: ISignUpData
+    signUpData: ISignUpData,
   ): Promise<IDeviceCodeApprovalResponse> {
     try {
       return await apiService.post<IDeviceCodeApprovalResponse>(
         "/auth/device-code/approve-signup",
-        { code, ...signUpData }
+        { code, ...signUpData },
       );
     } catch (error) {
-      console.error("Error approving device code with signup:", error);
       return {
         success: false,
         error:

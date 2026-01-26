@@ -40,7 +40,6 @@ export interface INavigateSearchResultsEvent {
 export interface IClearSearchResultsEvent {
   // Empty event, just a signal
 }
-
 // Chart-related types
 export interface ISeriesPoint {
   t: number; // timestamp

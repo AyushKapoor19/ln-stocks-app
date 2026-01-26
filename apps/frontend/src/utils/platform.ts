@@ -104,14 +104,13 @@ export function detectPlatform(): PlatformInfo {
  * Some platforms need special handling for resolution detection
  */
 export function getPlatformStageConfig(
-  platform: PlatformInfo
+  platform: PlatformInfo,
 ): Partial<StageConfig> | null {
   switch (platform.type) {
     case "comcast":
       // Comcast X1 sometimes reports wrong window size
       // Force detection based on actual capabilities
       if (window.innerHeight < 1080) {
-        console.log("Comcast platform: Forcing 720p configuration");
         return {
           w: 1280,
           h: 720,
@@ -123,21 +122,19 @@ export function getPlatformStageConfig(
 
     case "samsung":
       // Samsung Tizen TVs work well with standard detection
-      console.log("Samsung Tizen platform detected");
+
       break;
 
     case "lg":
       // LG webOS works well with standard detection
-      console.log("LG webOS platform detected");
+
       break;
 
     case "vizio":
-      console.log("Vizio SmartCast platform detected");
       break;
 
     case "firetv":
     case "android":
-      console.log(`${platform.name} platform detected`);
       break;
   }
 
@@ -147,13 +144,7 @@ export function getPlatformStageConfig(
 /**
  * Log platform information
  */
-export function logPlatformInfo(platform: PlatformInfo): void {
-  console.log("Platform Detection:");
-  console.log(`   Platform: ${platform.name}`);
-  console.log(`   Type: ${platform.type}`);
-  console.log(`   Is TV: ${platform.isTv ? "Yes" : "No"}`);
-  console.log(`   User Agent: ${platform.userAgent}`);
-}
+export function logPlatformInfo(platform: PlatformInfo): void {}
 
 /**
  * Check if running on a TV platform

@@ -21,7 +21,7 @@ import type { IQueryParams } from "../types/api.js";
 
 export async function seriesRoute(
   request: FastifyRequest<{ Querystring: IQueryParams }>,
-  reply: FastifyReply
+  reply: FastifyReply,
 ): Promise<ISeriesResponse> {
   const symbols = parseSymbols(request.query.symbols);
   const period = validatePeriod(request.query.period);
@@ -66,9 +66,6 @@ export async function seriesRoute(
       const currentPrice = cachedQuote ? cachedQuote.price : undefined;
 
       if (currentPrice) {
-        console.log(
-          `💰 Using real price $${currentPrice} for ${symbol} fallback chart`
-        );
       }
 
       // 5. Generate synthetic fallback (last resort)
@@ -76,7 +73,6 @@ export async function seriesRoute(
       cacheService.setSeries(symbol, period, fallback);
       out[symbol] = fallback;
     } catch (error) {
-      console.log(`❌ Error generating series for ${symbol}:`, error);
       out[symbol] = {
         symbol,
         period,

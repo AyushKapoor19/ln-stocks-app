@@ -94,7 +94,7 @@ export class StockUtils {
 
     // Convert to EST time
     const estTime = new Date(
-      now.toLocaleString("en-US", { timeZone: "America/New_York" })
+      now.toLocaleString("en-US", { timeZone: "America/New_York" }),
     );
     const currentHour = estTime.getHours();
     const currentMinutes = estTime.getMinutes();
@@ -155,7 +155,7 @@ export class StockUtils {
   static getNextMarketOpen(): Date {
     const now = new Date();
     const estTime = new Date(
-      now.toLocaleString("en-US", { timeZone: "America/New_York" })
+      now.toLocaleString("en-US", { timeZone: "America/New_York" }),
     );
 
     const nextOpen = new Date(estTime);

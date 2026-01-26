@@ -318,7 +318,7 @@ export default class AuthScreen extends BaseScreen {
   private static _createInputField(
     yPos: number,
     label: string,
-    icon: string
+    icon: string,
   ): object {
     return {
       x: 0,
@@ -434,10 +434,10 @@ export default class AuthScreen extends BaseScreen {
             index === 0 && isFocused
               ? Colors.stockGreenBright
               : index === 0
-              ? 0xff0d9959
-              : isFocused
-              ? Colors.cardBackground
-              : 0xff0a1a15,
+                ? 0xff0d9959
+                : isFocused
+                  ? Colors.cardBackground
+                  : 0xff0a1a15,
         });
         if (isFocused) {
           btn.setSmooth("scale", 1.05, { duration: 0.2 });
@@ -522,10 +522,6 @@ export default class AuthScreen extends BaseScreen {
   }
 
   _handleEnter(): boolean {
-    console.log(
-      `📍 Enter pressed: mode=${this.mode}, focusIndex=${this.focusIndex}`
-    );
-
     if (this.mode === "selection") {
       if (this.focusIndex === 0) {
         this.mode = "signin";
@@ -591,7 +587,6 @@ export default class AuthScreen extends BaseScreen {
   }
 
   private _showKeyboard(): void {
-    console.log("Opening keyboard for field:", this.activeField);
     this.showKeyboard = true;
 
     const blurOverlay = this.tag("BlurOverlay");
@@ -721,7 +716,6 @@ export default class AuthScreen extends BaseScreen {
 
   $onKeyPress(event: { key: string }): void {
     const key = event.key;
-    console.log(`🔤 Key pressed: ${key}`);
 
     if (key === "Done") {
       this._hideKeyboard();
@@ -789,15 +783,11 @@ export default class AuthScreen extends BaseScreen {
   }
 
   private async _handleSubmit(): Promise<void> {
-    console.log("Submitting form:", this.mode);
-
     if (!this.emailValue || !this.passwordValue) {
-      console.error("❌ Email and password are required");
       return;
     }
 
     if (this.mode === "signup" && !this.nameValue) {
-      console.error("❌ Name is required for sign up");
       return;
     }
 
@@ -805,17 +795,15 @@ export default class AuthScreen extends BaseScreen {
       const response = await authApi.signup(
         this.emailValue,
         this.passwordValue,
-        this.nameValue
+        this.nameValue,
       );
       if (response && response.success && response.token && response.user) {
-        console.log("✅ Sign up successful!");
         authApi.saveToken(response.token);
         this.fireAncestors("$authenticationSuccess", {
           user: response.user,
           token: response.token,
         });
       } else {
-        console.error("❌ Sign up failed:", response?.error);
       }
     } else {
       const response = await authApi.login({
@@ -823,14 +811,12 @@ export default class AuthScreen extends BaseScreen {
         password: this.passwordValue,
       });
       if (response && response.success && response.token && response.user) {
-        console.log("✅ Sign in successful!");
         authApi.saveToken(response.token);
         this.fireAncestors("$authenticationSuccess", {
           user: response.user,
           token: response.token,
         });
       } else {
-        console.error("❌ Sign in failed:", response?.error);
       }
     }
   }

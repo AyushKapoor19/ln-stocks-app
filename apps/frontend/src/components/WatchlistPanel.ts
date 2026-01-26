@@ -250,7 +250,7 @@ export default class WatchlistPanel
     // Determine which state to show
     if (!isLoggedIn) {
       // State 1: User not signed in
-      console.log("Watchlist: Showing sign-in prompt");
+
       if (emptyStateNotSignedIn) {
         emptyStateNotSignedIn.setSmooth("alpha", 1, {
           duration: 0.3,
@@ -259,7 +259,7 @@ export default class WatchlistPanel
       }
     } else if (!hasWatchlistItems) {
       // State 2: User signed in but watchlist is empty
-      console.log("Watchlist: Showing empty watchlist message");
+
       if (emptyStateSignedIn) {
         emptyStateSignedIn.setSmooth("alpha", 1, {
           duration: 0.3,
@@ -268,7 +268,7 @@ export default class WatchlistPanel
       }
     } else {
       // State 3: User signed in and has watchlist items
-      console.log("Watchlist: Showing user's stocks");
+
       const watchlist = this._getUserWatchlist();
 
       // Fetch real-time data for all watchlist stocks
@@ -290,7 +290,6 @@ export default class WatchlistPanel
       const watchlist = JSON.parse(watchlistData);
       return Array.isArray(watchlist) ? watchlist : [];
     } catch (error) {
-      console.error("Failed to fetch watchlist:", error);
       return [];
     }
   }
@@ -308,14 +307,9 @@ export default class WatchlistPanel
    */
   private async _fetchAndBuildWatchlist(watchlist: string[]): Promise<void> {
     try {
-      console.log(
-        "📊 Fetching real-time data for watchlist stocks...",
-        watchlist
-      );
-
       // Fetch quotes for all watchlist stocks in parallel
       const quotePromises = watchlist.map((symbol) =>
-        stocksApi.getQuote(symbol)
+        stocksApi.getQuote(symbol),
       );
       const quotes = await Promise.all(quotePromises);
 
@@ -328,8 +322,6 @@ export default class WatchlistPanel
           change: quote!.change,
           changePct: quote!.changePct,
         }));
-
-      console.log(`✅ Loaded ${this.stocks.length} stocks for watchlist`);
 
       // Build the UI
       this._buildStocksList();
@@ -360,9 +352,7 @@ export default class WatchlistPanel
           delay: 0.9,
         });
       }
-    } catch (error) {
-      console.error("❌ Failed to fetch watchlist prices:", error);
-    }
+    } catch (error) {}
   }
 
   /**
@@ -446,25 +436,16 @@ export default class WatchlistPanel
       ? (stocksContainer.tag("StocksList") as unknown as Lightning.Element)
       : null;
     if (!stocksList) {
-      console.log("❌ StocksList not found");
       return;
     }
 
-    console.log(
-      `🎯 Updating focus: isFocused=${this.isFocused}, selectedIndex=${this.selectedStockIndex}`
-    );
-
     this.stocks.forEach((stock, index) => {
       const stockItem = (stocksList as any).tag(
-        `Stock_${index}`
+        `Stock_${index}`,
       ) as Lightning.Element | null;
       if (stockItem) {
         const isFocusedItem =
           this.isFocused && index === this.selectedStockIndex;
-
-        console.log(
-          `  Stock ${index} (${stock.symbol}): focused=${isFocusedItem}`
-        );
 
         stockItem.setSmooth("color", isFocusedItem ? 0x44ffffff : 0x00000000, {
           duration: 0.2,
@@ -483,7 +464,7 @@ export default class WatchlistPanel
     const targetY = this.selectedStockIndex * this.ITEM_HEIGHT;
     const maxScroll = Math.max(
       0,
-      this.stocks.length * this.ITEM_HEIGHT - this.CONTAINER_HEIGHT
+      this.stocks.length * this.ITEM_HEIGHT - this.CONTAINER_HEIGHT,
     );
 
     // Calculate scroll position to keep item visible
@@ -517,9 +498,6 @@ export default class WatchlistPanel
    * Public methods for focus handling
    */
   setFocused(focused: boolean): void {
-    console.log(
-      `📊 Watchlist setFocused: ${focused}, stocks: ${this.stocks.length}`
-    );
     this.isFocused = focused;
     this._updateStockFocus();
 
@@ -538,14 +516,11 @@ export default class WatchlistPanel
   }
 
   handleUp(): boolean {
-    console.log(
-      `⬆️ handleUp: isFocused=${this.isFocused}, stocks=${this.stocks.length}, index=${this.selectedStockIndex}`
-    );
     if (!this.isFocused || this.stocks.length === 0) return false;
 
     if (this.selectedStockIndex > 0) {
       this.selectedStockIndex--;
-      console.log(`  → Moving to index ${this.selectedStockIndex}`);
+
       this._scrollToSelectedItem();
       this._updateStockFocus();
       return true;
@@ -554,14 +529,11 @@ export default class WatchlistPanel
   }
 
   handleDown(): boolean {
-    console.log(
-      `⬇️ handleDown: isFocused=${this.isFocused}, stocks=${this.stocks.length}, index=${this.selectedStockIndex}`
-    );
     if (!this.isFocused || this.stocks.length === 0) return false;
 
     if (this.selectedStockIndex < this.stocks.length - 1) {
       this.selectedStockIndex++;
-      console.log(`  → Moving to index ${this.selectedStockIndex}`);
+
       this._scrollToSelectedItem();
       this._updateStockFocus();
       return true;
@@ -589,10 +561,7 @@ export default class WatchlistPanel
   static saveWatchlist(watchlist: string[]): void {
     try {
       localStorage.setItem("user_watchlist", JSON.stringify(watchlist));
-      console.log("Watchlist saved:", watchlist);
-    } catch (error) {
-      console.error("Failed to save watchlist:", error);
-    }
+    } catch (error) {}
   }
 
   /**
@@ -619,7 +588,6 @@ export default class WatchlistPanel
   static addToWatchlist(symbol: string): void {
     const token = localStorage.getItem("auth_token");
     if (!token) {
-      console.log("User not signed in, cannot add to watchlist");
       return;
     }
 
@@ -628,16 +596,12 @@ export default class WatchlistPanel
       const watchlist = watchlistData ? JSON.parse(watchlistData) : [];
 
       if (watchlist.includes(symbol)) {
-        console.log(`${symbol} already in watchlist`);
         return;
       }
 
       watchlist.push(symbol);
       WatchlistPanel.saveWatchlist(watchlist);
-      console.log(`Added ${symbol} to watchlist`);
-    } catch (error) {
-      console.error("Failed to add to watchlist:", error);
-    }
+    } catch (error) {}
   }
 
   /**
@@ -652,16 +616,12 @@ export default class WatchlistPanel
       const index = watchlist.indexOf(symbol);
 
       if (index === -1) {
-        console.log(`${symbol} not in watchlist`);
         return;
       }
 
       watchlist.splice(index, 1);
       WatchlistPanel.saveWatchlist(watchlist);
-      console.log(`Removed ${symbol} from watchlist`);
-    } catch (error) {
-      console.error("Failed to remove from watchlist:", error);
-    }
+    } catch (error) {}
   }
 
   /**
@@ -670,7 +630,6 @@ export default class WatchlistPanel
   static toggleWatchlist(symbol: string): void {
     const token = localStorage.getItem("auth_token");
     if (!token) {
-      console.log("User not signed in");
       return;
     }
 

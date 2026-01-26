@@ -44,33 +44,25 @@ class PolygonService {
 
   async fetchSeries(
     symbol: string,
-    period: Period
+    period: Period,
   ): Promise<ISeriesData | null> {
     if (!POLYGON_KEY) {
-      console.log(
-        `🔑 No POLYGON_KEY set, cannot fetch real data for ${symbol}`
-      );
       return null;
     }
 
     try {
-      console.log(
-        `📊 Fetching REAL historical data from Polygon.io for ${symbol} (${period})...`
-      );
-
       const params = this.getPeriodParams(period);
       const toDate = new Date().toISOString().split("T")[0];
 
       const url = `${this.baseUrl}/aggs/ticker/${encodeURIComponent(
-        symbol
-      )}/range/${params.multiplier}/${params.timespan}/${
-        params.from
-      }/${toDate}?adjusted=true&sort=asc&apiKey=${POLYGON_KEY}`;
+        symbol,
+      )}/range/${params.multiplier}/${params.timespan}/${params.from}/${
+        toDate
+      }?adjusted=true&sort=asc&apiKey=${POLYGON_KEY}`;
 
       const response = await fetch(url);
 
       if (!response.ok) {
-        console.log(`❌ Polygon.io failed for ${symbol}: ${response.status}`);
         return null;
       }
 
@@ -91,10 +83,6 @@ class PolygonService {
           v: candle.v || 0,
         }));
 
-        console.log(
-          `✅ Got ${points.length} REAL candles from Polygon.io for ${symbol} (${data.status})`
-        );
-
         return {
           symbol,
           period,
@@ -103,12 +91,8 @@ class PolygonService {
         };
       }
 
-      console.log(
-        `⚠️ Polygon.io returned no data: ${data.status || "unknown"}`
-      );
       return null;
     } catch (error) {
-      console.log(`💥 Error fetching series for ${symbol}:`, error);
       return null;
     }
   }

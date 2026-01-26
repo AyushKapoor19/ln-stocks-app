@@ -50,12 +50,12 @@ export default class EmailSignUpTab extends Lightning.Component {
         EmailField: this._createInputField(
           110,
           "Email",
-          "investor@wallstreet.com"
+          "investor@wallstreet.com",
         ),
         PasswordField: this._createInputField(
           220,
           "Password",
-          "Create a secure password"
+          "Create a secure password",
         ),
 
         BackendErrorMessage: {
@@ -267,7 +267,7 @@ export default class EmailSignUpTab extends Lightning.Component {
   private static _createInputField(
     yPos: number,
     label: string,
-    placeholder: string
+    placeholder: string,
   ): object {
     return {
       x: 0,
@@ -390,6 +390,7 @@ export default class EmailSignUpTab extends Lightning.Component {
       "signup",
       "signin",
     ];
+
     const currentIndex = focusOrder.indexOf(this.focusedElement);
     if (currentIndex > 0) {
       this.focusedElement = focusOrder[currentIndex - 1];
@@ -411,6 +412,7 @@ export default class EmailSignUpTab extends Lightning.Component {
       "signup",
       "signin",
     ];
+
     const currentIndex = focusOrder.indexOf(this.focusedElement);
     if (currentIndex < focusOrder.length - 1) {
       this.focusedElement = focusOrder[currentIndex + 1];
@@ -904,7 +906,7 @@ export default class EmailSignUpTab extends Lightning.Component {
     const response = await authApi.signup(
       this.emailValue,
       this.passwordValue,
-      this.nameValue
+      this.nameValue,
     );
 
     this._setLoadingState(false);
@@ -917,7 +919,6 @@ export default class EmailSignUpTab extends Lightning.Component {
       });
     } else {
       const errorMsg = response?.error || "Sign up failed";
-      console.error("❌ Sign up failed:", errorMsg);
 
       if (errorMsg === "Email already registered") {
         this._showBackendError(errorMsg);

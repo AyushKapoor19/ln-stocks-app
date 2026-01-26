@@ -76,12 +76,6 @@ export default class App extends Lightning.Component {
 
     const precision = (this.stage.getOption("precision") as number) || 1;
 
-    console.log(
-      `📱 App initialized with design coordinates: ${this.w}x${this.stage.coordsHeight}`
-    );
-    console.log(`   Stage size: ${this.stage.w}x${this.stage.h}`);
-    console.log(`   Precision: ${precision}`);
-
     // Check for stored auth token and auto-login
     void this._checkStoredAuth();
   }
@@ -90,16 +84,12 @@ export default class App extends Lightning.Component {
     const token = authApi.getToken();
 
     if (!token) {
-      console.log("📭 No stored auth token found");
       return;
     }
-
-    console.log("🔑 Found stored token, verifying...");
 
     const response = await authApi.verifyToken(token);
 
     if (response.success && response.user) {
-      console.log("✅ Auto-login successful!", response.user);
       this.currentUser = response.user as IUser;
 
       // Update AccountScreen with user data
@@ -114,7 +104,6 @@ export default class App extends Lightning.Component {
         (homeScreen as any).updateAuthButton(true);
       }
     } else {
-      console.log("❌ Token verification failed, clearing token");
       authApi.clearToken();
     }
   }
@@ -126,36 +115,29 @@ export default class App extends Lightning.Component {
   $showAuthFlow(): void {
     // Called from Home button - decides between SignUp/SignIn/Account
     if (this.currentUser) {
-      console.log("Navigating to Account screen (user logged in)");
       this._showScreen("AccountScreen");
     } else {
-      console.log("Navigating to Sign Up screen (default for new users)");
       this._showScreen("SignUpScreen");
     }
   }
 
   $navigateToSignIn(): void {
-    console.log("Navigating to Sign In screen");
     this._showScreen("SignInScreen");
   }
 
   $navigateToSignUp(): void {
-    console.log("Navigating to Sign Up screen");
     this._showScreen("SignUpScreen");
   }
 
   $navigateToHome(): void {
-    console.log("Navigating to Home");
     this._showScreen("Home");
   }
 
   $navigateBack(): void {
-    console.log("Navigating back to Home");
     this._showScreen("Home");
   }
 
   $authSuccess(data: { user: IUser; token: string }): void {
-    console.log("✅ Authentication successful!", data.user);
     this.currentUser = data.user;
 
     // Save token for persistence
@@ -178,7 +160,6 @@ export default class App extends Lightning.Component {
   }
 
   $signOut(): void {
-    console.log("User signed out");
     this.currentUser = null;
     authApi.clearToken();
 
@@ -192,17 +173,14 @@ export default class App extends Lightning.Component {
   }
 
   $openSearch(): void {
-    console.log("Opening full-screen search");
     this._showScreen("SearchScreen");
   }
 
   $closeSearch(): void {
-    console.log("Closing search, returning to Home");
     this._showScreen("Home");
   }
 
   $selectStockFromSearch(data: { symbol: string; name: string }): void {
-    console.log("Stock selected from search:", data);
     // Pass the selected stock to Home screen
     const homeScreen = this.tag("Home");
     if (homeScreen && (homeScreen as any).loadStockFromSearch) {

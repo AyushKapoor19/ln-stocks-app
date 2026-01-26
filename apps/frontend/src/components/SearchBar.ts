@@ -87,7 +87,6 @@ export default class SearchBar extends BaseComponent {
   _init(): void {
     // Component initialized
   }
-
   _detach(): void {
     this._stopCursorBlink();
   }
@@ -131,7 +130,7 @@ export default class SearchBar extends BaseComponent {
 
   _handleEnter(): boolean {
     // Open full-screen search experience
-    console.log("SearchBar: Opening full-screen search");
+
     this.fireAncestors("$openSearch");
     return true;
   }
@@ -208,8 +207,6 @@ export default class SearchBar extends BaseComponent {
 
     const event: ISearchActivatedEvent = { component: this };
     this.fireAncestors("$searchActivated", event);
-
-    console.log("Search activated - type to search!");
   }
 
   private _deactivateSearch(): void {
@@ -240,7 +237,6 @@ export default class SearchBar extends BaseComponent {
 
     const event: ISearchDeactivatedEvent = { component: this };
     this.fireAncestors("$searchDeactivated", event);
-    console.log("Search deactivated");
   }
 
   private _updateSearchText(): void {
@@ -282,25 +278,21 @@ export default class SearchBar extends BaseComponent {
   private async _performSearch(): Promise<void> {
     if (!this.searchQuery || this.searchQuery.length < 1) return;
 
-    console.log(`Searching for: ${this.searchQuery}`);
-
     try {
       const results = await stocksApi.searchStocks(this.searchQuery);
       const rankedResults = this._rankSearchResults(results, this.searchQuery);
       this.searchResults = rankedResults;
       this.selectedSearchIndex = 0;
 
-      console.log(`✅ Found ${this.searchResults.length} results (ranked)`);
       this._showSearchResults();
     } catch (error) {
-      console.error("❌ Search failed:", error);
       this.searchResults = [];
     }
   }
 
   private _rankSearchResults(
     results: ISearchResult[],
-    query: string
+    query: string,
   ): ISearchResult[] {
     const queryUpper = query.toUpperCase();
 

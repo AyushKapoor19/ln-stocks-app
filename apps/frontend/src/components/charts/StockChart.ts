@@ -25,7 +25,7 @@ Chart.register(
   CategoryScale,
   Filler,
   Tooltip,
-  Legend
+  Legend,
 );
 
 // Plugin to draw black background
@@ -109,26 +109,18 @@ export default class StockChart extends BaseComponent {
     this._lineColor = config.lineColor || this._lineColor;
     this.canvasLeft = config.canvasLeft || this.canvasLeft;
     this.canvasTop = config.canvasTop || this.canvasTop;
-
-    console.log("📊 Chart.js Configuration:", {
-      chartWidth: this.chartWidth,
-      chartHeight: this.chartHeight,
-      lineColor: this._lineColor,
-      canvasLeft: this.canvasLeft,
-      canvasTop: this.canvasTop,
-    });
   }
 
   private createGradient(
     ctx: CanvasRenderingContext2D,
     chartArea: any,
-    lineColor: string
+    lineColor: string,
   ): CanvasGradient {
     const gradient = ctx.createLinearGradient(
       0,
       chartArea.top,
       0,
-      chartArea.bottom
+      chartArea.bottom,
     );
     const isPositive = lineColor.includes("00ff88");
 
@@ -186,7 +178,6 @@ export default class StockChart extends BaseComponent {
 
     const ctx = this.canvas.getContext("2d");
     if (!ctx) {
-      console.error("Failed to get canvas context");
       return;
     }
 
@@ -230,9 +221,7 @@ export default class StockChart extends BaseComponent {
           duration: 1500,
           easing: "easeOutQuart",
           delay: 100,
-          onComplete: () => {
-            console.log("✅ Chart animation complete");
-          },
+          onComplete: () => {},
         },
         interaction: {
           intersect: false,
@@ -291,13 +280,9 @@ export default class StockChart extends BaseComponent {
         },
       },
     });
-
-    console.log("✅ Chart.js initialized successfully");
   }
 
   set points(data: number[]) {
-    console.log("StockChart received points:", data);
-
     if (!data || data.length === 0) return;
 
     this.chartData = data;
@@ -310,10 +295,6 @@ export default class StockChart extends BaseComponent {
     this.currentPeriod = data.period || "1W";
     this.timestamps = data.points.map((p: ISeriesPoint) => p.t);
     this.chartData = data.points.map((p: ISeriesPoint) => p.c);
-
-    console.log(
-      `📊 Chart loaded ${this.chartData.length} points for period ${this.currentPeriod}`
-    );
 
     this.updateChartData();
   }

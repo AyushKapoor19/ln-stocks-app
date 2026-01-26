@@ -1,13 +1,13 @@
-'use client';
+"use client";
 
 /**
  * Success Page
- * 
+ *
  * Confirmation page after successful device activation
  */
 
-import React from 'react';
-import { Card } from '@/components/Card';
+import React from "react";
+import { Card } from "@/components/Card";
 
 export default function SuccessPage() {
   return (
@@ -29,7 +29,7 @@ export default function SuccessPage() {
               />
             </svg>
           </div>
-          
+
           <h1 className="text-3xl font-bold text-text-primary mb-2">
             Success!
           </h1>
@@ -39,15 +39,10 @@ export default function SuccessPage() {
         </div>
 
         <div className="space-y-4 text-text-tertiary">
-          <p>
-            You can now return to your TV and start using LN Stocks.
-          </p>
-          <p className="text-sm">
-            This window can be closed.
-          </p>
+          <p>You can now return to your TV and start using LN Stocks.</p>
+          <p className="text-sm">This window can be closed.</p>
         </div>
       </Card>
     </div>
   );
 }
-

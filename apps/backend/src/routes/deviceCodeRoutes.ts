@@ -40,7 +40,7 @@ interface IGenerateDeviceCodeQuery {
 
 export async function generateDeviceCodeRoute(
   request: FastifyRequest<{ Querystring: IGenerateDeviceCodeQuery }>,
-  reply: FastifyReply
+  reply: FastifyReply,
 ): Promise<IDeviceCodeResponse> {
   try {
     const authType = request.query.authType || "signin";
@@ -54,7 +54,7 @@ export async function generateDeviceCodeRoute(
 
 export async function checkDeviceCodeStatusRoute(
   request: FastifyRequest<{ Querystring: IDeviceCodeQueryParams }>,
-  reply: FastifyReply
+  reply: FastifyReply,
 ): Promise<IDeviceCodeStatusResponse> {
   const { code } = request.query;
 
@@ -69,7 +69,7 @@ export async function checkDeviceCodeStatusRoute(
 
 export async function verifyDeviceCodeRoute(
   request: FastifyRequest<{ Body: IDeviceCodeVerifyBody }>,
-  reply: FastifyReply
+  reply: FastifyReply,
 ): Promise<{
   success: boolean;
   authType?: "signin" | "signup";
@@ -89,7 +89,7 @@ export async function verifyDeviceCodeRoute(
       expires_at: Date;
     }>(
       "SELECT auth_type, status, expires_at FROM device_codes WHERE code = $1",
-      [code]
+      [code],
     );
 
     if (result.rows.length === 0) {
@@ -108,7 +108,6 @@ export async function verifyDeviceCodeRoute(
 
     return { success: true, authType: deviceCode.auth_type };
   } catch (error) {
-    console.error("❌ Error verifying device code:", error);
     reply.code(500);
     return { success: false, error: "Failed to verify code" };
   }
@@ -116,7 +115,7 @@ export async function verifyDeviceCodeRoute(
 
 export async function approveDeviceCodeRoute(
   request: FastifyRequest<{ Body: IDeviceCodeApproveBody }>,
-  reply: FastifyReply
+  reply: FastifyReply,
 ): Promise<{ success: boolean; error?: string }> {
   const { code, email, password } = request.body;
 
@@ -137,7 +136,7 @@ export async function approveDeviceCodeRoute(
 
   const approved = await deviceCodeService.approveDeviceCode(
     code,
-    loginResult.user.id
+    loginResult.user.id,
   );
 
   if (!approved) {
@@ -150,7 +149,7 @@ export async function approveDeviceCodeRoute(
 
 export async function approveDeviceCodeWithSignUpRoute(
   request: FastifyRequest<{ Body: IDeviceCodeApproveSignUpBody }>,
-  reply: FastifyReply
+  reply: FastifyReply,
 ): Promise<{ success: boolean; error?: string }> {
   const { code, email, password, displayName } = request.body;
 
@@ -175,7 +174,7 @@ export async function approveDeviceCodeWithSignUpRoute(
 
   const approved = await deviceCodeService.approveDeviceCode(
     code,
-    signupResult.user.id
+    signupResult.user.id,
   );
 
   if (!approved) {

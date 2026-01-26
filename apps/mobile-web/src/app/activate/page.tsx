@@ -53,7 +53,6 @@ export default function ActivatePage() {
       }
     } catch (err) {
       setError("Failed to verify code. Please try again.");
-      console.error("Verification error:", err);
     } finally {
       setIsLoading(false);
     }

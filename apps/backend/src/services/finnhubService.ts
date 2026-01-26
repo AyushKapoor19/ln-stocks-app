@@ -14,32 +14,27 @@ class FinnhubService {
 
   async fetchQuote(symbol: string): Promise<IQuoteData | null> {
     if (!FINNHUB_KEY) {
-      console.log(`🔑 No FINNHUB_KEY set for ${symbol}`);
       return null;
     }
 
     try {
-      console.log(`Fetching quote from Finnhub for ${symbol}...`);
-
       // Fetch quote and currency in parallel
       const [quoteResponse, profileResponse] = await Promise.all([
         fetch(
           `${this.baseUrl}/quote?symbol=${encodeURIComponent(
-            symbol
-          )}&token=${FINNHUB_KEY}`
+            symbol,
+          )}&token=${FINNHUB_KEY}`,
         ),
         fetch(
           `${this.baseUrl}/stock/profile2?symbol=${encodeURIComponent(
-            symbol
-          )}&token=${FINNHUB_KEY}`
+            symbol,
+          )}&token=${FINNHUB_KEY}`,
         ),
       ]);
 
       if (!quoteResponse.ok) {
         const errorText = await quoteResponse.text();
-        console.log(
-          `❌ Finnhub quote failed for ${symbol}: ${quoteResponse.status} - ${errorText}`
-        );
+
         return null;
       }
 
@@ -62,10 +57,6 @@ class FinnhubService {
         const change = currentPrice - previousClose;
         const changePct = previousClose !== 0 ? change / previousClose : 0;
 
-        console.log(
-          `✅ Got quote for ${symbol}: $${currentPrice} (${currency}) (H: ${data.h}, L: ${data.l})`
-        );
-
         return {
           symbol: symbol,
           price: Math.round(currentPrice * 100) / 100,
@@ -83,14 +74,8 @@ class FinnhubService {
         };
       }
 
-      console.log(
-        `⚠️ Finnhub returned no quote data for ${symbol}: ${JSON.stringify(
-          data
-        )}`
-      );
       return null;
     } catch (error) {
-      console.log(`💥 Error fetching quote for ${symbol}:`, error);
       return null;
     }
   }
@@ -101,15 +86,12 @@ class FinnhubService {
     }
 
     try {
-      console.log(`Searching for: ${query}`);
-
       const url = `${this.baseUrl}/search?q=${encodeURIComponent(
-        query
+        query,
       )}&token=${FINNHUB_KEY}`;
       const response = await fetch(url);
 
       if (!response.ok) {
-        console.log(`❌ Finnhub search failed: ${response.status}`);
         return [];
       }
 
@@ -118,7 +100,7 @@ class FinnhubService {
       if (data && data.result && data.result.length > 0) {
         // Filter for Common Stock or ETF only
         const filteredResults = data.result.filter(
-          (item) => item.type === "Common Stock" || item.type === "ETF"
+          (item) => item.type === "Common Stock" || item.type === "ETF",
         );
 
         // Fetch currency for each stock in parallel (limit to 30 for performance)
@@ -129,7 +111,7 @@ class FinnhubService {
               const profileUrl = `${
                 this.baseUrl
               }/stock/profile2?symbol=${encodeURIComponent(
-                item.symbol
+                item.symbol,
               )}&token=${FINNHUB_KEY}`;
               const profileResponse = await fetch(profileUrl);
 
@@ -147,7 +129,7 @@ class FinnhubService {
             } catch (error) {
               return { ...item, currency: "UNKNOWN" };
             }
-          })
+          }),
         );
 
         // Filter for USD only and exclude international exchange symbols
@@ -180,6 +162,7 @@ class FinnhubService {
                 "AS",
                 "OL",
               ];
+
               if (intlSuffixes.includes(suffix)) {
                 return false;
               }
@@ -198,15 +181,11 @@ class FinnhubService {
             currency: item.currency,
           }));
 
-        console.log(
-          `✅ Found ${results.length} USD stocks for "${query}" (international exchanges filtered)`
-        );
         return results;
       }
 
       return [];
     } catch (error) {
-      console.log(`💥 Search error:`, error);
       return [];
     }
   }
@@ -221,17 +200,12 @@ class FinnhubService {
     }
 
     try {
-      console.log(`  Fetching stocks from ${exchange}...`);
-
       const url = `${this.baseUrl}/stock/symbol?exchange=${encodeURIComponent(
-        exchange
+        exchange,
       )}&token=${FINNHUB_KEY}`;
       const response = await fetch(url);
 
       if (!response.ok) {
-        console.log(
-          `  ❌ Finnhub fetch failed for ${exchange}: ${response.status}`
-        );
         return [];
       }
 
@@ -244,7 +218,6 @@ class FinnhubService {
       }>;
 
       if (!data || !Array.isArray(data)) {
-        console.log(`  ❌ Invalid response from Finnhub for ${exchange}`);
         return [];
       }
 
@@ -254,7 +227,7 @@ class FinnhubService {
           (item) =>
             item.type === "Common Stock" ||
             item.type === "ETF" ||
-            item.type === "ETP"
+            item.type === "ETP",
         )
         .map((item) => ({
           symbol: item.symbol,
@@ -266,10 +239,8 @@ class FinnhubService {
           currency: item.currency || "USD", // Default to USD for US exchanges
         }));
 
-      console.log(`  ✅ ${exchange}: ${results.length} stocks`);
       return results;
     } catch (error) {
-      console.log(`  💥 Error fetching from ${exchange}:`, error);
       return [];
     }
   }
@@ -283,7 +254,7 @@ class FinnhubService {
 
     try {
       const url = `${this.baseUrl}/stock/profile2?symbol=${encodeURIComponent(
-        symbol
+        symbol,
       )}&token=${FINNHUB_KEY}`;
       const response = await fetch(url);
 

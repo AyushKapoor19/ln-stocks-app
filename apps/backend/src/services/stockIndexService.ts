@@ -27,13 +27,9 @@ class StockIndexService {
   // Initialize service (instant, no API calls required)
   async initialize(): Promise<void> {
     if (this.isInitialized) {
-      console.log("✅ Search service already initialized");
       return;
     }
 
-    console.log(
-      `✅ Search service ready (${POPULAR_US_STOCKS.length} popular stocks indexed)`
-    );
     this.isInitialized = true;
   }
 
@@ -42,7 +38,6 @@ class StockIndexService {
    */
   async search(query: string, limit: number = 50): Promise<ISearchResult[]> {
     if (!this.isInitialized) {
-      console.log("⚠️ Search service not initialized");
       return [];
     }
 
@@ -57,18 +52,15 @@ class StockIndexService {
     try {
       // Search popular stocks locally (instant)
       const popularMatches = this._searchPopularStocks(queryLower);
-      console.log(
-        `  Local matches: ${popularMatches.map((r) => r.symbol).join(", ")}`
-      );
 
       // For exact symbol matches, fetch real company name
       const exactMatch = popularMatches.find(
-        (stock) => stock.symbol.toLowerCase() === queryLower
+        (stock) => stock.symbol.toLowerCase() === queryLower,
       );
       if (exactMatch) {
         try {
           const companyName = await finnhubService.fetchCompanyName(
-            exactMatch.symbol
+            exactMatch.symbol,
           );
           if (companyName) {
             exactMatch.name = companyName;
@@ -80,9 +72,6 @@ class StockIndexService {
 
       // Search via Finnhub API for comprehensive results
       const apiResults = await finnhubService.searchSymbols(queryLower);
-      console.log(
-        `  API matches: ${apiResults.map((r) => r.symbol).join(", ")}`
-      );
 
       // Merge and deduplicate (API results take priority for real data)
       const allResults = new Map<string, ISearchResult>();
@@ -97,24 +86,17 @@ class StockIndexService {
         allResults.set(result.symbol, result);
       });
 
-      console.log(`  Merged: ${Array.from(allResults.keys()).join(", ")}`);
-
       // Rank by relevance
       const mergedResults = Array.from(allResults.values());
       const rankedResults = this._rankResults(mergedResults, queryLower);
 
       const duration = Date.now() - startTime;
       const apiOverrides = popularMatches.filter((local) =>
-        apiResults.some((api) => api.symbol === local.symbol)
+        apiResults.some((api) => api.symbol === local.symbol),
       ).length;
-
-      console.log(
-        `✅ Search "${query}": ${rankedResults.length} results (${popularMatches.length} local symbols, ${apiResults.length} API data, ${apiOverrides} with real names, ${duration}ms)`
-      );
 
       return rankedResults.slice(0, limit);
     } catch (error) {
-      console.error(`❌ Search error for "${query}":`, error);
       // Fallback to popular stocks if API fails
       return this._searchPopularStocks(queryLower).slice(0, limit);
     }
@@ -124,7 +106,7 @@ class StockIndexService {
   // Note: Returns placeholder names - real data comes from API and overrides these
   private _searchPopularStocks(queryLower: string): ISearchResult[] {
     return POPULAR_US_STOCKS.filter((symbol) =>
-      symbol.toLowerCase().includes(queryLower)
+      symbol.toLowerCase().includes(queryLower),
     ).map((symbol) => ({
       symbol,
       name: `${symbol} Corporation`, // Placeholder - overridden by API results
@@ -142,7 +124,7 @@ class StockIndexService {
    */
   private _rankResults(
     results: ISearchResult[],
-    queryLower: string
+    queryLower: string,
   ): ISearchResult[] {
     return results
       .map((result) => {

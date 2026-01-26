@@ -13,7 +13,7 @@ import type { IQueryParams } from "../types/api.js";
 
 export async function searchRoute(
   request: FastifyRequest<{ Querystring: IQueryParams }>,
-  reply: FastifyReply
+  reply: FastifyReply,
 ): Promise<ISearchResponse> {
   const query = validateSearchQuery(request.query.q);
 
@@ -35,7 +35,6 @@ export async function searchRoute(
       count: results.length,
     };
   } catch (error) {
-    console.log(`💥 Search error:`, error);
     reply.code(500);
     return { error: "Internal server error" } as unknown as ISearchResponse;
   }

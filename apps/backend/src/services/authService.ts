@@ -64,13 +64,11 @@ class AuthService {
 
       const result = await pool.query(
         "INSERT INTO users (email, password_hash, display_name) VALUES ($1, $2, $3) RETURNING id, email, display_name, created_at, updated_at, last_login",
-        [email, passwordHash, displayName || null]
+        [email, passwordHash, displayName || null],
       );
 
       const user: IUser = result.rows[0];
       const token = this.generateToken(user);
-
-      console.log(`✅ User signed up: ${email}`);
 
       return {
         success: true,
@@ -78,7 +76,6 @@ class AuthService {
         user,
       };
     } catch (error) {
-      console.error("❌ Signup error:", error);
       return { success: false, error: "Failed to create account" };
     }
   }
@@ -98,7 +95,7 @@ class AuthService {
 
       const passwordMatch = await bcrypt.compare(
         password,
-        userWithPassword.password_hash
+        userWithPassword.password_hash,
       );
       if (!passwordMatch) {
         return { success: false, error: "Invalid email or password" };
@@ -106,7 +103,7 @@ class AuthService {
 
       await pool.query(
         "UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = $1",
-        [userWithPassword.id]
+        [userWithPassword.id],
       );
 
       const user: IUser = {
@@ -120,15 +117,12 @@ class AuthService {
 
       const token = this.generateToken(user);
 
-      console.log(`✅ User logged in: ${email}`);
-
       return {
         success: true,
         token,
         user,
       };
     } catch (error) {
-      console.error("❌ Login error:", error);
       return { success: false, error: "Login failed" };
     }
   }
@@ -137,7 +131,7 @@ class AuthService {
     try {
       const result = await pool.query(
         "SELECT id, email, display_name, created_at, updated_at, last_login FROM users WHERE email = $1",
-        [email]
+        [email],
       );
 
       if (result.rows.length === 0) {
@@ -146,18 +140,17 @@ class AuthService {
 
       return result.rows[0];
     } catch (error) {
-      console.error("❌ Error finding user:", error);
       return null;
     }
   }
 
   async findUserByEmailWithPassword(
-    email: string
+    email: string,
   ): Promise<IUserWithPassword | null> {
     try {
       const result = await pool.query(
         "SELECT id, email, password_hash, display_name, created_at, updated_at, last_login FROM users WHERE email = $1",
-        [email]
+        [email],
       );
 
       if (result.rows.length === 0) {
@@ -166,7 +159,6 @@ class AuthService {
 
       return result.rows[0];
     } catch (error) {
-      console.error("❌ Error finding user with password:", error);
       return null;
     }
   }
@@ -175,7 +167,7 @@ class AuthService {
     try {
       const result = await pool.query(
         "SELECT id, email, display_name, created_at, updated_at, last_login FROM users WHERE id = $1",
-        [userId]
+        [userId],
       );
 
       if (result.rows.length === 0) {
@@ -184,7 +176,6 @@ class AuthService {
 
       return result.rows[0];
     } catch (error) {
-      console.error("❌ Error finding user by ID:", error);
       return null;
     }
   }
@@ -203,7 +194,6 @@ class AuthService {
       const decoded = jwt.verify(token, JWT_SECRET) as IJwtPayload;
       return decoded;
     } catch (error) {
-      console.error("❌ Token verification failed:", error);
       return null;
     }
   }

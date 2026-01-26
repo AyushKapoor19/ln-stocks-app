@@ -43,14 +43,10 @@ logApiKeysStatus();
 await testConnection();
 
 // Initialize stock index for production-grade search (BLOCKING)
-console.log("🚀 Initializing stock search index...");
+
 try {
   await stockIndexService.initialize();
-  console.log("✅ Stock index ready!");
-    } catch (error) {
-  console.error("❌ Failed to initialize stock index:", error);
-  console.log("⚠️ Search will return empty results until index is ready");
-}
+} catch (error) {}
 
 // Register stock data routes
 app.get("/", healthRoute);
@@ -78,5 +74,3 @@ app.listen({ port: PORT, host: HOST }).catch((error) => {
   app.log.error(error);
   process.exit(1);
 });
-
-console.log(`LN Stocks API running on http://${HOST}:${PORT}`);

@@ -37,7 +37,7 @@ export default class EmailSignInTab extends Lightning.Component {
         EmailField: this._createInputField(
           0,
           "Email",
-          "investor@wallstreet.com"
+          "investor@wallstreet.com",
         ),
         PasswordField: this._createInputField(110, "Password", "••••••••"),
 
@@ -217,7 +217,7 @@ export default class EmailSignInTab extends Lightning.Component {
   private static _createInputField(
     yPos: number,
     label: string,
-    placeholder: string
+    placeholder: string,
   ): object {
     return {
       x: 0,
@@ -286,6 +286,7 @@ export default class EmailSignInTab extends Lightning.Component {
       "signin",
       "signup",
     ];
+
     const currentIndex = focusOrder.indexOf(this.focusedElement);
     if (currentIndex > 0) {
       this.focusedElement = focusOrder[currentIndex - 1];
@@ -306,6 +307,7 @@ export default class EmailSignInTab extends Lightning.Component {
       "signin",
       "signup",
     ];
+
     const currentIndex = focusOrder.indexOf(this.focusedElement);
     if (currentIndex < focusOrder.length - 1) {
       this.focusedElement = focusOrder[currentIndex + 1];
@@ -699,7 +701,6 @@ export default class EmailSignInTab extends Lightning.Component {
       });
     } else {
       const errorMsg = response?.error || "Invalid credentials";
-      console.error("❌ Sign in failed:", errorMsg);
 
       if (errorMsg === "Invalid email or password") {
         this._showBackendError(errorMsg);

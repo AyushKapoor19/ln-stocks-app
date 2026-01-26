@@ -26,8 +26,6 @@ export function getStageConfig(): StageConfig {
   const windowWidth = window.innerWidth;
   const windowHeight = window.innerHeight;
 
-  console.log(`Window size: ${windowWidth}x${windowHeight}`);
-
   // Default to 1080p design
   const config: StageConfig = {
     w: DESIGN_WIDTH,
@@ -36,7 +34,5 @@ export function getStageConfig(): StageConfig {
     devicePixelRatio: 1,
   };
 
-  console.log(`✅ Stage: ${config.w}x${config.h} (precision: ${config.precision})`);
   return config;
 }
-

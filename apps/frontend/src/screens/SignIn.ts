@@ -641,13 +641,12 @@ export default class SignIn extends BaseScreen {
       this._hideKeyboard();
       return true;
     }
-    console.log("Navigating back to Home");
+
     this.fireAncestors("$navigateBack");
     return true;
   }
 
   $authenticationSuccess(data: { user: unknown; token: string }): void {
-    console.log("✅ Authentication successful from child!");
     this.fireAncestors("$authenticationSuccess", data);
   }
 
@@ -758,7 +757,7 @@ export default class SignIn extends BaseScreen {
       loginButton.setSmooth(
         "color",
         this.emailFocusIndex === 2 ? Colors.stockGreenBright : 0xff0d9959,
-        { duration: 0.2 }
+        { duration: 0.2 },
       );
     }
 
@@ -766,26 +765,17 @@ export default class SignIn extends BaseScreen {
   }
 
   private _showKeyboard(): void {
-    console.log("Opening keyboard for field:", this.activeField);
     this.showKeyboard = true;
     const blurOverlay = this.tag("BlurOverlay");
     const keyboardContainer = this.tag("KeyboardContainer");
 
-    console.log("BlurOverlay found:", !!blurOverlay);
-    console.log("KeyboardContainer found:", !!keyboardContainer);
-
     if (blurOverlay) {
       blurOverlay.setSmooth("alpha", 1, { duration: 0.3 });
-      console.log("✅ Blur overlay shown");
     }
 
     if (keyboardContainer) {
-      console.log(
-        `📍 Keyboard position: x=${keyboardContainer.x}, y=${keyboardContainer.y}, zIndex=${keyboardContainer.zIndex}`
-      );
       keyboardContainer.patch({ visible: true });
       keyboardContainer.setSmooth("alpha", 1, { duration: 0.3 });
-      console.log("✅ Keyboard container shown");
 
       // Update the title and icon based on active field
       const title = keyboardContainer.tag("Title");
@@ -840,7 +830,6 @@ export default class SignIn extends BaseScreen {
 
   $onKeyPress(event: { key: string }): void {
     const key = event.key;
-    console.log(`🔤 Key pressed: ${key}`);
 
     if (key === "Done") {
       this._hideKeyboard();
@@ -868,15 +857,14 @@ export default class SignIn extends BaseScreen {
   }
 
   private _handleKeyInput(char: string): void {
-    console.log(`📝 Adding character: "${char}"`);
     if (this.activeField === "email") {
       this.emailValue += char;
-      console.log(`📧 Email value now: "${this.emailValue}"`);
+
       this._updateEmailDisplay();
       this._updateKeyboardDisplay();
     } else if (this.activeField === "password") {
       this.passwordValue += char;
-      console.log(`🔑 Password value now: ${this.passwordValue.length} chars`);
+
       this._updatePasswordDisplay();
       this._updateKeyboardDisplay();
     }
@@ -912,13 +900,11 @@ export default class SignIn extends BaseScreen {
   private _updateKeyboardDisplay(): void {
     const keyboardContainer = this.tag("KeyboardContainer");
     if (!keyboardContainer) {
-      console.log("KeyboardContainer not found");
       return;
     }
 
     const inputCard = keyboardContainer.tag("InputDisplayCard");
     if (!inputCard) {
-      console.log("InputDisplayCard not found");
       return;
     }
 
@@ -927,29 +913,21 @@ export default class SignIn extends BaseScreen {
       this.activeField === "email"
         ? this.emailValue || "Email address"
         : this.passwordValue.length > 0
-        ? "\u2022".repeat(this.passwordValue.length)
-        : "Password";
+          ? "\u2022".repeat(this.passwordValue.length)
+          : "Password";
 
     const isPlaceholder =
       (this.activeField === "email" && this.emailValue.length === 0) ||
       (this.activeField === "password" && this.passwordValue.length === 0);
 
-    console.log(
-      `🔄 Keyboard input display: "${displayText}" (placeholder: ${isPlaceholder})`
-    );
-    console.log(
-      `📍 InputCard: x=${inputCard.x}, y=${inputCard.y}, alpha=${inputCard.alpha}, visible=${inputCard.visible}`
-    );
-
     // Remove old text element if it exists
     const oldInputText = inputCard.tag("InputText");
     if (oldInputText) {
-      console.log("Removing old text element");
       inputCard.childList.remove(oldInputText);
     }
 
     // Create brand new text element with all properties explicitly set
-    console.log(`✨ Creating new text element with: "${displayText}"`);
+
     const newText = inputCard.stage.c({
       ref: "InputText",
       x: 100,
@@ -967,7 +945,6 @@ export default class SignIn extends BaseScreen {
     });
 
     inputCard.childList.add(newText);
-    console.log(`📝 Text element added to InputCard`);
 
     // Update cursor
     const cursor = inputCard.tag("Cursor");
@@ -983,7 +960,6 @@ export default class SignIn extends BaseScreen {
           y: 30,
           alpha: 1,
         });
-        console.log(`📍 Cursor positioned at x=${100 + textWidth + 5}`);
       } else {
         cursor.patch({ alpha: 0 });
       }
@@ -995,7 +971,6 @@ export default class SignIn extends BaseScreen {
     // Force another update after a frame
     setTimeout(() => {
       this.stage.update();
-      console.log("✅ Keyboard display updated and rendered");
     }, 10);
   }
 
@@ -1045,12 +1020,7 @@ export default class SignIn extends BaseScreen {
   }
 
   private async _handleLogin(): Promise<void> {
-    console.log("Attempting login...");
-    console.log(`📧 Email: ${this.emailValue}`);
-    console.log(`🔑 Password: ${this.passwordValue.replace(/./g, "*")}`);
-
     if (!this.emailValue || !this.passwordValue) {
-      console.error("❌ Email and password are required");
       return;
     }
 
@@ -1060,42 +1030,34 @@ export default class SignIn extends BaseScreen {
     });
 
     if (response && response.success && response.token && response.user) {
-      console.log("✅ Login successful!");
       authApi.saveToken(response.token);
       this.$authenticationSuccess({
         user: response.user,
         token: response.token,
       });
     } else {
-      console.error("❌ Login failed:", response?.error || "Unknown error");
     }
   }
 
   _getFocused(): Lightning.Component {
     if (this.showKeyboard) {
-      console.log("Focus: Keyboard is open, getting keyboard component");
       const keyboardContainer = this.tag("KeyboardContainer");
       if (!keyboardContainer) {
-        console.log("KeyboardContainer not found in _getFocused");
         return this;
       }
       const keyboard = keyboardContainer.tag("Keyboard");
-      console.log("Keyboard component found:", !!keyboard);
+
       return keyboard || this;
     }
 
-    console.log("Focus: Returning SignIn component");
     return this;
   }
 
   private async _generateDeviceCode(): Promise<void> {
-    console.log("🔄 Generating device code...");
-
     const response: IDeviceCodeResponse | null =
       await authApi.generateDeviceCode();
 
     if (!response) {
-      console.error("❌ Failed to generate device code");
       return;
     }
 
@@ -1105,8 +1067,6 @@ export default class SignIn extends BaseScreen {
     this._displayDeviceCode(response.code);
     this._displayQRCode(response.qrCodeDataUrl);
     this._startPolling(response.pollInterval);
-
-    console.log(`✅ Device code generated: ${response.code}`);
   }
 
   private _displayDeviceCode(code: string): void {
@@ -1154,15 +1114,12 @@ export default class SignIn extends BaseScreen {
     this.pollInterval = setInterval(async () => {
       await this._checkCodeStatus();
     }, interval);
-
-    console.log(`📡 Polling started (every ${interval}ms)`);
   }
 
   private _stopPolling(): void {
     if (this.pollInterval) {
       clearInterval(this.pollInterval);
       this.pollInterval = null;
-      console.log("📡 Polling stopped");
     }
   }
 
@@ -1174,12 +1131,10 @@ export default class SignIn extends BaseScreen {
     if (!status) return;
 
     if (status.status === "approved" && status.token && status.user) {
-      console.log("✅ Authentication approved!");
       this._stopPolling();
       authApi.saveToken(status.token);
       this.$authenticationSuccess({ user: status.user, token: status.token });
     } else if (status.status === "expired") {
-      console.log("⏰ Device code expired");
       this._stopPolling();
     }
   }

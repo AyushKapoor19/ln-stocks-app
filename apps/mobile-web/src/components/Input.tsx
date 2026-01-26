@@ -1,10 +1,10 @@
 /**
  * Input Component
- * 
+ *
  * Reusable input field with error state and animations
  */
 
-import React from 'react';
+import React from "react";
 
 interface IInputProps {
   type: string;
@@ -25,7 +25,7 @@ export const Input: React.FC<IInputProps> = ({
   error,
   autoFocus,
   maxLength,
-  className = '',
+  className = "",
 }) => {
   return (
     <div className="w-full">
@@ -37,13 +37,15 @@ export const Input: React.FC<IInputProps> = ({
         autoFocus={autoFocus}
         maxLength={maxLength}
         className={`w-full px-4 py-3 bg-background-input text-text-primary rounded-lg border-2 transition-all duration-200 focus:outline-none focus:border-primary ${
-          error ? 'border-error animate-shake' : 'border-transparent focus:border-primary'
+          error
+            ? "border-error animate-shake"
+            : "border-transparent focus:border-primary"
         } ${className}`}
       />
+
       {error && (
         <p className="mt-2 text-sm text-error animate-fade-in">{error}</p>
       )}
     </div>
   );
 };
-

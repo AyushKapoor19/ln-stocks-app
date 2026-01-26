@@ -9,7 +9,7 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8787";
 class ApiService {
   private async request<T>(
     endpoint: string,
-    options: RequestInit = {}
+    options: RequestInit = {},
   ): Promise<T> {
     const url = `${API_BASE_URL}${endpoint}`;
 
@@ -31,7 +31,6 @@ class ApiService {
 
       return data;
     } catch (error) {
-      console.error(`API Error [${endpoint}]:`, error);
       throw error;
     }
   }

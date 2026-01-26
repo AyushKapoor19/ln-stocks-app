@@ -26,8 +26,6 @@ class MetricsService {
    */
   async fetchMetrics(symbol: string): Promise<IStockMetrics> {
     try {
-      console.log(`Fetching metrics for ${symbol}...`);
-
       // Fetch data from multiple sources in parallel
       const [polygonMetrics, finnhubMetrics] = await Promise.all([
         this._getPolygonMetrics(symbol),
@@ -48,24 +46,8 @@ class MetricsService {
           : "polygon_calculated",
       };
 
-      console.log(`✅ Got metrics for ${symbol}:`, {
-        volume: metrics.volume
-          ? `${(metrics.volume / 1000000).toFixed(2)}M`
-          : "N/A",
-        marketCap: metrics.marketCap
-          ? `$${(metrics.marketCap / 1000000000).toFixed(2)}B`
-          : "N/A",
-        week52:
-          metrics.week52Low && metrics.week52High
-            ? `$${metrics.week52Low.toFixed(2)} - $${metrics.week52High.toFixed(
-                2
-              )}`
-            : "N/A",
-      });
-
       return metrics;
     } catch (error) {
-      console.error(`❌ Failed to fetch metrics for ${symbol}:`, error);
       return {
         symbol,
         source: "estimated",
@@ -81,7 +63,7 @@ class MetricsService {
    * Uses caching layer to avoid redundant API calls
    */
   private async _getPolygonMetrics(
-    symbol: string
+    symbol: string,
   ): Promise<Partial<IStockMetrics>> {
     try {
       // Check cache first (in-memory → PostgreSQL)
@@ -103,7 +85,6 @@ class MetricsService {
       }
 
       if (!yearData || !yearData.points || yearData.points.length === 0) {
-        console.log(`No Polygon data for ${symbol}`);
         return {};
       }
 
@@ -125,7 +106,6 @@ class MetricsService {
         week52Low: week52Low > 0 ? week52Low : undefined,
       };
     } catch (error) {
-      console.log(`Polygon metrics error for ${symbol}:`, error);
       return {};
     }
   }
@@ -136,7 +116,7 @@ class MetricsService {
    * - 52-week range from /stock/metric
    */
   private async _getFinnhubMetrics(
-    symbol: string
+    symbol: string,
   ): Promise<Partial<IStockMetrics>> {
     if (!FINNHUB_KEY) {
       return {};
@@ -147,15 +127,12 @@ class MetricsService {
       const profileUrl = `${
         this.finnhubBaseUrl
       }/stock/profile2?symbol=${encodeURIComponent(
-        symbol
+        symbol,
       )}&token=${FINNHUB_KEY}`;
 
       const profileResponse = await fetch(profileUrl);
 
       if (!profileResponse.ok) {
-        console.log(
-          `Finnhub profile failed for ${symbol}: ${profileResponse.status}`
-        );
         return {};
       }
 
@@ -173,7 +150,7 @@ class MetricsService {
       const metricsUrl = `${
         this.finnhubBaseUrl
       }/stock/metric?symbol=${encodeURIComponent(
-        symbol
+        symbol,
       )}&metric=all&token=${FINNHUB_KEY}`;
 
       const metricsResponse = await fetch(metricsUrl);
@@ -193,7 +170,6 @@ class MetricsService {
         week52Low,
       };
     } catch (error) {
-      console.log(`Finnhub metrics error for ${symbol}:`, error);
       return {};
     }
   }

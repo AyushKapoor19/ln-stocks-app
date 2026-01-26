@@ -10,7 +10,7 @@ import type { IHealthResponse } from "../types/api.js";
 
 export async function healthRoute(
   request: FastifyRequest,
-  reply: FastifyReply
+  reply: FastifyReply,
 ): Promise<IHealthResponse> {
   return {
     name: "LN Stocks API",

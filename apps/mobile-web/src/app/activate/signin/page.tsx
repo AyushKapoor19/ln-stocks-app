@@ -90,7 +90,7 @@ function SignInContent() {
       const response = await authService.approveDeviceCode(
         code,
         formData.email,
-        formData.password
+        formData.password,
       );
 
       if (response.success) {
@@ -106,7 +106,6 @@ function SignInContent() {
         ...errors,
         backend: "Something went wrong. Please try again.",
       });
-      console.error("Sign in error:", err);
     } finally {
       setIsLoading(false);
     }
