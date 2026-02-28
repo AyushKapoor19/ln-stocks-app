@@ -38,35 +38,6 @@ export class StockUtils {
   }
 
   /**
-   * Formats a number as currency (USD)
-   * @param value - Number to format
-   * @returns Formatted currency string (e.g., "$123.45")
-   */
-  static formatPrice(value: number): string {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(value);
-  }
-
-  /**
-   * Formats change value with percentage
-   * @param change - Absolute change amount
-   * @param changePct - Percentage change (as decimal, e.g., 0.05 for 5%)
-   * @returns Formatted string (e.g., "+2.45 (+0.57%)")
-   */
-  static formatChange(change: number, changePct: number): string {
-    const changeStr = change >= 0 ? `+${change.toFixed(2)}` : change.toFixed(2);
-    const pctStr =
-      changePct >= 0
-        ? `+${(changePct * 100).toFixed(2)}%`
-        : `${(changePct * 100).toFixed(2)}%`;
-    return `${changeStr} (${pctStr})`;
-  }
-
-  /**
    * Formats a percentage
    * @param value - Percentage as decimal (e.g., 0.05 for 5%)
    * @param includeSign - Whether to include + sign for positive values

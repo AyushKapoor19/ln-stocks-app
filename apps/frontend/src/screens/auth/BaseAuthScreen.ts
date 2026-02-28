@@ -31,10 +31,16 @@ export default abstract class BaseAuthScreen extends BaseScreen {
   protected focusOnTab: boolean = true;
 
   protected abstract getAuthConfig(): IAuthConfig;
+  protected abstract getAuthType(): "signup" | "signin";
   protected abstract getMobileContentComponent(): Lightning.Component.Constructor;
   protected abstract getEmailContentComponent(): Lightning.Component.Constructor;
 
-  static _template(): object {
+  protected static getBaseTemplate(
+    config: IAuthConfig,
+    mobileComponent: Lightning.Component.Constructor,
+    emailComponent: Lightning.Component.Constructor,
+    authType: "signup" | "signin"
+  ): object {
     return {
       w: 1920,
       h: 1080,
@@ -49,7 +55,7 @@ export default abstract class BaseAuthScreen extends BaseScreen {
         Title: {
           y: 0,
           text: {
-            text: "",
+            text: config.title,
             fontSize: 72,
             fontStyle: FontStyle.Bold,
             textColor: Colors.textPrimary,
@@ -60,7 +66,7 @@ export default abstract class BaseAuthScreen extends BaseScreen {
         Subtitle: {
           y: 100,
           text: {
-            text: "",
+            text: config.subtitle,
             fontSize: FontSize.Large,
             textColor: Colors.textTertiary,
             fontFace: FontFamily.Default,
@@ -91,7 +97,7 @@ export default abstract class BaseAuthScreen extends BaseScreen {
             x: 0,
             y: 20,
             text: {
-              text: "",
+              text: config.mobileTabLabel,
               fontSize: FontSize.Large,
               textColor: Colors.authAccent,
               fontFace: FontFamily.Default,
@@ -101,7 +107,7 @@ export default abstract class BaseAuthScreen extends BaseScreen {
           Indicator: {
             x: 0,
             y: 58,
-            w: 280,
+            w: config.mobileTabWidth,
             h: 3,
             rect: true,
             color: Colors.authAccent,
@@ -109,14 +115,14 @@ export default abstract class BaseAuthScreen extends BaseScreen {
         },
 
         EmailTab: {
-          x: 350,
+          x: config.emailTabX,
           y: 0,
 
           Label: {
             x: 0,
             y: 20,
             text: {
-              text: "",
+              text: config.emailTabLabel,
               fontSize: FontSize.Large,
               textColor: Colors.textTertiary,
               fontFace: FontFamily.Default,
@@ -126,10 +132,10 @@ export default abstract class BaseAuthScreen extends BaseScreen {
           Indicator: {
             x: 0,
             y: 58,
-            w: 260,
+            w: config.emailTabWidth,
             h: 3,
             rect: true,
-            color: Colors.transparent,
+            color: Colors.authAccent,
             alpha: 0,
           },
         },
@@ -142,73 +148,19 @@ export default abstract class BaseAuthScreen extends BaseScreen {
         h: 640,
 
         MobileContent: {
+          type: mobileComponent,
+          params: { authType },
           alpha: 1,
         },
 
         EmailContent: {
+          type: emailComponent,
           alpha: 0,
         },
       },
     };
   }
 
-  _init(): void {
-    const config = this.getAuthConfig();
-    
-    const header = this.tag("Header");
-    if (header) {
-      const title = header.tag("Title");
-      if (title && title.text) {
-        title.text.text = config.title;
-      }
-
-      const subtitle = header.tag("Subtitle");
-      if (subtitle && subtitle.text) {
-        subtitle.text.text = config.subtitle;
-      }
-    }
-
-    const tabBar = this.tag("TabBar");
-    if (tabBar) {
-      const mobileTab = tabBar.tag("MobileTab");
-      if (mobileTab) {
-        const label = mobileTab.tag("Label");
-        if (label && label.text) {
-          label.text.text = config.mobileTabLabel;
-        }
-        const indicator = mobileTab.tag("Indicator");
-        if (indicator) {
-          indicator.w = config.mobileTabWidth;
-        }
-      }
-
-      const emailTab = tabBar.tag("EmailTab");
-      if (emailTab) {
-        emailTab.x = config.emailTabX;
-        const label = emailTab.tag("Label");
-        if (label && label.text) {
-          label.text.text = config.emailTabLabel;
-        }
-        const indicator = emailTab.tag("Indicator");
-        if (indicator) {
-          indicator.w = config.emailTabWidth;
-        }
-      }
-    }
-
-    const tabContent = this.tag("TabContent");
-    if (tabContent) {
-      tabContent.patch({
-        MobileContent: {
-          type: this.getMobileContentComponent(),
-          authType: "signup",
-        },
-        EmailContent: {
-          type: this.getEmailContentComponent(),
-        },
-      });
-    }
-  }
 
   _active(): void {
     this.currentTab = "mobile";

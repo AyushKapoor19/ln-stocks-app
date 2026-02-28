@@ -12,7 +12,7 @@ import type {
   IDeviceCodeStatusResponse,
 } from "../types/auth";
 
-const API_BASE_URL = "https://ln-stocks-backend.onrender.com";
+const API_BASE_URL = import.meta.env.VITE_API_URL || "https://ln-stocks-backend.onrender.com";
 const AUTH_TOKEN_KEY = "auth_token";
 const NETWORK_ERROR: IAuthResponse = { success: false, error: "Network error" };
 

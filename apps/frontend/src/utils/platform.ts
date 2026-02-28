@@ -121,20 +121,11 @@ export function getPlatformStageConfig(
       break;
 
     case "samsung":
-      // Samsung Tizen TVs work well with standard detection
-
-      break;
-
     case "lg":
-      // LG webOS works well with standard detection
-
-      break;
-
     case "vizio":
-      break;
-
     case "firetv":
     case "android":
+      // These platforms work well with standard detection
       break;
   }
 

@@ -31,7 +31,7 @@ import {
 } from "./routes/deviceCodeRoutes.js";
 
 // Initialize server
-const app = Fastify({ logger: true });
+const app = Fastify({ logger: false });
 
 // Register CORS
 await app.register(cors, { origin: true });
@@ -45,7 +45,6 @@ await testConnection();
 // Initialize stock index for production-grade search (BLOCKING)
 try {
   await stockIndexService.initialize();
-  console.log("Stock index service initialized");
 } catch (error) {
   console.error("Failed to initialize stock index service:", error);
 }
@@ -72,7 +71,10 @@ app.post("/auth/device-code/approve", approveDeviceCodeRoute);
 app.post("/auth/device-code/approve-signup", approveDeviceCodeWithSignUpRoute);
 
 // Start server
-app.listen({ port: PORT, host: HOST }).catch((error) => {
-  app.log.error(error);
-  process.exit(1);
+app.listen({ port: PORT, host: HOST }, (error) => {
+  if (error) {
+    console.error("Failed to start server:", error);
+    process.exit(1);
+  }
+  console.log(`Server running on http://${HOST}:${PORT}`);
 });

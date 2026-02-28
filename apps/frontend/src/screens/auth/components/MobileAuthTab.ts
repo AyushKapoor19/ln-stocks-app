@@ -162,6 +162,16 @@ export default class MobileAuthTab extends Lightning.Component {
     return this;
   }
 
+  _handleUp(): boolean {
+    this.fireAncestors("$focusBackToTab");
+    return true;
+  }
+
+  _handleBack(): boolean {
+    this.fireAncestors("$focusBackToTab");
+    return true;
+  }
+
   private _updateDeviceCodeStyle(): void {
     const deviceCodeContainer = this.tag("LeftSection")?.tag(
       "DeviceCodeContainer",
@@ -192,7 +202,13 @@ export default class MobileAuthTab extends Lightning.Component {
     await this._fadeOutCode();
 
     const response = await authApi.generateDeviceCode(this.authType);
-    if (!response) {
+    
+    if (!response || !response.code || !response.qrCodeDataUrl) {
+      console.error("Failed to load device code");
+      const codeText = this.tag("LeftSection")?.tag("DeviceCodeContainer")?.tag("CodeText");
+      if (codeText && codeText.text) {
+        codeText.text.text = "ERROR";
+      }
       return;
     }
 

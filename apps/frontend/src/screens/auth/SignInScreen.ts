@@ -9,6 +9,19 @@ import MobileAuthTab from "./components/MobileAuthTab";
 import EmailSignInTab from "./components/EmailSignInTab";
 
 export default class SignInScreen extends BaseAuthScreen {
+  static _template(): object {
+    const config = {
+      title: "Welcome Back",
+      subtitle: "Sign in to continue trading",
+      mobileTabLabel: "Sign in using mobile",
+      emailTabLabel: "Sign in using email",
+      mobileTabWidth: 260,
+      emailTabX: 330,
+      emailTabWidth: 240,
+    };
+    return BaseAuthScreen.getBaseTemplate(config, MobileAuthTab, EmailSignInTab, "signin");
+  }
+
   protected getAuthConfig() {
     return {
       title: "Welcome Back",
@@ -19,6 +32,10 @@ export default class SignInScreen extends BaseAuthScreen {
       emailTabX: 330,
       emailTabWidth: 240,
     };
+  }
+
+  protected getAuthType(): "signup" | "signin" {
+    return "signin";
   }
 
   protected getMobileContentComponent(): Lightning.Component.Constructor {

@@ -1,7 +1,7 @@
 import { BaseApiService } from "./baseApi";
 import type { ISeriesData } from "../types/events";
 
-const API_BASE_URL = "https://ln-stocks-backend.onrender.com";
+const API_BASE_URL = import.meta.env.VITE_API_URL || "https://ln-stocks-backend.onrender.com";
 
 interface QuoteResponse {
   symbol: string;

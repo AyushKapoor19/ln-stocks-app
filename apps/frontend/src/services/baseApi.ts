@@ -19,20 +19,30 @@ export class BaseApiService {
     options: RequestInit = {}
   ): Promise<T | null> {
     try {
-      const response = await fetch(`${this.baseUrl}${endpoint}`, {
-        ...options,
-        headers: {
-          "Content-Type": "application/json",
-          ...options.headers,
-        },
-      });
+      const headers: Record<string, string> = Object.assign(
+        {},
+        options.headers as Record<string, string>
+      );
+      
+      // Only set Content-Type if there's a body
+      if (options.body) {
+        headers["Content-Type"] = "application/json";
+      }
+
+      const response = await fetch(`${this.baseUrl}${endpoint}`, Object.assign(
+        {},
+        options,
+        { headers }
+      ));
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        console.error(`API Error: ${response.status} ${endpoint}`);
+        return null;
       }
 
       return await response.json();
     } catch (error) {
+      console.error(`Network Error: ${endpoint}`, error);
       return null;
     }
   }
