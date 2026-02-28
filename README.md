@@ -2,6 +2,32 @@
 
 Real-time stock market tracking application built with TypeScript, Lightning.js, Next.js, and Fastify. Features multi-platform support for TV, web, and mobile devices with comprehensive market data, interactive charts, and device authentication.
 
+## Features
+
+### TV Application - Real-Time Stock Tracking
+
+![Home Screen](./docs/screenshots/tv-home-screen.png)
+
+Interactive stock charts with market overview, stock details, and watchlist management. Supports multiple time periods (1M, 3M, 1Y) with Chart.js visualizations.
+
+### Stock Search with On-Screen Keyboard
+
+![Search Screen](./docs/screenshots/tv-search-screen.png)
+
+Production-grade search with indexed popular stocks and on-screen keyboard navigation optimized for TV remotes.
+
+### Device Code Authentication
+
+![Device Authentication](./docs/screenshots/tv-device-auth.png)
+
+Secure TV authentication via mobile device using QR code scanning or manual code entry. Visit the activation URL on your phone to approve.
+
+### Email Authentication
+
+![Email Sign Up](./docs/screenshots/tv-email-signup.png)
+
+Traditional email/password authentication with real-time validation and security requirements displayed on-screen.
+
 ## Architecture
 
 Monorepo structure with three main applications:
