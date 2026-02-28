@@ -12,7 +12,8 @@ import type {
   IDeviceCodeStatusResponse,
 } from "../types/auth";
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || "https://ln-stocks-backend.onrender.com";
+const API_BASE_URL =
+  import.meta.env.VITE_API_URL || "https://ln-stocks-backend.onrender.com";
 const AUTH_TOKEN_KEY = "auth_token";
 const NETWORK_ERROR: IAuthResponse = { success: false, error: "Network error" };
 
@@ -24,7 +25,7 @@ class AuthApiService extends BaseApiService {
   async signup(
     email: string,
     password: string,
-    displayName?: string,
+    displayName?: string
   ): Promise<IAuthResponse> {
     const result = await this.post<IAuthResponse>("/auth/signup", {
       email,
@@ -40,18 +41,18 @@ class AuthApiService extends BaseApiService {
   }
 
   async generateDeviceCode(
-    authType: "signin" | "signup" = "signin",
+    authType: "signin" | "signup" = "signin"
   ): Promise<IDeviceCodeResponse | null> {
     return this.post<IDeviceCodeResponse>(
-      `/auth/device-code/generate?authType=${authType}`,
+      `/auth/device-code/generate?authType=${authType}`
     );
   }
 
   async checkDeviceCodeStatus(
-    code: string,
+    code: string
   ): Promise<IDeviceCodeStatusResponse | null> {
     return this.get<IDeviceCodeStatusResponse>(
-      `/auth/device-code/status?code=${encodeURIComponent(code)}`,
+      `/auth/device-code/status?code=${encodeURIComponent(code)}`
     );
   }
 
