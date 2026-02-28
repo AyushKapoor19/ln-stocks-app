@@ -31,19 +31,6 @@ interface TimePeriod {
   days: number;
 }
 
-interface LightningComponent {
-  tag(tagName: string): LightningComponent | null;
-  text: {
-    textColor: number;
-  };
-  color: number;
-  setSmooth(
-    property: string,
-    value: number,
-    options: { duration: number },
-  ): void;
-}
-
 const TIME_PERIODS: TimePeriod[] = [
   { id: "1M", label: "1M", days: 30 },
   { id: "3M", label: "3M", days: 90 },
@@ -1369,7 +1356,6 @@ export default class Home extends BaseScreen {
   }
 
   private _selectTimePeriod(newIndex: number): void {
-    const oldPeriod = TIME_PERIODS[this.selectedPeriodIndex];
     const newPeriod = TIME_PERIODS[newIndex];
 
     this.selectedPeriodIndex = newIndex;

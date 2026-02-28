@@ -19,7 +19,6 @@ export default class SignIn extends BaseScreen {
   private tabs = ["Use code", "Use email address"];
   private deviceCode: string = "";
   private pollInterval: NodeJS.Timeout | null = null;
-  private qrImageUrl: string = "";
 
   // Email login state
   private emailFocusIndex = 0; // 0: email field, 1: password field, 2: sign in button
@@ -1062,7 +1061,6 @@ export default class SignIn extends BaseScreen {
     }
 
     this.deviceCode = response.code;
-    this.qrImageUrl = response.qrCodeDataUrl;
 
     this._displayDeviceCode(response.code);
     this._displayQRCode(response.qrCodeDataUrl);

@@ -45,6 +45,20 @@ const backgroundColorPlugin = {
 // Register the background plugin
 Chart.register(backgroundColorPlugin);
 
+interface IChartContext {
+  chart: Chart;
+  dataIndex?: number;
+  dataset?: unknown;
+  datasetIndex?: number;
+}
+
+interface IChartArea {
+  top: number;
+  bottom: number;
+  left: number;
+  right: number;
+}
+
 interface ChartConfiguration {
   chartWidth?: number;
   chartHeight?: number;
@@ -103,17 +117,17 @@ export default class StockChart extends BaseComponent {
   }
 
   private _readConfiguration(): void {
-    const config = this as unknown as ChartConfiguration;
-    this.chartWidth = config.chartWidth || this.chartWidth;
-    this.chartHeight = config.chartHeight || this.chartHeight;
-    this._lineColor = config.lineColor || this._lineColor;
-    this.canvasLeft = config.canvasLeft || this.canvasLeft;
-    this.canvasTop = config.canvasTop || this.canvasTop;
+    const component = this as unknown as Lightning.Component & Partial<ChartConfiguration>;
+    this.chartWidth = component.chartWidth || this.chartWidth;
+    this.chartHeight = component.chartHeight || this.chartHeight;
+    this._lineColor = component.lineColor || this._lineColor;
+    this.canvasLeft = component.canvasLeft || this.canvasLeft;
+    this.canvasTop = component.canvasTop || this.canvasTop;
   }
 
   private createGradient(
     ctx: CanvasRenderingContext2D,
-    chartArea: any,
+    chartArea: IChartArea,
     lineColor: string,
   ): CanvasGradient {
     const gradient = ctx.createLinearGradient(
@@ -193,7 +207,7 @@ export default class StockChart extends BaseComponent {
             label: "Price",
             data: [],
             borderColor: this._lineColor,
-            backgroundColor: (context: any) => {
+            backgroundColor: (context: IChartContext) => {
               const chart = context.chart;
               const { ctx, chartArea } = chart;
 
@@ -201,7 +215,7 @@ export default class StockChart extends BaseComponent {
                 return "transparent";
               }
 
-              return this.createGradient(ctx, chartArea, this._lineColor);
+              return this.createGradient(ctx, chartArea as IChartArea, this._lineColor);
             },
             borderWidth: 2.5,
             fill: "origin",
@@ -268,8 +282,9 @@ export default class StockChart extends BaseComponent {
               font: {
                 size: 20,
               },
-              callback: function (value: any) {
-                return "$" + value.toFixed(2);
+              callback: function (value: number | string) {
+                const numValue = typeof value === 'string' ? parseFloat(value) : value;
+                return "$" + numValue.toFixed(2);
               },
             },
             border: {
@@ -303,11 +318,15 @@ export default class StockChart extends BaseComponent {
     this._lineColor = newColor;
 
     if (this.chart && this.chart.data.datasets[0]) {
-      this.chart.data.datasets[0].borderColor = newColor;
-      (this.chart.data.datasets[0] as any).pointHoverBackgroundColor = newColor;
+      const dataset = this.chart.data.datasets[0];
+      dataset.borderColor = newColor;
+      
+      if ('pointHoverBackgroundColor' in dataset) {
+        (dataset as unknown as Record<string, unknown>).pointHoverBackgroundColor = newColor;
+      }
 
       // Update backgroundColor function to use new color
-      this.chart.data.datasets[0].backgroundColor = (context: any) => {
+      dataset.backgroundColor = (context: IChartContext) => {
         const chart = context.chart;
         const { ctx, chartArea } = chart;
 
@@ -315,7 +334,7 @@ export default class StockChart extends BaseComponent {
           return "transparent";
         }
 
-        return this.createGradient(ctx, chartArea, newColor);
+        return this.createGradient(ctx, chartArea as IChartArea, newColor);
       };
 
       // Re-animate with new colors

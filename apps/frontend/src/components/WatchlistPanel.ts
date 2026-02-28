@@ -6,8 +6,7 @@
  */
 
 import { Lightning } from "@lightningjs/sdk";
-import { Colors } from "../constants/Colors";
-import { FontSize, FontStyle, FontFamily } from "../constants/Fonts";
+import { FontStyle, FontFamily } from "../constants/Fonts";
 import { stocksApi } from "../services/api";
 
 interface StockQuote {
@@ -48,7 +47,6 @@ export default class WatchlistPanel
   private selectedStockIndex = 0;
   private scrollY = 0;
   private readonly ITEM_HEIGHT = 55;
-  private readonly VISIBLE_ITEMS = 3;
   private readonly CONTAINER_HEIGHT = 185;
   private isFocused = false;
 
@@ -432,17 +430,15 @@ export default class WatchlistPanel
    */
   private _updateStockFocus(): void {
     const stocksContainer = this.tag("StocksContainer");
-    const stocksList = stocksContainer
-      ? (stocksContainer.tag("StocksList") as unknown as Lightning.Element)
-      : null;
+    if (!stocksContainer) return;
+    
+    const stocksList = stocksContainer.tag("StocksList");
     if (!stocksList) {
       return;
     }
 
-    this.stocks.forEach((stock, index) => {
-      const stockItem = (stocksList as any).tag(
-        `Stock_${index}`,
-      ) as Lightning.Element | null;
+    this.stocks.forEach((_stock, index) => {
+      const stockItem = (stocksList as unknown as Lightning.Component).tag(`Stock_${index}`);
       if (stockItem) {
         const isFocusedItem =
           this.isFocused && index === this.selectedStockIndex;

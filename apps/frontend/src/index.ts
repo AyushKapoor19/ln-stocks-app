@@ -3,8 +3,6 @@ import App from "./app/App.js";
 import {
   detectResolution,
   logResolutionInfo,
-  DESIGN_WIDTH,
-  DESIGN_HEIGHT,
 } from "./utils/resolution.js";
 import {
   detectPlatform,

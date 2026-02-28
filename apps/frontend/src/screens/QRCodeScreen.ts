@@ -15,7 +15,6 @@ import type { IDeviceCodeResponse } from "../types/auth";
 export default class QRCodeScreen extends BaseScreen {
   private deviceCode: string = "";
   private pollInterval: NodeJS.Timeout | null = null;
-  private qrImageUrl: string = "";
 
   static _template(): object {
     return {
@@ -273,7 +272,6 @@ export default class QRCodeScreen extends BaseScreen {
     }
 
     this.deviceCode = response.code;
-    this.qrImageUrl = response.qrCodeDataUrl;
 
     this._displayDeviceCode(response.code);
     this._displayQRCode(response.qrCodeDataUrl);

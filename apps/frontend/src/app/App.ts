@@ -87,8 +87,6 @@ export default class App extends Lightning.Component {
     // Set width using Lightning.js coordsWidth
     this.w = this.stage.coordsWidth;
 
-    const precision = (this.stage.getOption("precision") as number) || 1;
-
     // Check for stored auth token and auto-login
     void this._checkStoredAuth();
   }

@@ -7,7 +7,7 @@ import { Lightning } from "@lightningjs/sdk";
 import BaseScreen from "./BaseScreen";
 import { stocksApi, type SearchResult } from "../services/api";
 import { Colors } from "../constants/Colors";
-import { FontSize, FontStyle, FontFamily } from "../constants/Fonts";
+import { FontStyle, FontFamily } from "../constants/Fonts";
 
 interface StockCardData extends SearchResult {
   price?: number;

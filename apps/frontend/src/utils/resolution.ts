@@ -146,6 +146,6 @@ export function scaleValue(value: number, precision: number): number {
 /**
  * Log resolution information for debugging
  */
-export function logResolutionInfo(config: StageConfig): void {
-  const info = getResolutionInfo(config);
+export function logResolutionInfo(_config: StageConfig): void {
+  // Resolution info logging is disabled for production
 }

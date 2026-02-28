@@ -5,7 +5,6 @@ import { Colors } from "../constants/Colors";
 import { FontSize, FontStyle, FontFamily } from "../constants/Fonts";
 import {
   ISearchResult,
-  ISelectStockEvent,
   ISearchActivatedEvent,
   ISearchDeactivatedEvent,
   IShowSearchResultsEvent,
@@ -193,15 +192,7 @@ export default class SearchBar extends BaseComponent {
     this.searchResults = [];
     this.selectedSearchIndex = 0;
 
-    const searchLabel = this.tag("SearchLabel");
-    if (searchLabel && searchLabel.text) {
-      searchLabel.text.text = "|";
-      searchLabel.text.textColor = Colors.textPrimary;
-      searchLabel.text.fontSize = FontSize.Body;
-      searchLabel.text.fontStyle = FontStyle.Bold;
-      searchLabel.setSmooth("alpha", 1, { duration: 0.2 });
-    }
-
+    this._setSearchLabelText("|", 1);
     this._hideCursor();
     this._stopCursorBlink();
 
@@ -213,26 +204,16 @@ export default class SearchBar extends BaseComponent {
     this.searchQuery = "";
     this._clearSearchResults();
 
-    const searchLabel = this.tag("SearchLabel");
-    if (searchLabel && searchLabel.text) {
-      searchLabel.text.text = "Search stocks...";
-      searchLabel.text.textColor = Colors.textPrimary;
-      searchLabel.text.fontSize = FontSize.Body;
-      searchLabel.text.fontStyle = FontStyle.Bold;
-    }
+    this._setSearchLabelText("Search stocks...");
 
     if (this.isFocused) {
       this._showCursor();
       this._startCursorBlink();
-      if (searchLabel) {
-        searchLabel.setSmooth("alpha", 0, { duration: 0.2 });
-      }
+      this._setSearchLabelAlpha(0);
     } else {
       this._hideCursor();
       this._stopCursorBlink();
-      if (searchLabel) {
-        searchLabel.setSmooth("alpha", 1, { duration: 0.2 });
-      }
+      this._setSearchLabelAlpha(1);
     }
 
     const event: ISearchDeactivatedEvent = { component: this };
@@ -240,17 +221,10 @@ export default class SearchBar extends BaseComponent {
   }
 
   private _updateSearchText(): void {
-    const searchLabel = this.tag("SearchLabel");
-    if (!searchLabel || !searchLabel.text) return;
-
     const displayText =
       this.searchQuery.length > 0 ? `${this.searchQuery}|` : "|";
 
-    searchLabel.text.text = displayText;
-    searchLabel.text.textColor = Colors.textPrimary;
-    searchLabel.text.fontSize = FontSize.Body;
-    searchLabel.text.fontStyle = FontStyle.Bold;
-    searchLabel.setSmooth("alpha", 1, { duration: 0.1 });
+    this._setSearchLabelText(displayText, 1, 0.1);
 
     if (this.searchQuery.length > 0) {
       this._hideCursor();
@@ -258,6 +232,33 @@ export default class SearchBar extends BaseComponent {
     }
 
     this.stage.update();
+  }
+
+  /**
+   * Helper method to set search label text and styling
+   */
+  private _setSearchLabelText(text: string, alpha?: number, duration = 0.2): void {
+    const searchLabel = this.tag("SearchLabel");
+    if (!searchLabel || !searchLabel.text) return;
+
+    searchLabel.text.text = text;
+    searchLabel.text.textColor = Colors.textPrimary;
+    searchLabel.text.fontSize = FontSize.Body;
+    searchLabel.text.fontStyle = FontStyle.Bold;
+
+    if (alpha !== undefined) {
+      searchLabel.setSmooth("alpha", alpha, { duration });
+    }
+  }
+
+  /**
+   * Helper method to set search label alpha
+   */
+  private _setSearchLabelAlpha(alpha: number, duration = 0.2): void {
+    const searchLabel = this.tag("SearchLabel");
+    if (searchLabel) {
+      searchLabel.setSmooth("alpha", alpha, { duration });
+    }
   }
 
   private _debouncedSearch(): void {

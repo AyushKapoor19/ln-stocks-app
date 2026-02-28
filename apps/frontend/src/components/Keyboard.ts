@@ -161,8 +161,8 @@ export default class Keyboard extends Lightning.Component {
   }
 
   private _createKeys(): void {
-    const keysRow = this.tag("KeysRow") as any;
-    const secondRow = this.tag("SecondRow") as any;
+    const keysRow = this.tag("KeysRow") as Lightning.Component;
+    const secondRow = this.tag("SecondRow") as Lightning.Component;
     if (!keysRow || !secondRow) return;
 
     const keySize = 56;
@@ -312,8 +312,8 @@ export default class Keyboard extends Lightning.Component {
   }
 
   private _createModeToggles(): void {
-    const container = this.tag("ModeToggles") as any;
-    const doneButton = this.tag("DoneButton") as any;
+    const container = this.tag("ModeToggles") as Lightning.Component;
+    const doneButton = this.tag("DoneButton") as Lightning.Component;
     if (!container || !doneButton) return;
 
     const modes = [
