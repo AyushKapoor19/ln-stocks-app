@@ -7,6 +7,7 @@ export const Colors = {
   white: 0xffffffff,
 
   background: 0xff0b0b0c,
+  stageClearColor: 0xff0b0b0c,
   cardBackground: 0xff18181b,
   cardBackgroundFocus: 0xff27272a,
   cardBackgroundHover: 0xff202024,

@@ -1,6 +1,7 @@
 import { Launch } from "@lightningjs/sdk";
 import App from "./app/App.js";
 import { detectResolution } from "./utils/resolution.js";
+import { Colors } from "./constants/Colors.js";
 
 const resolutionConfig = detectResolution();
 
@@ -10,7 +11,7 @@ const applicationOptions = {
     h: resolutionConfig.h,
     precision: resolutionConfig.precision,
     devicePixelRatio: resolutionConfig.devicePixelRatio,
-    clearColor: 0xff0b0b0c,
+    clearColor: Colors.stageClearColor,
     canvas: document.getElementById("app") as HTMLCanvasElement,
     useImageWorker: false,
     defaultFontFace: "Avenir Next",
@@ -20,4 +21,4 @@ const applicationOptions = {
   keys: {},
 };
 
-Launch(App, applicationOptions, { inspector: false }, {});
+Launch(App, applicationOptions, {});
