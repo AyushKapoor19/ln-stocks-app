@@ -10,6 +10,7 @@ const { Pool } = pg;
 const DATABASE_URL = process.env.DATABASE_URL;
 
 if (!DATABASE_URL) {
+  console.warn("DATABASE_URL not configured - database operations will fail");
 }
 
 export const pool = new Pool({
@@ -20,7 +21,9 @@ export const pool = new Pool({
       : undefined,
 });
 
-pool.on("error", (err) => {});
+pool.on("error", (err) => {
+  console.error("Unexpected database pool error:", err);
+});
 
 export async function testConnection(): Promise<boolean> {
   try {
