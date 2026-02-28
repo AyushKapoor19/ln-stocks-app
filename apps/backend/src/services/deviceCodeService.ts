@@ -33,7 +33,7 @@ class DeviceCodeService {
       );
 
       const mobileWebUrl =
-        process.env.MOBILE_WEB_URL || "https://ln-stocks-mobile.vercel.app";
+        process.env.MOBILE_WEB_URL || "https://ln-stocks-web.vercel.app";
       const authUrl = `${mobileWebUrl}/activate?code=${code}`;
       const qrCodeDataUrl = await QRCode.toDataURL(authUrl, {
         width: 400,
