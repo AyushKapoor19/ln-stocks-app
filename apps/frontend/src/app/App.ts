@@ -1,5 +1,5 @@
 import { Lightning } from "@lightningjs/sdk";
-import Home from "../screens/Home";
+import HomeScreen from "../screens/HomeScreen";
 import SignUpScreen from "../screens/auth/SignUpScreen";
 import SignInScreen from "../screens/auth/SignInScreen";
 import AccountScreen from "../screens/auth/AccountScreen";
@@ -51,7 +51,7 @@ export default class App extends Lightning.Component {
       rect: true,
       color: Colors.background,
       Home: {
-        type: Home,
+        type: HomeScreen,
         alpha: 1,
         zIndex: 1,
         visible: true,
