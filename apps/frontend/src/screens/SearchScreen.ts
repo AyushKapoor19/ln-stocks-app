@@ -329,7 +329,9 @@ export default class SearchScreen extends BaseScreen {
       }));
 
       await this._loadStockDetails(popularStocks);
-    } catch (error) {}
+    } catch (error) {
+      console.error("Failed to load popular stocks:", error);
+    }
   }
 
   private _getStockName(symbol: string): string {
@@ -358,12 +360,13 @@ export default class SearchScreen extends BaseScreen {
 
   private async _loadStockDetails(results: SearchResult[]): Promise<void> {
     // Show cards immediately with "Loading..." state
-    this.searchResults = results.slice(0, 18).map((result) => ({
-      ...result,
-      price: undefined,
-      change: undefined,
-      changePct: undefined,
-    }));
+    this.searchResults = results.slice(0, 18).map((result) =>
+      Object.assign({}, result, {
+        price: undefined,
+        change: undefined,
+        changePct: undefined,
+      }),
+    );
     this._buildStockCards();
 
     // Load all prices in parallel for speed
@@ -372,16 +375,17 @@ export default class SearchScreen extends BaseScreen {
         const quote = await stocksApi.getQuote(result.symbol);
 
         // Update this specific stock's data
-        this.searchResults[index] = {
-          ...result,
+        this.searchResults[index] = Object.assign({}, result, {
           price: quote?.price,
           change: quote?.change,
           changePct: quote?.changePct,
-        };
+        });
 
         // Update just this card
         this._updateSingleCard(index);
-      } catch (error) {}
+      } catch (error) {
+        console.error(`Failed to load quote for ${result.symbol}:`, error);
+      }
     });
 
     // Wait for all prices to load

@@ -24,6 +24,7 @@ export const Colors = {
   stockGreen: 0xff22c55e,
   stockGreenBright: 0xff00ff88,
   stockRed: 0xffef4444,
+  stockRedBright: 0xffff4444,
   stockGray: 0xff71717a,
 
   border: 0x44ffffff,

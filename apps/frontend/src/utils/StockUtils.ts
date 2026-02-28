@@ -1,3 +1,5 @@
+import { Colors } from "../constants/Colors";
+
 /**
  * Stock data formatting and market utilities
  */
@@ -67,7 +69,7 @@ export class StockUtils {
     return {
       isOpen,
       statusText: isOpen ? "Market Open" : "Market Closed",
-      statusColor: isOpen ? 0xff00ff88 : 0xffff4444,
+      statusColor: isOpen ? Colors.stockGreenBright : Colors.stockRedBright,
     };
   }
 

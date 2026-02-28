@@ -116,15 +116,14 @@ class FinnhubService {
                 const profile = (await profileResponse.json()) as {
                   currency?: string;
                 };
-                return {
-                  ...item,
+                return Object.assign({}, item, {
                   currency: profile.currency || "UNKNOWN",
-                };
+                });
               }
 
-              return { ...item, currency: "UNKNOWN" };
+              return Object.assign({}, item, { currency: "UNKNOWN" });
             } catch (error) {
-              return { ...item, currency: "UNKNOWN" };
+              return Object.assign({}, item, { currency: "UNKNOWN" });
             }
           }),
         );

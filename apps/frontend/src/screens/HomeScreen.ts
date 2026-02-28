@@ -758,7 +758,9 @@ export default class Home extends BaseScreen {
       this._loadStockData(this.currentSymbol);
       this._restoreButtonStates();
       this._updateFocus();
-    } catch (error) {}
+    } catch (error) {
+      console.error("Failed to activate Home screen:", error);
+    }
   }
 
   private _restoreButtonStates(): void {
@@ -797,16 +799,14 @@ export default class Home extends BaseScreen {
         const chartData = stocksApi.formatSeriesForChart(series);
         if (chartData.length > 0) {
           this._updateChartWithTimestamps(series);
-        } else {
         }
-      } else {
-        if (quote) {
-          this.currentChange = quote.change;
-          this.currentChangePct = quote.changePct;
-          this._updatePriceDisplay();
-        }
+      } else if (quote) {
+        this.currentChange = quote.change;
+        this.currentChangePct = quote.changePct;
+        this._updatePriceDisplay();
       }
     } catch (error) {
+      console.error(`Failed to load stock data for ${symbol}:`, error);
     } finally {
       this.isLoading = false;
     }
@@ -1171,13 +1171,9 @@ export default class Home extends BaseScreen {
             this.currentFocusIndex = 6; // Watchlist index
             this._updateFocus();
             return true;
-          } else {
           }
-        } catch (error) {}
-      } else {
-        if (!token) {
-        }
-        if (!watchlistData) {
+        } catch (error) {
+          console.error("Failed to parse watchlist data:", error);
         }
       }
     } else if (this.currentFocusIndex === 6) {

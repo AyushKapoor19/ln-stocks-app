@@ -350,7 +350,9 @@ export default class WatchlistPanel
           delay: 0.9,
         });
       }
-    } catch (error) {}
+    } catch (error) {
+      console.error("Failed to show interactive badge animation:", error);
+    }
   }
 
   /**
@@ -557,7 +559,9 @@ export default class WatchlistPanel
   static saveWatchlist(watchlist: string[]): void {
     try {
       localStorage.setItem("user_watchlist", JSON.stringify(watchlist));
-    } catch (error) {}
+    } catch (error) {
+      console.error("Failed to save watchlist:", error);
+    }
   }
 
   /**
@@ -597,7 +601,9 @@ export default class WatchlistPanel
 
       watchlist.push(symbol);
       WatchlistPanel.saveWatchlist(watchlist);
-    } catch (error) {}
+    } catch (error) {
+      console.error(`Failed to add ${symbol} to watchlist:`, error);
+    }
   }
 
   /**
@@ -617,7 +623,9 @@ export default class WatchlistPanel
 
       watchlist.splice(index, 1);
       WatchlistPanel.saveWatchlist(watchlist);
-    } catch (error) {}
+    } catch (error) {
+      console.error(`Failed to remove ${symbol} from watchlist:`, error);
+    }
   }
 
   /**
