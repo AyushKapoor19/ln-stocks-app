@@ -5,7 +5,7 @@ const nextConfig = {
   output: "standalone",
   env: {
     NEXT_PUBLIC_API_URL:
-      process.env.NEXT_PUBLIC_API_URL || "http://localhost:8787",
+      process.env.NEXT_PUBLIC_API_URL || "https://ln-stocks-backend.onrender.com",
   },
 };
 
