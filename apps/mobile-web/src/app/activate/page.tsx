@@ -23,9 +23,7 @@ export default function ActivatePage() {
   const handleCodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "");
     setCode(value);
-    if (error) {
-      setError("");
-    }
+    setError("");
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -51,7 +49,7 @@ export default function ActivatePage() {
       } else {
         setError(response.error || "Invalid or expired code");
       }
-    } catch (err) {
+    } catch {
       setError("Failed to verify code. Please try again.");
     } finally {
       setIsLoading(false);

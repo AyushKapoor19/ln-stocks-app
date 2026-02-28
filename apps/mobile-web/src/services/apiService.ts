@@ -4,7 +4,7 @@
  * Handles all HTTP requests to the backend API
  */
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8787";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://ln-stocks-backend.onrender.com";
 
 class ApiService {
   private async request<T>(
@@ -13,13 +13,15 @@ class ApiService {
   ): Promise<T> {
     const url = `${API_BASE_URL}${endpoint}`;
 
-    const config: RequestInit = {
-      ...options,
-      headers: {
-        "Content-Type": "application/json",
-        ...options.headers,
-      },
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
     };
+
+    if (options.headers) {
+      Object.assign(headers, options.headers);
+    }
+
+    const config: RequestInit = Object.assign({}, options, { headers });
 
     try {
       const response = await fetch(url, config);

@@ -12,6 +12,8 @@ import { Card } from "@/components/Card";
 import { Input } from "@/components/Input";
 import { Button } from "@/components/Button";
 import { authService } from "@/services/authService";
+import { validateEmailField, validatePasswordStrength } from "@/utils/validation";
+import { useFormErrors } from "@/hooks/useFormErrors";
 
 function SignUpContent() {
   const router = useRouter();
@@ -23,7 +25,7 @@ function SignUpContent() {
     email: "",
     password: "",
   });
-  const [errors, setErrors] = useState({
+  const { errors, setErrors, clearError } = useFormErrors({
     displayName: "",
     email: "",
     password: "",
@@ -36,11 +38,6 @@ function SignUpContent() {
       router.push("/activate");
     }
   }, [code, router]);
-
-  const validateEmail = (email: string): boolean => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  };
 
   const validateForm = (): boolean => {
     const newErrors = {
@@ -56,25 +53,15 @@ function SignUpContent() {
       isValid = false;
     }
 
-    if (!formData.email.trim()) {
-      newErrors.email = "Email is required";
-      isValid = false;
-    } else if (!validateEmail(formData.email)) {
-      newErrors.email = "Invalid email format";
+    const emailError = validateEmailField(formData.email);
+    if (emailError) {
+      newErrors.email = emailError;
       isValid = false;
     }
 
-    if (!formData.password) {
-      newErrors.password = "Password is required";
-      isValid = false;
-    } else if (formData.password.length < 8) {
-      newErrors.password = "Password must be at least 8 characters";
-      isValid = false;
-    } else if (!/\d/.test(formData.password)) {
-      newErrors.password = "Password must contain at least one number";
-      isValid = false;
-    } else if (!/[a-zA-Z]/.test(formData.password)) {
-      newErrors.password = "Password must contain at least one letter";
+    const passwordError = validatePasswordStrength(formData.password);
+    if (passwordError) {
+      newErrors.password = passwordError;
       isValid = false;
     }
 
@@ -84,10 +71,9 @@ function SignUpContent() {
 
   const handleChange =
     (field: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
-      setFormData({ ...formData, [field]: e.target.value });
-      if (errors[field as keyof typeof errors]) {
-        setErrors({ ...errors, [field]: "", backend: "" });
-      }
+      const updated = Object.assign({}, formData, { [field]: e.target.value });
+      setFormData(updated);
+      clearError(field as keyof typeof errors);
     };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -109,16 +95,10 @@ function SignUpContent() {
       if (response.success) {
         router.push("/activate/success");
       } else {
-        setErrors({
-          ...errors,
-          backend: response.error || "Failed to create account",
-        });
+        setErrors({ displayName: "", email: "", password: "", backend: response.error || "Failed to create account" });
       }
-    } catch (err) {
-      setErrors({
-        ...errors,
-        backend: "Something went wrong. Please try again.",
-      });
+    } catch {
+      setErrors({ displayName: "", email: "", password: "", backend: "Something went wrong. Please try again." });
     } finally {
       setIsLoading(false);
     }

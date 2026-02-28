@@ -12,10 +12,6 @@ html,
 body {
   max-width: 100vw;
   overflow-x: hidden;
-}
-
-body {
-  color: rgb(var(--foreground-rgb));
   background: #000000;
 }
 
@@ -24,4 +20,3 @@ body {
     text-wrap: balance;
   }
 }
-

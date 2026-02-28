@@ -12,6 +12,8 @@ import { Card } from "@/components/Card";
 import { Input } from "@/components/Input";
 import { Button } from "@/components/Button";
 import { authService } from "@/services/authService";
+import { validateEmailField, validatePassword } from "@/utils/validation";
+import { useFormErrors } from "@/hooks/useFormErrors";
 
 function SignInContent() {
   const router = useRouter();
@@ -22,7 +24,7 @@ function SignInContent() {
     email: "",
     password: "",
   });
-  const [errors, setErrors] = useState({
+  const { errors, setErrors, clearError } = useFormErrors({
     email: "",
     password: "",
     backend: "",
@@ -35,11 +37,6 @@ function SignInContent() {
     }
   }, [code, router]);
 
-  const validateEmail = (email: string): boolean => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  };
-
   const validateForm = (): boolean => {
     const newErrors = {
       email: "",
@@ -48,19 +45,15 @@ function SignInContent() {
     };
     let isValid = true;
 
-    if (!formData.email.trim()) {
-      newErrors.email = "Email is required";
-      isValid = false;
-    } else if (!validateEmail(formData.email)) {
-      newErrors.email = "Invalid email format";
+    const emailError = validateEmailField(formData.email);
+    if (emailError) {
+      newErrors.email = emailError;
       isValid = false;
     }
 
-    if (!formData.password) {
-      newErrors.password = "Password is required";
-      isValid = false;
-    } else if (formData.password.length < 8) {
-      newErrors.password = "Password must be at least 8 characters";
+    const passwordError = validatePassword(formData.password);
+    if (passwordError) {
+      newErrors.password = passwordError;
       isValid = false;
     }
 
@@ -70,10 +63,9 @@ function SignInContent() {
 
   const handleChange =
     (field: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
-      setFormData({ ...formData, [field]: e.target.value });
-      if (errors[field as keyof typeof errors]) {
-        setErrors({ ...errors, [field]: "", backend: "" });
-      }
+      const updated = Object.assign({}, formData, { [field]: e.target.value });
+      setFormData(updated);
+      clearError(field as keyof typeof errors);
     };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -96,16 +88,10 @@ function SignInContent() {
       if (response.success) {
         router.push("/activate/success");
       } else {
-        setErrors({
-          ...errors,
-          backend: response.error || "Invalid email or password",
-        });
+        setErrors({ email: "", password: "", backend: response.error || "Invalid email or password" });
       }
-    } catch (err) {
-      setErrors({
-        ...errors,
-        backend: "Something went wrong. Please try again.",
-      });
+    } catch {
+      setErrors({ email: "", password: "", backend: "Something went wrong. Please try again." });
     } finally {
       setIsLoading(false);
     }

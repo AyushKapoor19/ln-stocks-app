@@ -76,7 +76,12 @@ class AuthService {
     try {
       return await apiService.post<IDeviceCodeApprovalResponse>(
         "/auth/device-code/approve-signup",
-        { code, ...signUpData },
+        {
+          code,
+          displayName: signUpData.displayName,
+          email: signUpData.email,
+          password: signUpData.password,
+        },
       );
     } catch (error) {
       return {
