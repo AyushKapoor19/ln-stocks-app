@@ -2,7 +2,7 @@ import { Lightning } from "@lightningjs/sdk";
 import BaseScreen from "./BaseScreen";
 import StockChart from "../components/charts/StockChart";
 import WatchlistPanel from "../components/WatchlistPanel";
-import { stocksApi } from "../services/api";
+import { stocksApi } from "../services/stocksApi";
 import { Colors } from "../constants/Colors";
 import { FontSize, FontStyle, FontFamily } from "../constants/Fonts";
 import { StockUtils } from "../utils/StockUtils";

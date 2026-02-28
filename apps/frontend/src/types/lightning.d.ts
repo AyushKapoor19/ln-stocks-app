@@ -4,6 +4,16 @@
  */
 
 import { Lightning } from "@lightningjs/sdk";
+import type { IUser } from "./auth";
+import type {
+  ISelectStockEvent,
+  ISearchActivatedEvent,
+  ISearchDeactivatedEvent,
+  IShowSearchResultsEvent,
+  IUpdateSearchSelectionEvent,
+  INavigateSearchResultsEvent,
+  IClearSearchResultsEvent,
+} from "./events";
 
 declare module "@lightningjs/sdk" {
   namespace Lightning {
@@ -17,23 +27,23 @@ declare module "@lightningjs/sdk" {
         $showAuthFlow(): void;
 
         // Auth events
-        $authSuccess(data: { user: any; token: string }): void;
-        $authenticationSuccess(data: { user: any; token: string }): void;
+        $authSuccess(data: { user: IUser; token: string }): void;
+        $authenticationSuccess(data: { user: IUser; token: string }): void;
         $signOut(): void;
         $focusBackToTab(): void;
 
         // Search events
-        $selectStock(event: any): void;
-        $searchActivated(event: any): void;
-        $searchDeactivated(event: any): void;
-        $showSearchResults(event: any): void;
-        $updateSearchSelection(event: any): void;
-        $navigateSearchResultsUp(event: any): void;
-        $navigateSearchResultsDown(event: any): void;
-        $clearSearchResults(event: any): void;
+        $selectStock(event: ISelectStockEvent): void;
+        $searchActivated(event: ISearchActivatedEvent): void;
+        $searchDeactivated(event: ISearchDeactivatedEvent): void;
+        $showSearchResults(event: IShowSearchResultsEvent): void;
+        $updateSearchSelection(event: IUpdateSearchSelectionEvent): void;
+        $navigateSearchResultsUp(event: INavigateSearchResultsEvent): void;
+        $navigateSearchResultsDown(event: INavigateSearchResultsEvent): void;
+        $clearSearchResults(event: IClearSearchResultsEvent): void;
         $openSearch(): void;
         $closeSearch(): void;
-        $selectStockFromSearch(data: { symbol: string; name: string }): void;
+        $selectStockFromSearch(data: ISelectStockEvent): void;
 
         // Keyboard events
         $onKeyPress(event: { key: string }): void;

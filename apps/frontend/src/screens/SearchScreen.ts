@@ -5,7 +5,7 @@
 
 import { Lightning } from "@lightningjs/sdk";
 import BaseScreen from "./BaseScreen";
-import { stocksApi, type SearchResult } from "../services/api";
+import { stocksApi, type SearchResult } from "../services/stocksApi";
 import { Colors } from "../constants/Colors";
 import { FontStyle, FontFamily } from "../constants/Fonts";
 

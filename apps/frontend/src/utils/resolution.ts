@@ -15,21 +15,13 @@
  * - 4K: 1920x1080 (precision = 1, devicePixelRatio = 1) - TV OS handles scaling
  */
 
+import type { IResolutionInfo } from "../types/stage";
+
 export interface StageConfig {
   w: number;
   h: number;
   precision: number;
   devicePixelRatio: number;
-}
-
-export interface ResolutionInfo {
-  name: string;
-  width: number;
-  height: number;
-  precision: number;
-  devicePixelRatio: number;
-  coordsWidth: number;
-  coordsHeight: number;
 }
 
 /**
@@ -119,7 +111,7 @@ export function get4KConfig(): StageConfig {
 /**
  * Get human-readable resolution information
  */
-export function getResolutionInfo(config: StageConfig): ResolutionInfo {
+export function getResolutionInfo(config: StageConfig): IResolutionInfo {
   let name = "1080p";
   if (config.h === 720) name = "720p";
   else if (config.h === 2160) name = "4K";

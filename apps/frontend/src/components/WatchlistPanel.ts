@@ -7,7 +7,7 @@
 
 import { Lightning } from "@lightningjs/sdk";
 import { FontStyle, FontFamily } from "../constants/Fonts";
-import { stocksApi } from "../services/api";
+import { stocksApi } from "../services/stocksApi";
 
 interface StockQuote {
   symbol: string;

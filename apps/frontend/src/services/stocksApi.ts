@@ -94,10 +94,8 @@ class StocksApiService extends BaseApiService {
     return series.points.sort((a, b) => a.t - b.t).map((point) => point.c);
   }
 
-  async searchStocks(
-    query: string,
-  ): Promise<Array<{ symbol: string; name: string }>> {
-    const data = await this.get<{ results: Array<{ symbol: string; name: string }> }>(
+  async searchStocks(query: string): Promise<SearchResult[]> {
+    const data = await this.get<{ results: SearchResult[] }>(
       `/v1/search?q=${encodeURIComponent(query)}`,
     );
     return data?.results || [];

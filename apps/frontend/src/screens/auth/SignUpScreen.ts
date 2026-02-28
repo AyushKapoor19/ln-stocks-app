@@ -3,6 +3,7 @@
  */
 
 import { Lightning } from "@lightningjs/sdk";
+import type { IUser } from "../../types/auth";
 import BaseAuthScreen from "./BaseAuthScreen";
 import MobileAuthTab from "./components/MobileAuthTab";
 import EmailSignUpTab from "./components/EmailSignUpTab";
@@ -43,7 +44,7 @@ export default class SignUpScreen extends BaseAuthScreen {
     this.fireAncestors("$navigateToSignIn");
   }
 
-  $authSuccess(data: { user: unknown; token: string }): void {
+  $authSuccess(data: { user: IUser; token: string }): void {
     this.fireAncestors("$authSuccess", data);
   }
 }

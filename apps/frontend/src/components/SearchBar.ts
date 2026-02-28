@@ -1,6 +1,6 @@
 import { Lightning } from "@lightningjs/sdk";
 import BaseComponent from "./BaseComponent";
-import { stocksApi } from "../services/api";
+import { stocksApi } from "../services/stocksApi";
 import { Colors } from "../constants/Colors";
 import { FontSize, FontStyle, FontFamily } from "../constants/Fonts";
 import {

@@ -1,7 +1,5 @@
 /**
  * Stage Type Definitions
- *
- * Proper typing for Lightning.js Stage to avoid 'any' usage
  */
 
 export interface IStageConfig {
@@ -14,7 +12,7 @@ export interface IStageConfig {
   getOption(key: string): unknown;
 }
 
-export interface ResolutionInfo {
+export interface IResolutionInfo {
   name: string;
   width: number;
   height: number;
