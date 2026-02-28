@@ -1,9 +1,10 @@
 /**
  * Authentication API Service
  *
- * Handles authentication API calls
+ * Handles authentication API calls including signup, login, device codes, and token management
  */
 
+import { BaseApiService, StorageHelper } from "./baseApi";
 import type {
   IAuthResponse,
   ISignInData,
@@ -11,116 +12,66 @@ import type {
   IDeviceCodeStatusResponse,
 } from "../types/auth";
 
-class AuthApiService {
-  private baseUrl = "https://ln-stocks-backend.onrender.com";
+const API_BASE_URL = "https://ln-stocks-backend.onrender.com";
+const AUTH_TOKEN_KEY = "auth_token";
+const NETWORK_ERROR: IAuthResponse = { success: false, error: "Network error" };
+
+class AuthApiService extends BaseApiService {
+  constructor() {
+    super(API_BASE_URL);
+  }
 
   async signup(
     email: string,
     password: string,
     displayName?: string,
   ): Promise<IAuthResponse> {
-    try {
-      const response = await fetch(`${this.baseUrl}/auth/signup`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password, displayName }),
-      });
-
-      const data = await response.json();
-      return data;
-    } catch (error) {
-      return { success: false, error: "Network error" };
-    }
+    const result = await this.post<IAuthResponse>("/auth/signup", {
+      email,
+      password,
+      displayName,
+    });
+    return result || NETWORK_ERROR;
   }
 
   async login(data: ISignInData): Promise<IAuthResponse> {
-    try {
-      const response = await fetch(`${this.baseUrl}/auth/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
-
-      const result = await response.json();
-      return result;
-    } catch (error) {
-      return { success: false, error: "Network error" };
-    }
+    const result = await this.post<IAuthResponse>("/auth/login", data);
+    return result || NETWORK_ERROR;
   }
 
   async generateDeviceCode(
     authType: "signin" | "signup" = "signin",
   ): Promise<IDeviceCodeResponse | null> {
-    try {
-      const response = await fetch(
-        `${this.baseUrl}/auth/device-code/generate?authType=${authType}`,
-        {
-          method: "POST",
-        },
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to generate device code");
-      }
-
-      const data = await response.json();
-      return data;
-    } catch (error) {
-      return null;
-    }
+    return this.post<IDeviceCodeResponse>(
+      `/auth/device-code/generate?authType=${authType}`,
+    );
   }
 
   async checkDeviceCodeStatus(
     code: string,
   ): Promise<IDeviceCodeStatusResponse | null> {
-    try {
-      const response = await fetch(
-        `${this.baseUrl}/auth/device-code/status?code=${encodeURIComponent(
-          code,
-        )}`,
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to check device code status");
-      }
-
-      const data = await response.json();
-      return data;
-    } catch (error) {
-      return null;
-    }
+    return this.get<IDeviceCodeStatusResponse>(
+      `/auth/device-code/status?code=${encodeURIComponent(code)}`,
+    );
   }
 
   async verifyToken(token: string): Promise<IAuthResponse> {
-    try {
-      const response = await fetch(`${this.baseUrl}/auth/verify`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      const data = await response.json();
-      return data;
-    } catch (error) {
-      return { success: false, error: "Network error" };
-    }
+    const result = await this.get<IAuthResponse>("/auth/verify", {
+      Authorization: `Bearer ${token}`,
+    });
+    return result || NETWORK_ERROR;
   }
 
   saveToken(token: string): void {
-    if (typeof localStorage !== "undefined") {
-      localStorage.setItem("auth_token", token);
-    }
+    StorageHelper.setItem(AUTH_TOKEN_KEY, token);
   }
 
   getToken(): string | null {
-    if (typeof localStorage !== "undefined") {
-      return localStorage.getItem("auth_token");
-    }
-    return null;
+    return StorageHelper.getItem(AUTH_TOKEN_KEY);
   }
 
   clearToken(): void {
-    if (typeof localStorage !== "undefined") {
-      localStorage.removeItem("auth_token");
-    }
+    StorageHelper.removeItem(AUTH_TOKEN_KEY);
   }
 }
 
