@@ -36,7 +36,7 @@ export default class AuthScreen extends BaseScreen {
         w: 1920,
         h: 400,
         rect: true,
-        colorTop: 0xff001a0f,
+        colorTop: Colors.backgroundGradientTop,
         colorBottom: Colors.black,
       },
 
@@ -131,7 +131,7 @@ export default class AuthScreen extends BaseScreen {
           w: 850,
           h: 100,
           rect: true,
-          color: 0xff0a1a15,
+          color: Colors.cardBackgroundDark,
           shader: { type: Lightning.shaders.RoundedRectangle, radius: 12 },
           Label: {
             x: 425,
@@ -208,7 +208,7 @@ export default class AuthScreen extends BaseScreen {
         w: 1920,
         h: 1080,
         rect: true,
-        color: 0xcc000000,
+        color: Colors.blurOverlay,
         alpha: 0,
         visible: false,
         zIndex: 100,
@@ -230,7 +230,7 @@ export default class AuthScreen extends BaseScreen {
           w: 1400,
           h: 650,
           rect: true,
-          color: 0xff1a1a1a,
+          color: Colors.cardBackgroundMedium,
           shader: { type: Lightning.shaders.RoundedRectangle, radius: 20 },
         },
 
@@ -266,7 +266,7 @@ export default class AuthScreen extends BaseScreen {
           w: 1300,
           h: 100,
           rect: true,
-          color: 0xff0a1a15,
+          color: Colors.cardBackgroundDark,
           shader: { type: Lightning.shaders.RoundedRectangle, radius: 16 },
 
           GreenAccent: {
@@ -326,7 +326,7 @@ export default class AuthScreen extends BaseScreen {
       w: 900,
       h: 120,
       rect: true,
-      color: 0xff0a1a15,
+      color: Colors.cardBackgroundDark,
       shader: { type: Lightning.shaders.RoundedRectangle, radius: 12 },
 
       FocusBorder: {
@@ -434,10 +434,10 @@ export default class AuthScreen extends BaseScreen {
             index === 0 && isFocused
               ? Colors.stockGreenBright
               : index === 0
-                ? 0xff0d9959
+                ? Colors.stockGreenMedium
                 : isFocused
                   ? Colors.cardBackground
-                  : 0xff0a1a15,
+                  : Colors.cardBackgroundDark,
         });
         if (isFocused) {
           btn.setSmooth("scale", 1.05, { duration: 0.2 });

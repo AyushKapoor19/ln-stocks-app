@@ -165,7 +165,7 @@ export default class Home extends BaseScreen {
           w: 12,
           h: 12,
           rect: true,
-          color: 0xff10b981,
+          color: Colors.success,
           shader: { type: Lightning.shaders.RoundedRectangle, radius: 6 },
         },
 
@@ -178,7 +178,7 @@ export default class Home extends BaseScreen {
             fontFace: FontFamily.Default,
             fontSize: 20,
             fontStyle: FontStyle.Bold,
-            textColor: 0xffffffff,
+            textColor: Colors.white,
           },
         },
 
@@ -189,7 +189,7 @@ export default class Home extends BaseScreen {
           w: 2,
           h: 32,
           rect: true,
-          color: 0x33ffffff,
+          color: Colors.separator,
         },
 
         // Time Text
@@ -201,7 +201,7 @@ export default class Home extends BaseScreen {
             fontFace: FontFamily.Default,
             fontSize: 20,
             fontStyle: FontStyle.Regular,
-            textColor: 0xff888888,
+            textColor: Colors.textQuaternary,
           },
         },
       },
@@ -355,7 +355,7 @@ export default class Home extends BaseScreen {
         w: 520,
         h: 290,
         rect: true,
-        color: 0xff0f0f0f,
+        color: Colors.cardBackgroundDarker,
         shader: {
           type: Lightning.shaders.RoundedRectangle,
           radius: 24,
@@ -364,12 +364,12 @@ export default class Home extends BaseScreen {
           w: 520,
           h: 290,
           rect: true,
-          color: 0x00000000,
+          color: Colors.transparent,
           shader: {
             type: Lightning.shaders.RoundedRectangle,
             radius: 24,
             stroke: 2,
-            strokeColor: 0xff252525,
+            strokeColor: Colors.strokeDark,
           },
         },
         Header: {
@@ -383,7 +383,7 @@ export default class Home extends BaseScreen {
               fontFace: FontFamily.Default,
               fontSize: 28,
               fontStyle: FontStyle.Bold,
-              textColor: 0xffffffff,
+              textColor: Colors.white,
             },
           },
         },
@@ -393,7 +393,7 @@ export default class Home extends BaseScreen {
           w: 450,
           h: 1,
           rect: true,
-          color: 0xff252525,
+          color: Colors.strokeDark,
         },
         Content: {
           x: 35,
@@ -403,7 +403,7 @@ export default class Home extends BaseScreen {
             rect: true,
             w: 450,
             h: 50,
-            color: 0x00000000,
+            color: Colors.transparent,
             Name: {
               x: 5,
               y: 16,
@@ -412,7 +412,7 @@ export default class Home extends BaseScreen {
                 fontFace: FontFamily.Default,
                 fontSize: 24,
                 fontStyle: FontStyle.Bold,
-                textColor: 0xffdddddd,
+                textColor: Colors.textLight,
               },
             },
             Price: {
@@ -423,7 +423,7 @@ export default class Home extends BaseScreen {
                 fontFace: FontFamily.Default,
                 fontSize: 24,
                 fontStyle: FontStyle.Bold,
-                textColor: 0xffffffff,
+                textColor: Colors.white,
               },
             },
             Change: {
@@ -435,7 +435,7 @@ export default class Home extends BaseScreen {
                 fontFace: FontFamily.Default,
                 fontSize: 24,
                 fontStyle: FontStyle.Bold,
-                textColor: 0xff00ff88,
+                textColor: Colors.stockGreenBright,
               },
             },
           },
@@ -444,14 +444,14 @@ export default class Home extends BaseScreen {
             w: 450,
             h: 1,
             rect: true,
-            color: 0x33ffffff,
+            color: Colors.separator,
           },
           Index2: {
             y: 63,
             rect: true,
             w: 450,
             h: 50,
-            color: 0x00000000,
+            color: Colors.transparent,
             Name: {
               x: 5,
               y: 16,
@@ -460,7 +460,7 @@ export default class Home extends BaseScreen {
                 fontFace: FontFamily.Default,
                 fontSize: 24,
                 fontStyle: FontStyle.Bold,
-                textColor: 0xffdddddd,
+                textColor: Colors.textLight,
               },
             },
             Price: {
@@ -471,7 +471,7 @@ export default class Home extends BaseScreen {
                 fontFace: FontFamily.Default,
                 fontSize: 24,
                 fontStyle: FontStyle.Bold,
-                textColor: 0xffffffff,
+                textColor: Colors.white,
               },
             },
             Change: {
@@ -483,7 +483,7 @@ export default class Home extends BaseScreen {
                 fontFace: FontFamily.Default,
                 fontSize: 24,
                 fontStyle: FontStyle.Bold,
-                textColor: 0xff00ff88,
+                textColor: Colors.stockGreenBright,
               },
             },
           },
@@ -492,14 +492,14 @@ export default class Home extends BaseScreen {
             w: 450,
             h: 1,
             rect: true,
-            color: 0x33ffffff,
+            color: Colors.separator,
           },
           Index3: {
             y: 126,
             rect: true,
             w: 450,
             h: 50,
-            color: 0x00000000,
+            color: Colors.transparent,
             Name: {
               x: 5,
               y: 16,
@@ -508,7 +508,7 @@ export default class Home extends BaseScreen {
                 fontFace: FontFamily.Default,
                 fontSize: 24,
                 fontStyle: FontStyle.Bold,
-                textColor: 0xffdddddd,
+                textColor: Colors.textLight,
               },
             },
             Price: {
@@ -519,7 +519,7 @@ export default class Home extends BaseScreen {
                 fontFace: FontFamily.Default,
                 fontSize: 24,
                 fontStyle: FontStyle.Bold,
-                textColor: 0xffffffff,
+                textColor: Colors.white,
               },
             },
             Change: {
@@ -531,7 +531,7 @@ export default class Home extends BaseScreen {
                 fontFace: FontFamily.Default,
                 fontSize: 24,
                 fontStyle: FontStyle.Bold,
-                textColor: 0xff00ff88,
+                textColor: Colors.stockGreenBright,
               },
             },
           },
@@ -546,7 +546,7 @@ export default class Home extends BaseScreen {
         w: 520,
         h: 290,
         rect: true,
-        color: 0xff0f0f0f,
+        color: Colors.cardBackgroundDarker,
         shader: {
           type: Lightning.shaders.RoundedRectangle,
           radius: 24,
@@ -555,12 +555,12 @@ export default class Home extends BaseScreen {
           w: 520,
           h: 290,
           rect: true,
-          color: 0x00000000,
+          color: Colors.transparent,
           shader: {
             type: Lightning.shaders.RoundedRectangle,
             radius: 24,
             stroke: 2,
-            strokeColor: 0xff252525,
+            strokeColor: Colors.strokeDark,
           },
         },
         Header: {
@@ -574,7 +574,7 @@ export default class Home extends BaseScreen {
               fontFace: FontFamily.Default,
               fontSize: 28,
               fontStyle: FontStyle.Bold,
-              textColor: 0xffffffff,
+              textColor: Colors.white,
             },
           },
         },
@@ -584,7 +584,7 @@ export default class Home extends BaseScreen {
           w: 450,
           h: 1,
           rect: true,
-          color: 0xff252525,
+          color: Colors.strokeDark,
         },
         Content: {
           x: 35,
@@ -601,7 +601,7 @@ export default class Home extends BaseScreen {
                   fontFace: FontFamily.Default,
                   fontSize: 16,
                   fontStyle: FontStyle.Regular,
-                  textColor: 0xff888888,
+                  textColor: Colors.textQuaternary,
                 },
               },
               Value: {
@@ -612,7 +612,7 @@ export default class Home extends BaseScreen {
                   fontFace: FontFamily.Default,
                   fontSize: 26,
                   fontStyle: FontStyle.Bold,
-                  textColor: 0xffffffff,
+                  textColor: Colors.white,
                 },
               },
             },
@@ -626,7 +626,7 @@ export default class Home extends BaseScreen {
                   fontFace: FontFamily.Default,
                   fontSize: 16,
                   fontStyle: FontStyle.Regular,
-                  textColor: 0xff888888,
+                  textColor: Colors.textQuaternary,
                 },
               },
               Value: {
@@ -637,7 +637,7 @@ export default class Home extends BaseScreen {
                   fontFace: FontFamily.Default,
                   fontSize: 26,
                   fontStyle: FontStyle.Bold,
-                  textColor: 0xffffffff,
+                  textColor: Colors.white,
                 },
               },
             },
@@ -647,7 +647,7 @@ export default class Home extends BaseScreen {
             w: 450,
             h: 1,
             rect: true,
-            color: 0x22ffffff,
+            color: Colors.separatorLight,
           },
           Row2: {
             y: 95,
@@ -661,7 +661,7 @@ export default class Home extends BaseScreen {
                   fontFace: FontFamily.Default,
                   fontSize: 16,
                   fontStyle: FontStyle.Regular,
-                  textColor: 0xff888888,
+                  textColor: Colors.textQuaternary,
                 },
               },
               Value: {
@@ -672,7 +672,7 @@ export default class Home extends BaseScreen {
                   fontFace: FontFamily.Default,
                   fontSize: 22,
                   fontStyle: FontStyle.Bold,
-                  textColor: 0xffffffff,
+                  textColor: Colors.white,
                 },
               },
             },
@@ -686,7 +686,7 @@ export default class Home extends BaseScreen {
                   fontFace: FontFamily.Default,
                   fontSize: 16,
                   fontStyle: FontStyle.Regular,
-                  textColor: 0xff888888,
+                  textColor: Colors.textQuaternary,
                 },
               },
               Value: {
@@ -697,7 +697,7 @@ export default class Home extends BaseScreen {
                   fontFace: FontFamily.Default,
                   fontSize: 22,
                   fontStyle: FontStyle.Bold,
-                  textColor: 0xffffffff,
+                  textColor: Colors.white,
                 },
               },
             },
@@ -860,7 +860,7 @@ export default class Home extends BaseScreen {
     const timeText = marketStatus.tag("TimeText");
 
     // Define colors based on market status
-    const circleColor = status.isOpen ? 0xff10b981 : 0xffef4444; // Green : Red
+    const circleColor = status.isOpen ? Colors.success : Colors.error;
 
     // Update circle color
     if (statusCircle) {
@@ -1473,14 +1473,14 @@ export default class Home extends BaseScreen {
 
           if (background) {
             if (isFocused && isSelected) {
-              background.setSmooth("color", 0x77ffffff, {
+              background.setSmooth("color", Colors.focusBackground, {
                 duration: 0.3,
               });
               if (label && label.text) {
                 label.text.textColor = Colors.white;
               }
             } else if (isSelected) {
-              background.setSmooth("color", 0x55ffffff, {
+              background.setSmooth("color", Colors.selectionBackground, {
                 duration: 0.3,
               });
               if (label && label.text) {
@@ -1625,7 +1625,7 @@ export default class Home extends BaseScreen {
     if (isInWatchlist) {
       // Filled yellow star
       starIcon.text.text = "★";
-      starIcon.text.textColor = 0xffffd700; // Gold/yellow
+      starIcon.text.textColor = Colors.starGold;
     } else {
       // Empty star with border
       starIcon.text.text = "☆";

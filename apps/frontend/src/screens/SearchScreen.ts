@@ -58,7 +58,7 @@ export default class SearchScreen extends BaseScreen {
       w: 1920,
       h: 1080,
       rect: true,
-      color: 0xff000000,
+      color: Colors.black,
 
       // Left Panel - Compact Keyboard (1/3 screen)
       LeftPanel: {
@@ -67,7 +67,7 @@ export default class SearchScreen extends BaseScreen {
         w: LEFT_PANEL_WIDTH,
         h: 1080,
         rect: true,
-        color: 0xff0a0a0a,
+        color: Colors.backgroundDarkGray,
 
         Title: {
           x: 40,
@@ -95,7 +95,7 @@ export default class SearchScreen extends BaseScreen {
               text: "Type to search...",
               fontSize: 36,
               fontStyle: FontStyle.Bold,
-              textColor: 0xff666666,
+              textColor: Colors.sectionTitleColor,
               fontFace: FontFamily.Default,
             },
           },
@@ -128,7 +128,7 @@ export default class SearchScreen extends BaseScreen {
           text: {
             text: "Press BACK to close",
             fontSize: 16,
-            textColor: 0xff666666,
+            textColor: Colors.sectionTitleColor,
             fontFace: FontFamily.Default,
           },
         },
@@ -177,7 +177,7 @@ export default class SearchScreen extends BaseScreen {
               text: "No results found",
               fontSize: 42,
               fontStyle: FontStyle.Bold,
-              textColor: 0xff888888,
+              textColor: Colors.textQuaternary,
               fontFace: FontFamily.Default,
             },
           },
@@ -189,7 +189,7 @@ export default class SearchScreen extends BaseScreen {
             text: {
               text: "Try a different search term",
               fontSize: 28,
-              textColor: 0xff666666,
+              textColor: Colors.sectionTitleColor,
               fontFace: FontFamily.Default,
             },
           },
@@ -262,7 +262,7 @@ export default class SearchScreen extends BaseScreen {
           w: keyWidth,
           h: KEY_SIZE,
           rect: true,
-          color: 0x35ffffff,
+          color: Colors.keyUnfocused,
           shader: { type: Lightning.shaders.RoundedRectangle, radius: 8 },
           Label: {
             x: keyWidth / 2,
@@ -420,13 +420,13 @@ export default class SearchScreen extends BaseScreen {
               2,
             )} (${stock.changePct.toFixed(2)}%)`
           : "";
-      changeTag.text.textColor = isPositive ? 0xff10b981 : 0xffef4444;
+      changeTag.text.textColor = isPositive ? Colors.success : Colors.error;
     }
 
     const gradient = card.tag("GradientOverlay");
     if (gradient) {
       gradient.patch({
-        colorTop: isPositive ? 0x25059669 : 0x25991b1b,
+        colorTop: isPositive ? Colors.gradientGreenLight : Colors.gradientRedLight,
       });
     }
   }
@@ -440,7 +440,7 @@ export default class SearchScreen extends BaseScreen {
     // Quick fade-out and immediate render for speed
     const existingCards = grid.children || [];
     if (existingCards.length > 0) {
-      existingCards.forEach((card: any) => {
+      existingCards.forEach((card: Lightning.Component) => {
         if (card && card.setSmooth) {
           card.setSmooth("alpha", 0, { duration: 0.1 });
         }
@@ -510,7 +510,7 @@ export default class SearchScreen extends BaseScreen {
         w: gridConfig.cardWidth,
         h: gridConfig.cardHeight,
         rect: true,
-        color: 0xff1a1a1a,
+        color: Colors.cardBackgroundMedium,
         shader: { type: Lightning.shaders.RoundedRectangle, radius: 24 },
         alpha: 0,
 
@@ -520,8 +520,8 @@ export default class SearchScreen extends BaseScreen {
           w: gridConfig.cardWidth,
           h: gridConfig.cardHeight,
           rect: true,
-          colorTop: isPositive ? 0x1a059669 : 0x1a991b1b,
-          colorBottom: 0x00000000,
+          colorTop: isPositive ? Colors.gradientGreenDark : Colors.gradientRedDark,
+          colorBottom: Colors.transparent,
           shader: { type: Lightning.shaders.RoundedRectangle, radius: 24 },
         },
 
@@ -539,7 +539,7 @@ export default class SearchScreen extends BaseScreen {
               text: stock.symbol,
               fontSize: 48,
               fontStyle: FontStyle.Bold,
-              textColor: 0xffffffff,
+              textColor: Colors.white,
               fontFace: FontFamily.Default,
             },
           },
@@ -554,7 +554,7 @@ export default class SearchScreen extends BaseScreen {
                   ? stock.name.substring(0, 22) + "..."
                   : stock.name,
               fontSize: 24,
-              textColor: 0xff888888,
+              textColor: Colors.textQuaternary,
               fontFace: FontFamily.Default,
               wordWrap: false,
               maxLines: 1,
@@ -569,7 +569,7 @@ export default class SearchScreen extends BaseScreen {
               text: stock.price ? `$${stock.price.toFixed(2)}` : "Loading...",
               fontSize: 45,
               fontStyle: FontStyle.SemiBold,
-              textColor: 0xffffffff,
+              textColor: Colors.white,
               fontFace: FontFamily.Default,
             },
           },
@@ -587,7 +587,7 @@ export default class SearchScreen extends BaseScreen {
                   : "",
               fontSize: 22,
               fontStyle: FontStyle.Body,
-              textColor: isPositive ? 0xff10b981 : 0xffef4444,
+              textColor: isPositive ? Colors.success : Colors.error,
               fontFace: FontFamily.Default,
             },
           },
@@ -629,7 +629,7 @@ export default class SearchScreen extends BaseScreen {
             colIndex === this.selectedKeyCol;
 
           // White background with black text when focused (like sign in/sign up keyboard)
-          keyTag.setSmooth("color", isFocused ? 0xffffffff : 0x35ffffff, {
+          keyTag.setSmooth("color", isFocused ? Colors.keyFocused : Colors.keyUnfocused, {
             duration: 0.2,
           });
           keyTag.setSmooth("scale", isFocused ? 1.08 : 1, { duration: 0.2 });
@@ -639,7 +639,7 @@ export default class SearchScreen extends BaseScreen {
           if (label) {
             label.patch({
               text: {
-                textColor: isFocused ? 0xff000000 : 0xffffffff,
+                textColor: isFocused ? Colors.black : Colors.white,
               },
             });
           }
@@ -660,8 +660,8 @@ export default class SearchScreen extends BaseScreen {
         const isPositive = stock.change && stock.change >= 0;
 
         // Gradient colors - dramatic difference between states
-        const primaryGradientUnfocused = isPositive ? 0x1a059669 : 0x1a991b1b; // 10% opacity
-        const primaryGradientFocused = isPositive ? 0xd9047857 : 0xd97f1d1d; // 85% opacity
+        const primaryGradientUnfocused = isPositive ? Colors.gradientGreenDark : Colors.gradientRedDark;
+        const primaryGradientFocused = isPositive ? Colors.gradientGreenFocused : Colors.gradientRedFocused;
 
         if (gradientOverlay) {
           gradientOverlay.patch({
@@ -672,7 +672,7 @@ export default class SearchScreen extends BaseScreen {
         }
 
         // Subtle background darkening when focused (adds depth)
-        card.setSmooth("color", isFocused ? 0xff0f0f0f : 0xff1a1a1a, {
+        card.setSmooth("color", isFocused ? Colors.cardBackgroundDarker : Colors.cardBackgroundMedium, {
           duration: 0.2,
         });
 
@@ -692,7 +692,7 @@ export default class SearchScreen extends BaseScreen {
       queryText.patch({
         text: {
           text: hasQuery ? this.searchQuery : "Type to search...",
-          textColor: hasQuery ? Colors.white : 0xff666666,
+          textColor: hasQuery ? Colors.white : Colors.sectionTitleColor,
         },
       });
 

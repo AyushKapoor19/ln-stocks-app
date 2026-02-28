@@ -78,6 +78,28 @@ export const Colors = {
   passwordCheckActiveIcon: 0xff000000,
 
   errorFieldBackground: 0xff3d1a1a,
+
+  backgroundGradientTop: 0xff001a0f,
+  backgroundDarkGray: 0xff0a0a0a,
+  cardBackgroundDark: 0xff0a1a15,
+  cardBackgroundDarker: 0xff0f0f0f,
+  cardBackgroundMedium: 0xff1a1a1a,
+  strokeDark: 0xff252525,
+  textLight: 0xffdddddd,
+  stockGreenMedium: 0xff0d9959,
+  blurOverlay: 0xcc000000,
+  keyFocused: 0xffffffff,
+  keyUnfocused: 0x35ffffff,
+  separatorLight: 0x22ffffff,
+  focusBackground: 0x77ffffff,
+  selectionBackground: 0x55ffffff,
+  starGold: 0xffffd700,
+  gradientGreenLight: 0x25059669,
+  gradientRedLight: 0x25991b1b,
+  gradientGreenDark: 0x1a059669,
+  gradientRedDark: 0x1a991b1b,
+  gradientGreenFocused: 0xd9047857,
+  gradientRedFocused: 0xd97f1d1d,
 } as const;
 
 export type ColorKey = keyof typeof Colors;

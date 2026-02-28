@@ -16,7 +16,6 @@ import Keyboard from "../components/Keyboard";
 
 export default class SignIn extends BaseScreen {
   private selectedTabIndex = 0;
-  private tabs = ["Use code", "Use email address"];
   private deviceCode: string = "";
   private pollInterval: NodeJS.Timeout | null = null;
 
@@ -40,7 +39,7 @@ export default class SignIn extends BaseScreen {
         w: 1920,
         h: 400,
         rect: true,
-        colorTop: 0xff001a0f,
+        colorTop: Colors.backgroundGradientTop,
         colorBottom: Colors.black,
       },
 
@@ -171,7 +170,7 @@ export default class SignIn extends BaseScreen {
             w: 900,
             h: 180,
             rect: true,
-            color: 0xff0a1a15,
+            color: Colors.cardBackgroundDark,
             shader: { type: Lightning.shaders.RoundedRectangle, radius: 16 },
 
             IconGlow: {
@@ -282,7 +281,7 @@ export default class SignIn extends BaseScreen {
             w: 900,
             h: 90,
             rect: true,
-            color: 0xff0a1a15,
+            color: Colors.cardBackgroundDark,
             shader: { type: Lightning.shaders.RoundedRectangle, radius: 12 },
 
             FocusBorder: {
@@ -336,7 +335,7 @@ export default class SignIn extends BaseScreen {
             w: 900,
             h: 90,
             rect: true,
-            color: 0xff0a1a15,
+            color: Colors.cardBackgroundDark,
             shader: { type: Lightning.shaders.RoundedRectangle, radius: 12 },
 
             FocusBorder: {
@@ -415,7 +414,7 @@ export default class SignIn extends BaseScreen {
         w: 1920,
         h: 1080,
         rect: true,
-        color: 0xcc000000,
+        color: Colors.blurOverlay,
         alpha: 0,
         zIndex: 100,
       },
@@ -434,7 +433,7 @@ export default class SignIn extends BaseScreen {
           w: 1520,
           h: 700,
           rect: true,
-          color: 0xff1a1a1a,
+          color: Colors.cardBackgroundMedium,
           shader: { type: Lightning.shaders.RoundedRectangle, radius: 24 },
         },
 
@@ -470,7 +469,7 @@ export default class SignIn extends BaseScreen {
           w: 1400,
           h: 100,
           rect: true,
-          color: 0xff0a1a15,
+          color: Colors.cardBackgroundDark,
           shader: { type: Lightning.shaders.RoundedRectangle, radius: 16 },
 
           GreenAccent: {
@@ -538,7 +537,7 @@ export default class SignIn extends BaseScreen {
       w: 110,
       h: 140,
       rect: true,
-      color: 0xff0a1a15,
+      color: Colors.cardBackgroundDark,
       shader: { type: Lightning.shaders.RoundedRectangle, radius: 12 },
 
       GreenBorder: {
@@ -755,7 +754,7 @@ export default class SignIn extends BaseScreen {
     if (loginButton) {
       loginButton.setSmooth(
         "color",
-        this.emailFocusIndex === 2 ? Colors.stockGreenBright : 0xff0d9959,
+        this.emailFocusIndex === 2 ? Colors.stockGreenBright : Colors.stockGreenMedium,
         { duration: 0.2 },
       );
     }
