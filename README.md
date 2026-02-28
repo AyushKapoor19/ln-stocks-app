@@ -27,48 +27,43 @@ Built with TypeScript • Lightning.js • Next.js • Fastify
 
 ## Features
 
-<table>
-<tr>
-<td width="50%">
-
 ### TV Application - Real-Time Tracking
 
-![Home Screen](./docs/screenshots/tv-home-screen.png)
+<p align="center">
+  <img src="./docs/screenshots/tv-home-screen.png" alt="Home Screen" width="800">
+</p>
 
 Interactive stock charts with market overview, stock details, and watchlist management. Supports multiple time periods (1M, 3M, 1Y) with Chart.js visualizations.
 
-</td>
-<td width="50%">
+---
 
 ### Stock Search with On-Screen Keyboard
 
-![Search Screen](./docs/screenshots/tv-search-screen.png)
+<p align="center">
+  <img src="./docs/screenshots/tv-search-screen.png" alt="Search Screen" width="800">
+</p>
 
 Stock search with indexed popular symbols and on-screen keyboard navigation for TV remotes.
 
-</td>
-</tr>
-<tr>
-<td width="50%">
+---
 
 ### Device Code Authentication
 
-![Device Authentication](./docs/screenshots/tv-device-auth.png)
+<p align="center">
+  <img src="./docs/screenshots/tv-device-auth.png" alt="Device Authentication" width="800">
+</p>
 
 Secure TV authentication via mobile device using QR code scanning or manual code entry. Visit the activation URL on your phone to approve.
 
-</td>
-<td width="50%">
+---
 
 ### Email Authentication
 
-![Email Sign Up](./docs/screenshots/tv-email-signup.png)
+<p align="center">
+  <img src="./docs/screenshots/tv-email-signup.png" alt="Email Sign Up" width="800">
+</p>
 
 Traditional email/password authentication with real-time validation and security requirements displayed on-screen.
-
-</td>
-</tr>
-</table>
 
 ## Architecture
 
