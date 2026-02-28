@@ -1,3 +1,9 @@
+/**
+ * Form Errors Hook
+ *
+ * Custom hook for managing form error state with field-level clearing
+ */
+
 import { useState } from "react";
 
 export function useFormErrors<T extends Record<string, string>>(
@@ -12,13 +18,5 @@ export function useFormErrors<T extends Record<string, string>>(
     }
   };
 
-  const clearAllErrors = (): void => {
-    const cleared = Object.keys(errors).reduce((acc, key) => {
-      acc[key as keyof T] = "" as T[keyof T];
-      return acc;
-    }, {} as T);
-    setErrors(cleared);
-  };
-
-  return { errors, setErrors, clearError, clearAllErrors };
+  return { errors, setErrors, clearError };
 }

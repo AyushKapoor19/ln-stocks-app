@@ -7,13 +7,15 @@
 import { apiService } from "./apiService";
 import type {
   ISignUpData,
-  ISignInData,
-  IAuthResponse,
   IDeviceCodeVerifyResponse,
   IDeviceCodeApprovalResponse,
 } from "../types/auth";
 
 class AuthService {
+  private handleError(error: unknown, defaultMessage: string): string {
+    return error instanceof Error ? error.message : defaultMessage;
+  }
+
   async verifyDeviceCode(code: string): Promise<IDeviceCodeVerifyResponse> {
     try {
       return await apiService.post<IDeviceCodeVerifyResponse>(
@@ -23,29 +25,7 @@ class AuthService {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Failed to verify code",
-      };
-    }
-  }
-
-  async signUp(data: ISignUpData): Promise<IAuthResponse> {
-    try {
-      return await apiService.post<IAuthResponse>("/auth/signup", data);
-    } catch (error) {
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : "Failed to sign up",
-      };
-    }
-  }
-
-  async signIn(data: ISignInData): Promise<IAuthResponse> {
-    try {
-      return await apiService.post<IAuthResponse>("/auth/login", data);
-    } catch (error) {
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : "Failed to sign in",
+        error: this.handleError(error, "Failed to verify code"),
       };
     }
   }
@@ -63,8 +43,7 @@ class AuthService {
     } catch (error) {
       return {
         success: false,
-        error:
-          error instanceof Error ? error.message : "Failed to approve device",
+        error: this.handleError(error, "Failed to approve device"),
       };
     }
   }
@@ -86,8 +65,7 @@ class AuthService {
     } catch (error) {
       return {
         success: false,
-        error:
-          error instanceof Error ? error.message : "Failed to approve device",
+        error: this.handleError(error, "Failed to approve device"),
       };
     }
   }

@@ -23,22 +23,14 @@ class ApiService {
 
     const config: RequestInit = Object.assign({}, options, { headers });
 
-    try {
-      const response = await fetch(url, config);
-      const data = await response.json();
+    const response = await fetch(url, config);
+    const data = await response.json();
 
-      if (!response.ok) {
-        throw new Error(data.error || "Request failed");
-      }
-
-      return data;
-    } catch (error) {
-      throw error;
+    if (!response.ok) {
+      throw new Error(data.error || "Request failed");
     }
-  }
 
-  async get<T>(endpoint: string): Promise<T> {
-    return this.request<T>(endpoint, { method: "GET" });
+    return data;
   }
 
   async post<T>(endpoint: string, data: unknown): Promise<T> {

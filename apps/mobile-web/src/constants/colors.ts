@@ -1,7 +1,5 @@
 /**
  * Color Constants
- *
- * Centralized color palette matching the TV app theme
  */
 
 export const Colors = {
