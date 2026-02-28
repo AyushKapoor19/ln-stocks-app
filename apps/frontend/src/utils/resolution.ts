@@ -1,18 +1,8 @@
 /**
- * Resolution Utilities for TV App
+ * Resolution Utilities
  *
- * Design Resolution: 1080p (1920x1080)
- * All coordinates, sizes, and fonts are designed for 1080p
- *
- * IMPORTANT: Stage dimensions remain fixed
- * - Stage is ALWAYS 1920x1080 or 1280x720 (never 3840x2160)
- * - For 4K TVs, we keep stage at 1920x1080 and let the TV OS scale it
- * - This prevents components from scattering at different resolutions
- *
- * Supported Resolutions:
- * - 720p: 1280x720 (precision = 2/3, devicePixelRatio = 1.5)
- * - 1080p: 1920x1080 (precision = 1, devicePixelRatio = 1)
- * - 4K: 1920x1080 (precision = 1, devicePixelRatio = 1) - TV OS handles scaling
+ * Stage is fixed at 1920x1080 or 1280x720
+ * 4K displays use 1080p stage with OS-level scaling
  */
 
 import type { IResolutionInfo } from "../types/stage";
@@ -24,22 +14,13 @@ export interface StageConfig {
   devicePixelRatio: number;
 }
 
-/**
- * Design resolution constants (1080p)
- */
 export const DESIGN_WIDTH = 1920;
 export const DESIGN_HEIGHT = 1080;
 
-/**
- * Detect the current device resolution and return appropriate stage configuration
- * Supports platform-specific resolution hooks
- */
 export function detectResolution(): StageConfig {
   const windowWidth = window.innerWidth;
   const windowHeight = window.innerHeight;
 
-  // Check for URL parameters to override detection (for testing)
-  // This allows testing different resolutions without changing TV settings
   const urlParams = new URLSearchParams(window.location.search);
 
   if (urlParams.has("720") || urlParams.get("resolution") === "720p") {
@@ -54,8 +35,6 @@ export function detectResolution(): StageConfig {
     return get4KConfig();
   }
 
-  // Auto-detect based on window size
-  // Auto-detect based on window dimensions
   if (windowHeight <= 720 || windowWidth <= 1280) {
     return get720pConfig();
   } else if (windowHeight >= 2160 || windowWidth >= 3840) {
@@ -65,11 +44,6 @@ export function detectResolution(): StageConfig {
   }
 }
 
-/**
- * Get 720p configuration
- * precision = 2/3 means the stage is scaled down from 1080p
- * devicePixelRatio = 1.5 means render at higher quality for sharper display
- */
 export function get720pConfig(): StageConfig {
   return {
     w: 1280,
@@ -79,11 +53,6 @@ export function get720pConfig(): StageConfig {
   };
 }
 
-/**
- * Get 1080p configuration (design resolution)
- * precision = 1 means no scaling
- * devicePixelRatio = 1 means render at native resolution
- */
 export function get1080pConfig(): StageConfig {
   return {
     w: 1920,
@@ -93,12 +62,6 @@ export function get1080pConfig(): StageConfig {
   };
 }
 
-/**
- * Get 4K configuration
- * IMPORTANT: We keep stage at 1920x1080 for 4K
- * and let the TV OS handle scaling
- * This prevents components from scattering!
- */
 export function get4KConfig(): StageConfig {
   return {
     w: 1920,
@@ -108,9 +71,6 @@ export function get4KConfig(): StageConfig {
   };
 }
 
-/**
- * Get human-readable resolution information
- */
 export function getResolutionInfo(config: StageConfig): IResolutionInfo {
   let name = "1080p";
   if (config.h === 720) name = "720p";
@@ -127,17 +87,6 @@ export function getResolutionInfo(config: StageConfig): IResolutionInfo {
   };
 }
 
-/**
- * Calculate scaled value based on precision
- * Use this for dynamic calculations if needed
- */
 export function scaleValue(value: number, precision: number): number {
   return value * precision;
-}
-
-/**
- * Log resolution information for debugging
- */
-export function logResolutionInfo(_config: StageConfig): void {
-  // Resolution info logging is disabled for production
 }

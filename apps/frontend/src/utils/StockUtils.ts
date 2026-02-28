@@ -1,14 +1,9 @@
 /**
- * Stock Utilities Class
- *
- * Centralized utilities for stock data formatting and market status
+ * Stock data formatting and market utilities
  */
-
 export class StockUtils {
   /**
-   * Formats volume with K, M, B suffixes
-   * @param volume - Volume number to format
-   * @returns Formatted string (e.g., "2.5M", "1.2B")
+   * Formats volume with K (thousands), M (millions), B (billions) suffixes
    */
   static formatVolume(volume: number): string {
     if (volume >= 1000000000) {
@@ -22,9 +17,7 @@ export class StockUtils {
   }
 
   /**
-   * Formats market capitalization with T, B, M suffixes
-   * @param marketCap - Market cap number to format
-   * @returns Formatted string with $ prefix (e.g., "$523B", "$1.2T")
+   * Formats market capitalization with T (trillions), B (billions), M (millions) suffixes
    */
   static formatMarketCap(marketCap: number): string {
     if (marketCap >= 1000000000000) {
@@ -38,10 +31,7 @@ export class StockUtils {
   }
 
   /**
-   * Formats a percentage
-   * @param value - Percentage as decimal (e.g., 0.05 for 5%)
-   * @param includeSign - Whether to include + sign for positive values
-   * @returns Formatted string (e.g., "+5.00%", "-2.50%")
+   * Formats percentage value with optional + sign for positive values
    */
   static formatPercentage(value: number, includeSign = true): string {
     const pct = (value * 100).toFixed(2);
@@ -52,9 +42,8 @@ export class StockUtils {
   }
 
   /**
-   * Checks if the stock market is currently open
+   * Returns current market status (open/closed) based on NYSE hours
    * Market hours: Monday-Friday, 9:30 AM - 4:00 PM EST
-   * @returns Object with market status information
    */
   static getMarketStatus(): {
     isOpen: boolean;
@@ -62,8 +51,6 @@ export class StockUtils {
     statusColor: number;
   } {
     const now = new Date();
-
-    // Convert to EST time
     const estTime = new Date(
       now.toLocaleString("en-US", { timeZone: "America/New_York" }),
     );
@@ -71,7 +58,6 @@ export class StockUtils {
     const currentMinutes = estTime.getMinutes();
     const currentDay = estTime.getDay();
 
-    // Market hours: Monday-Friday, 9:30 AM - 4:00 PM EST
     const isWeekday = currentDay >= 1 && currentDay <= 5;
     const afterOpen =
       currentHour > 9 || (currentHour === 9 && currentMinutes >= 30);
@@ -81,14 +67,12 @@ export class StockUtils {
     return {
       isOpen,
       statusText: isOpen ? "Market Open" : "Market Closed",
-      statusColor: isOpen ? 0xff00ff88 : 0xffff4444, // green : red
+      statusColor: isOpen ? 0xff00ff88 : 0xffff4444,
     };
   }
 
   /**
-   * Gets the dynamic separator position based on market status
-   * @param isOpen - Whether market is open
-   * @returns Object with separator and time text x positions
+   * Returns layout positions for market status indicator
    */
   static getMarketStatusLayout(isOpen: boolean): {
     separatorX: number;
@@ -102,17 +86,14 @@ export class StockUtils {
   }
 
   /**
-   * Gets market hours display text
-   * @returns Market hours string
+   * Returns formatted market hours text
    */
   static getMarketHoursText(): string {
     return "9:30 AM - 4:00 PM EST";
   }
 
   /**
-   * Checks if a given date is a trading day (Monday-Friday)
-   * @param date - Date to check (defaults to today)
-   * @returns true if it's a weekday
+   * Checks if given date is a trading day (weekday)
    */
   static isTradingDay(date: Date = new Date()): boolean {
     const day = date.getDay();
@@ -120,8 +101,7 @@ export class StockUtils {
   }
 
   /**
-   * Gets next market open time
-   * @returns Date object of next market open (9:30 AM EST)
+   * Calculates next market open time (9:30 AM EST on next trading day)
    */
   static getNextMarketOpen(): Date {
     const now = new Date();
