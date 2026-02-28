@@ -1,3 +1,9 @@
+/**
+ * Form Validation Utilities
+ *
+ * Centralized validation functions for user input
+ */
+
 export function validateEmail(email: string): boolean {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return emailRegex.test(email);
