@@ -16,6 +16,11 @@ interface IUser {
   last_login: string | null;
 }
 
+interface IHomeScreen extends Lightning.Component {
+  updateAuthButton?: (isLoggedIn: boolean) => void;
+  loadStockFromSearch?: (symbol: string, name: string) => void;
+}
+
 /**
  * Main App Class
  *
@@ -23,6 +28,14 @@ interface IUser {
  * Lightning.js automatically scales everything based on the detected resolution.
  */
 export default class App extends Lightning.Component {
+  private static readonly SCREENS = [
+    "Home",
+    "SignUpScreen",
+    "SignInScreen",
+    "AccountScreen",
+    "SearchScreen",
+  ] as const;
+
   private currentScreen: string = "Home";
   private currentUser: IUser | null = null;
 
@@ -99,10 +112,7 @@ export default class App extends Lightning.Component {
       }
 
       // Update Home screen to show "Account" instead of "Sign In"
-      const homeScreen = this.tag("Home");
-      if (homeScreen && (homeScreen as any).updateAuthButton) {
-        (homeScreen as any).updateAuthButton(true);
-      }
+      this._updateHomeAuthButton(true);
     } else {
       authApi.clearToken();
     }
@@ -110,6 +120,13 @@ export default class App extends Lightning.Component {
 
   _getFocused(): Lightning.Component | null {
     return this.tag(this.currentScreen);
+  }
+
+  private _updateHomeAuthButton(isLoggedIn: boolean): void {
+    const homeScreen = this.tag("Home") as IHomeScreen;
+    if (homeScreen?.updateAuthButton) {
+      homeScreen.updateAuthButton(isLoggedIn);
+    }
   }
 
   $showAuthFlow(): void {
@@ -150,10 +167,7 @@ export default class App extends Lightning.Component {
     }
 
     // Update Home screen to show "Account" button
-    const homeScreen = this.tag("Home");
-    if (homeScreen && (homeScreen as any).updateAuthButton) {
-      (homeScreen as any).updateAuthButton(true);
-    }
+    this._updateHomeAuthButton(true);
 
     // Navigate to Account screen
     this._showScreen("AccountScreen");
@@ -164,10 +178,7 @@ export default class App extends Lightning.Component {
     authApi.clearToken();
 
     // Update Home screen to show "Sign In" instead of "Account"
-    const homeScreen = this.tag("Home");
-    if (homeScreen && (homeScreen as any).updateAuthButton) {
-      (homeScreen as any).updateAuthButton(false);
-    }
+    this._updateHomeAuthButton(false);
 
     this._showScreen("Home");
   }
@@ -182,22 +193,14 @@ export default class App extends Lightning.Component {
 
   $selectStockFromSearch(data: { symbol: string; name: string }): void {
     // Pass the selected stock to Home screen
-    const homeScreen = this.tag("Home");
-    if (homeScreen && (homeScreen as any).loadStockFromSearch) {
-      (homeScreen as any).loadStockFromSearch(data.symbol, data.name);
+    const homeScreen = this.tag("Home") as IHomeScreen;
+    if (homeScreen?.loadStockFromSearch) {
+      homeScreen.loadStockFromSearch(data.symbol, data.name);
     }
   }
 
   private _showScreen(screenName: string): void {
-    const screens = [
-      "Home",
-      "SignUpScreen",
-      "SignInScreen",
-      "AccountScreen",
-      "SearchScreen",
-    ];
-
-    screens.forEach((screen) => {
+    App.SCREENS.forEach((screen) => {
       const screenComponent = this.tag(screen);
       if (screenComponent) {
         if (screen === screenName) {
