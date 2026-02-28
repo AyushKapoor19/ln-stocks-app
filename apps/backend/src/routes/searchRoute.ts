@@ -6,36 +6,38 @@
 
 import type { FastifyRequest, FastifyReply } from "fastify";
 import { finnhubService } from "../services/finnhubService.js";
-import { validateSearchQuery } from "../utils/validation.js";
 import { FINNHUB_KEY } from "../constants/config.js";
+import {
+  sendBadRequest,
+  sendServiceUnavailable,
+  sendInternalError,
+} from "../utils/errorHandler.js";
+import { validateQuery } from "../utils/requestValidation.js";
 import type { ISearchResponse } from "../types/search.js";
 import type { IQueryParams } from "../types/api.js";
 
 export async function searchRoute(
   request: FastifyRequest<{ Querystring: IQueryParams }>,
   reply: FastifyReply,
-): Promise<ISearchResponse> {
-  const query = validateSearchQuery(request.query.q);
-
-  if (!query || query.length < 1) {
-    reply.code(400);
-    return { error: "query required" } as unknown as ISearchResponse;
+): Promise<void> {
+  const query = validateQuery(request.query.q, reply, 1);
+  if (!query) {
+    return;
   }
 
   if (!FINNHUB_KEY) {
-    reply.code(503);
-    return { error: "No FINNHUB_KEY configured" } as unknown as ISearchResponse;
+    sendServiceUnavailable(reply, "No FINNHUB_KEY configured");
+    return;
   }
 
   try {
     const results = await finnhubService.searchSymbols(query);
-    return {
+    reply.send({
       query,
       results,
       count: results.length,
-    };
+    });
   } catch (error) {
-    reply.code(500);
-    return { error: "Internal server error" } as unknown as ISearchResponse;
+    sendInternalError(reply);
   }
 }

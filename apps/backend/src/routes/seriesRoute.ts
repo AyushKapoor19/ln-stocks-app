@@ -15,21 +15,21 @@ import { cacheService } from "../services/cacheService.js";
 import { dbCacheService } from "../services/dbCacheService.js";
 import { polygonService } from "../services/polygonService.js";
 import { generateFallbackSeries } from "../utils/fallbackData.js";
-import { parseSymbols, validatePeriod } from "../utils/validation.js";
+import { validatePeriod } from "../utils/validation.js";
+import { validateSymbols } from "../utils/requestValidation.js";
 import type { ISeriesResponse } from "../types/series.js";
 import type { IQueryParams } from "../types/api.js";
 
 export async function seriesRoute(
   request: FastifyRequest<{ Querystring: IQueryParams }>,
   reply: FastifyReply,
-): Promise<ISeriesResponse> {
-  const symbols = parseSymbols(request.query.symbols);
-  const period = validatePeriod(request.query.period);
-
-  if (symbols.length === 0) {
-    reply.code(400);
-    return { error: "symbols required" } as unknown as ISeriesResponse;
+): Promise<void> {
+  const symbols = validateSymbols(request.query.symbols, reply);
+  if (!symbols) {
+    return;
   }
+
+  const period = validatePeriod(request.query.period);
 
   const out: ISeriesResponse = {};
 
@@ -65,9 +65,6 @@ export async function seriesRoute(
       const cachedQuote = cacheService.getQuote(symbol);
       const currentPrice = cachedQuote ? cachedQuote.price : undefined;
 
-      if (currentPrice) {
-      }
-
       // 5. Generate synthetic fallback (last resort)
       const fallback = generateFallbackSeries(symbol, period, currentPrice);
       cacheService.setSeries(symbol, period, fallback);
@@ -82,5 +79,5 @@ export async function seriesRoute(
     }
   }
 
-  return out;
+  reply.send(out);
 }

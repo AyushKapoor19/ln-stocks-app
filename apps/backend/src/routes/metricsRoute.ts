@@ -6,19 +6,17 @@
 
 import type { FastifyRequest, FastifyReply } from "fastify";
 import { metricsService } from "../services/metricsService.js";
-import { parseSymbols } from "../utils/validation.js";
+import { validateSymbols } from "../utils/requestValidation.js";
 import type { IMetricsResponse } from "../types/metrics.js";
 import type { IQueryParams } from "../types/api.js";
 
 export async function metricsRoute(
   request: FastifyRequest<{ Querystring: IQueryParams }>,
   reply: FastifyReply,
-): Promise<IMetricsResponse> {
-  const symbols = parseSymbols(request.query.symbols);
-
-  if (symbols.length === 0) {
-    reply.code(400);
-    return { error: "symbols required" } as unknown as IMetricsResponse;
+): Promise<void> {
+  const symbols = validateSymbols(request.query.symbols, reply);
+  if (!symbols) {
+    return;
   }
 
   const out: IMetricsResponse = {};
@@ -38,5 +36,5 @@ export async function metricsRoute(
 
   await Promise.all(metricsPromises);
 
-  return out;
+  reply.send(out);
 }

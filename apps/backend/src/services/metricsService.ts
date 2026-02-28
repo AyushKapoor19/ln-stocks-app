@@ -9,6 +9,7 @@ import { finnhubService } from "./finnhubService.js";
 import { cacheService } from "./cacheService.js";
 import { dbCacheService } from "./dbCacheService.js";
 import { FINNHUB_KEY } from "../constants/config.js";
+import { hasApiKey } from "../utils/serviceHelpers.js";
 import type {
   IStockMetrics,
   IFinnhubMetricsResponse,
@@ -89,7 +90,6 @@ class MetricsService {
       }
 
       // Calculate 52-week high/low from all points
-      const prices = yearData.points.map((p) => p.c);
       const highs = yearData.points.map((p) => p.h || p.c);
       const lows = yearData.points.map((p) => p.l || p.c);
 
@@ -118,7 +118,7 @@ class MetricsService {
   private async _getFinnhubMetrics(
     symbol: string,
   ): Promise<Partial<IStockMetrics>> {
-    if (!FINNHUB_KEY) {
+    if (!hasApiKey(FINNHUB_KEY)) {
       return {};
     }
 

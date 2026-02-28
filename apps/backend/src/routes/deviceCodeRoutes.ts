@@ -8,6 +8,15 @@ import type { FastifyRequest, FastifyReply } from "fastify";
 import { deviceCodeService } from "../services/deviceCodeService.js";
 import { authService } from "../services/authService.js";
 import { pool } from "../utils/db.js";
+import {
+  sendBadRequest,
+  sendUnauthorized,
+  sendInternalError,
+} from "../utils/errorHandler.js";
+import {
+  validateRequiredFields,
+  validateDeviceCodeFields,
+} from "../utils/requestValidation.js";
 import type {
   IDeviceCodeResponse,
   IDeviceCodeStatusResponse,
@@ -59,7 +68,7 @@ export async function checkDeviceCodeStatusRoute(
   const { code } = request.query;
 
   if (!code) {
-    reply.code(400);
+    sendBadRequest(reply, "Code is required");
     return { status: "expired" };
   }
 
@@ -78,7 +87,7 @@ export async function verifyDeviceCodeRoute(
   const { code } = request.body;
 
   if (!code) {
-    reply.code(400);
+    sendBadRequest(reply, "Code is required");
     return { success: false, error: "Code is required" };
   }
 
@@ -108,7 +117,7 @@ export async function verifyDeviceCodeRoute(
 
     return { success: true, authType: deviceCode.auth_type };
   } catch (error) {
-    reply.code(500);
+    sendInternalError(reply, "Failed to verify code");
     return { success: false, error: "Failed to verify code" };
   }
 }
@@ -119,19 +128,15 @@ export async function approveDeviceCodeRoute(
 ): Promise<{ success: boolean; error?: string }> {
   const { code, email, password } = request.body;
 
-  if (!code || !email || !password) {
-    reply.code(400);
+  if (!validateDeviceCodeFields(code, email, password, reply)) {
     return { success: false, error: "Code, email, and password are required" };
   }
 
   const loginResult = await authService.login({ email, password });
 
   if (!loginResult.success || !loginResult.user) {
-    reply.code(401);
-    return {
-      success: false,
-      error: loginResult.error || "Invalid credentials",
-    };
+    sendUnauthorized(reply, loginResult.error || "Invalid credentials");
+    return { success: false, error: loginResult.error || "Invalid credentials" };
   }
 
   const approved = await deviceCodeService.approveDeviceCode(
@@ -140,7 +145,7 @@ export async function approveDeviceCodeRoute(
   );
 
   if (!approved) {
-    reply.code(400);
+    sendBadRequest(reply, "Device code expired or already used");
     return { success: false, error: "Device code expired or already used" };
   }
 
@@ -153,8 +158,7 @@ export async function approveDeviceCodeWithSignUpRoute(
 ): Promise<{ success: boolean; error?: string }> {
   const { code, email, password, displayName } = request.body;
 
-  if (!code || !email || !password) {
-    reply.code(400);
+  if (!validateDeviceCodeFields(code, email, password, reply)) {
     return { success: false, error: "Code, email, and password are required" };
   }
 
@@ -165,11 +169,8 @@ export async function approveDeviceCodeWithSignUpRoute(
   });
 
   if (!signupResult.success || !signupResult.user) {
-    reply.code(400);
-    return {
-      success: false,
-      error: signupResult.error || "Failed to create account",
-    };
+    sendBadRequest(reply, signupResult.error || "Failed to create account");
+    return { success: false, error: signupResult.error || "Failed to create account" };
   }
 
   const approved = await deviceCodeService.approveDeviceCode(
@@ -178,7 +179,7 @@ export async function approveDeviceCodeWithSignUpRoute(
   );
 
   if (!approved) {
-    reply.code(400);
+    sendBadRequest(reply, "Device code expired or already used");
     return { success: false, error: "Device code expired or already used" };
   }
 

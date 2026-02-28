@@ -6,6 +6,7 @@
 
 import fetch from "node-fetch";
 import { FINNHUB_KEY } from "../constants/config.js";
+import { roundTo, hasApiKey } from "../utils/serviceHelpers.js";
 import type { IQuoteData, IFinnhubQuoteResponse } from "../types/quote.js";
 import type { IFinnhubSearchResponse, ISearchResult } from "../types/search.js";
 
@@ -13,7 +14,7 @@ class FinnhubService {
   private baseUrl = "https://finnhub.io/api/v1";
 
   async fetchQuote(symbol: string): Promise<IQuoteData | null> {
-    if (!FINNHUB_KEY) {
+    if (!hasApiKey(FINNHUB_KEY)) {
       return null;
     }
 
@@ -33,8 +34,6 @@ class FinnhubService {
       ]);
 
       if (!quoteResponse.ok) {
-        const errorText = await quoteResponse.text();
-
         return null;
       }
 
@@ -59,17 +58,15 @@ class FinnhubService {
 
         return {
           symbol: symbol,
-          price: Math.round(currentPrice * 100) / 100,
-          change: Math.round(change * 100) / 100,
-          changePct: Math.round(changePct * 10000) / 10000,
+          price: roundTo(currentPrice, 2),
+          change: roundTo(change, 2),
+          changePct: roundTo(changePct, 4),
           time: data.t * 1000,
           source: "finnhub_quote",
-          dayHigh: data.h ? Math.round(data.h * 100) / 100 : undefined,
-          dayLow: data.l ? Math.round(data.l * 100) / 100 : undefined,
-          open: data.o ? Math.round(data.o * 100) / 100 : undefined,
-          previousClose: previousClose
-            ? Math.round(previousClose * 100) / 100
-            : undefined,
+          dayHigh: data.h ? roundTo(data.h, 2) : undefined,
+          dayLow: data.l ? roundTo(data.l, 2) : undefined,
+          open: data.o ? roundTo(data.o, 2) : undefined,
+          previousClose: previousClose ? roundTo(previousClose, 2) : undefined,
           currency: currency,
         };
       }
@@ -81,7 +78,7 @@ class FinnhubService {
   }
 
   async searchSymbols(query: string): Promise<ISearchResult[]> {
-    if (!FINNHUB_KEY) {
+    if (!hasApiKey(FINNHUB_KEY)) {
       throw new Error("No FINNHUB_KEY configured");
     }
 
@@ -195,7 +192,7 @@ class FinnhubService {
    * Used for building the search index
    */
   async fetchStocksByExchange(exchange: string): Promise<ISearchResult[]> {
-    if (!FINNHUB_KEY) {
+    if (!hasApiKey(FINNHUB_KEY)) {
       throw new Error("No FINNHUB_KEY configured");
     }
 
@@ -248,7 +245,7 @@ class FinnhubService {
    * Fetch company name for a given symbol (for exact matches)
    */
   async fetchCompanyName(symbol: string): Promise<string | null> {
-    if (!FINNHUB_KEY) {
+    if (!hasApiKey(FINNHUB_KEY)) {
       return null;
     }
 

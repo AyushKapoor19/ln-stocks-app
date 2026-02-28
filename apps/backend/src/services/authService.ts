@@ -8,6 +8,13 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { pool } from "../utils/db.js";
 import { JWT_SECRET, JWT_EXPIRES_IN } from "../constants/config.js";
+import {
+  queryOne,
+  isValidEmail,
+  validatePassword,
+  executeCommand,
+} from "../utils/serviceHelpers.js";
+import { validateEmailPassword } from "../utils/authValidation.js";
 import type {
   IUser,
   IUserWithPassword,
@@ -23,35 +30,18 @@ class AuthService {
   async signup(request: ISignupRequest): Promise<IAuthResponse> {
     const { email, password, displayName } = request;
 
-    if (!email || !password) {
-      return { success: false, error: "Email and password are required" };
+    const validationError = validateEmailPassword(email, password);
+    if (validationError) {
+      return validationError;
     }
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
+    if (!isValidEmail(email)) {
       return { success: false, error: "Invalid email format" };
     }
 
-    // Password validation rules
-    if (password.length < 8) {
-      return {
-        success: false,
-        error: "Password must be at least 8 characters",
-      };
-    }
-
-    if (!/[a-zA-Z]/.test(password)) {
-      return {
-        success: false,
-        error: "Password must contain at least one letter",
-      };
-    }
-
-    if (!/\d/.test(password)) {
-      return {
-        success: false,
-        error: "Password must contain at least one number",
-      };
+    const passwordError = validatePassword(password);
+    if (passwordError) {
+      return { success: false, error: passwordError };
     }
 
     try {
@@ -83,8 +73,9 @@ class AuthService {
   async login(request: ILoginRequest): Promise<IAuthResponse> {
     const { email, password } = request;
 
-    if (!email || !password) {
-      return { success: false, error: "Email and password are required" };
+    const validationError = validateEmailPassword(email, password);
+    if (validationError) {
+      return validationError;
     }
 
     try {
@@ -101,7 +92,8 @@ class AuthService {
         return { success: false, error: "Invalid email or password" };
       }
 
-      await pool.query(
+      await executeCommand(
+        pool,
         "UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = $1",
         [userWithPassword.id],
       );
@@ -128,56 +120,29 @@ class AuthService {
   }
 
   async findUserByEmail(email: string): Promise<IUser | null> {
-    try {
-      const result = await pool.query(
-        "SELECT id, email, display_name, created_at, updated_at, last_login FROM users WHERE email = $1",
-        [email],
-      );
-
-      if (result.rows.length === 0) {
-        return null;
-      }
-
-      return result.rows[0];
-    } catch (error) {
-      return null;
-    }
+    return queryOne<IUser>(
+      pool,
+      "SELECT id, email, display_name, created_at, updated_at, last_login FROM users WHERE email = $1",
+      [email],
+    );
   }
 
   async findUserByEmailWithPassword(
     email: string,
   ): Promise<IUserWithPassword | null> {
-    try {
-      const result = await pool.query(
-        "SELECT id, email, password_hash, display_name, created_at, updated_at, last_login FROM users WHERE email = $1",
-        [email],
-      );
-
-      if (result.rows.length === 0) {
-        return null;
-      }
-
-      return result.rows[0];
-    } catch (error) {
-      return null;
-    }
+    return queryOne<IUserWithPassword>(
+      pool,
+      "SELECT id, email, password_hash, display_name, created_at, updated_at, last_login FROM users WHERE email = $1",
+      [email],
+    );
   }
 
   async findUserById(userId: number): Promise<IUser | null> {
-    try {
-      const result = await pool.query(
-        "SELECT id, email, display_name, created_at, updated_at, last_login FROM users WHERE id = $1",
-        [userId],
-      );
-
-      if (result.rows.length === 0) {
-        return null;
-      }
-
-      return result.rows[0];
-    } catch (error) {
-      return null;
-    }
+    return queryOne<IUser>(
+      pool,
+      "SELECT id, email, display_name, created_at, updated_at, last_login FROM users WHERE id = $1",
+      [userId],
+    );
   }
 
   generateToken(user: IUser): string {

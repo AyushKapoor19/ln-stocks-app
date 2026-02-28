@@ -8,19 +8,17 @@ import type { FastifyRequest, FastifyReply } from "fastify";
 import { cacheService } from "../services/cacheService.js";
 import { finnhubService } from "../services/finnhubService.js";
 import { generateFallbackQuote } from "../utils/fallbackData.js";
-import { parseSymbols } from "../utils/validation.js";
+import { validateSymbols } from "../utils/requestValidation.js";
 import type { IQuotesResponse, IQuoteData } from "../types/quote.js";
 import type { IQueryParams } from "../types/api.js";
 
 export async function quotesRoute(
   request: FastifyRequest<{ Querystring: IQueryParams }>,
   reply: FastifyReply,
-): Promise<IQuotesResponse> {
-  const symbols = parseSymbols(request.query.symbols);
-
-  if (symbols.length === 0) {
-    reply.code(400);
-    return { error: "symbols required" } as unknown as IQuotesResponse;
+): Promise<void> {
+  const symbols = validateSymbols(request.query.symbols, reply);
+  if (!symbols) {
+    return;
   }
 
   const out: IQuotesResponse = {};
@@ -58,5 +56,5 @@ export async function quotesRoute(
     }
   }
 
-  return out;
+  reply.send(out);
 }

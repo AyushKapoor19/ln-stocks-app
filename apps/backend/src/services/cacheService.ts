@@ -12,39 +12,33 @@ class CacheService {
   private quoteCache = new Map<string, IQuoteCache>();
   private seriesCache = new Map<string, ISeriesCache>();
 
+  private getCacheKey(type: "quote" | "series", symbol: string, period?: string): string {
+    return period ? `${type}_${symbol}_${period}` : `${type}_${symbol}`;
+  }
+
+  private isCacheValid<T extends { timestamp: number }>(cached: T | undefined): boolean {
+    return !!(cached && Date.now() - cached.timestamp < CACHE_DURATION);
+  }
+
   getQuote(symbol: string): IQuoteData | null {
-    const cacheKey = `quote_${symbol}`;
-    const cached = this.quoteCache.get(cacheKey);
-
-    if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
-      return cached.data;
-    }
-
-    return null;
+    const cached = this.quoteCache.get(this.getCacheKey("quote", symbol));
+    return this.isCacheValid(cached) ? cached!.data : null;
   }
 
   setQuote(symbol: string, data: IQuoteData): void {
-    const cacheKey = `quote_${symbol}`;
-    this.quoteCache.set(cacheKey, {
+    this.quoteCache.set(this.getCacheKey("quote", symbol), {
       data,
       timestamp: Date.now(),
     });
   }
 
   getSeries(symbol: string, period: string): ISeriesData | null {
-    const cacheKey = `series_${symbol}_${period}`;
-    const cached = this.seriesCache.get(cacheKey);
-
-    if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
-      return cached.data;
-    }
-
-    return null;
+    const cached = this.seriesCache.get(this.getCacheKey("series", symbol, period));
+    return this.isCacheValid(cached) ? cached!.data : null;
   }
 
   setSeries(symbol: string, period: string, data: ISeriesData): void {
-    const cacheKey = `series_${symbol}_${period}`;
-    this.seriesCache.set(cacheKey, {
+    this.seriesCache.set(this.getCacheKey("series", symbol, period), {
       data,
       timestamp: Date.now(),
     });

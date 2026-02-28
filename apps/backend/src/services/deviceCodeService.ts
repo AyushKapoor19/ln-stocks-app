@@ -11,6 +11,7 @@ import {
   DEVICE_CODE_EXPIRES_IN,
   DEVICE_CODE_POLL_INTERVAL,
 } from "../constants/config.js";
+import { queryOne, executeCommand, queryMany } from "../utils/serviceHelpers.js";
 import type {
   IDeviceCode,
   IDeviceCodeResponse,
@@ -58,16 +59,15 @@ class DeviceCodeService {
     code: string,
   ): Promise<IDeviceCodeStatusResponse> {
     try {
-      const result = await pool.query<IDeviceCode>(
+      const deviceCode = await queryOne<IDeviceCode>(
+        pool,
         "SELECT * FROM device_codes WHERE code = $1",
         [code],
       );
 
-      if (result.rows.length === 0) {
+      if (!deviceCode) {
         return { status: "expired" };
       }
-
-      const deviceCode = result.rows[0];
 
       if (new Date() > new Date(deviceCode.expires_at)) {
         await this.markDeviceCodeExpired(code);
@@ -95,49 +95,36 @@ class DeviceCodeService {
   }
 
   async approveDeviceCode(code: string, userId: number): Promise<boolean> {
-    try {
-      const result = await pool.query(
-        "UPDATE device_codes SET status = $1, user_id = $2 WHERE code = $3 AND status = $4 AND expires_at > NOW() RETURNING *",
-        ["approved", userId, code, "pending"],
-      );
+    const result = await queryMany<IDeviceCode>(
+      pool,
+      "UPDATE device_codes SET status = $1, user_id = $2 WHERE code = $3 AND status = $4 AND expires_at > NOW() RETURNING *",
+      ["approved", userId, code, "pending"],
+    );
 
-      if (result.rows.length === 0) {
-        return false;
-      }
-
-      return true;
-    } catch (error) {
-      return false;
-    }
+    return result.length > 0;
   }
 
   async markDeviceCodeExpired(code: string): Promise<void> {
-    try {
-      await pool.query("UPDATE device_codes SET status = $1 WHERE code = $2", [
-        "expired",
-        code,
-      ]);
-    } catch (error) {}
+    await executeCommand(
+      pool,
+      "UPDATE device_codes SET status = $1 WHERE code = $2",
+      ["expired", code],
+    );
   }
 
   async markDeviceCodeUsed(code: string): Promise<void> {
-    try {
-      await pool.query(
-        "UPDATE device_codes SET used_at = CURRENT_TIMESTAMP WHERE code = $1",
-        [code],
-      );
-    } catch (error) {}
+    await executeCommand(
+      pool,
+      "UPDATE device_codes SET used_at = CURRENT_TIMESTAMP WHERE code = $1",
+      [code],
+    );
   }
 
   async cleanupExpiredCodes(): Promise<void> {
-    try {
-      const result = await pool.query(
-        "DELETE FROM device_codes WHERE expires_at < NOW()",
-      );
-
-      if (result.rowCount && result.rowCount > 0) {
-      }
-    } catch (error) {}
+    await executeCommand(
+      pool,
+      "DELETE FROM device_codes WHERE expires_at < NOW()",
+    );
   }
 
   private generateRandomCode(length: number): string {

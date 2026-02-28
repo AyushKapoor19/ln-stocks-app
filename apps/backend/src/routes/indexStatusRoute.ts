@@ -3,8 +3,9 @@
  * Returns the current status of the stock search index
  */
 
-import { FastifyRequest, FastifyReply } from "fastify";
+import type { FastifyRequest, FastifyReply } from "fastify";
 import { stockIndexService } from "../services/stockIndexService.js";
+import { sendInternalError } from "../utils/errorHandler.js";
 
 export async function indexStatusRoute(
   request: FastifyRequest,
@@ -18,9 +19,6 @@ export async function indexStatusRoute(
       stats,
     });
   } catch (error) {
-    reply.code(500).send({
-      status: "error",
-      message: "Failed to get index status",
-    });
+    sendInternalError(reply, "Failed to get index status");
   }
 }

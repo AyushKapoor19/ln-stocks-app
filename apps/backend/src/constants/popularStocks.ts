@@ -12,8 +12,6 @@
  * - Popular ETFs (SPY, QQQ, sector funds)
  * - Trending stocks (IPOs, earnings plays, high retail interest)
  *
- * Update Schedule:
- * Monthly review based on trading volume, market cap changes, and retail trends.
  *
  */
 

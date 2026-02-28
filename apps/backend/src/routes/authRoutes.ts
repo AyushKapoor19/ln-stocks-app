@@ -6,6 +6,7 @@
 
 import type { FastifyRequest, FastifyReply } from "fastify";
 import { authService } from "../services/authService.js";
+import { sendBadRequest, sendUnauthorized } from "../utils/errorHandler.js";
 import type {
   ISignupRequest,
   ILoginRequest,
@@ -37,7 +38,7 @@ export async function signupRoute(
   const result = await authService.signup(signupRequest);
 
   if (!result.success) {
-    reply.code(400);
+    sendBadRequest(reply, result.error || "Signup failed");
   }
 
   return result;
@@ -53,7 +54,7 @@ export async function loginRoute(
   const result = await authService.login(loginRequest);
 
   if (!result.success) {
-    reply.code(401);
+    sendUnauthorized(reply, result.error || "Login failed");
   }
 
   return result;
@@ -66,7 +67,7 @@ export async function verifyTokenRoute(
   const authHeader = request.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    reply.code(401);
+    sendUnauthorized(reply, "No token provided");
     return { success: false, error: "No token provided" };
   }
 
@@ -74,14 +75,14 @@ export async function verifyTokenRoute(
   const payload = authService.verifyToken(token);
 
   if (!payload) {
-    reply.code(401);
+    sendUnauthorized(reply, "Invalid token");
     return { success: false, error: "Invalid token" };
   }
 
   const user = await authService.findUserById(payload.userId);
 
   if (!user) {
-    reply.code(401);
+    sendUnauthorized(reply, "User not found");
     return { success: false, error: "User not found" };
   }
 

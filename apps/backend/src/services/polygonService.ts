@@ -6,6 +6,7 @@
 
 import fetch from "node-fetch";
 import { POLYGON_KEY } from "../constants/config.js";
+import { roundTo, hasApiKey } from "../utils/serviceHelpers.js";
 import type { ISeriesData, IPolygonResponse, Period } from "../types/series.js";
 
 class PolygonService {
@@ -46,7 +47,7 @@ class PolygonService {
     symbol: string,
     period: Period,
   ): Promise<ISeriesData | null> {
-    if (!POLYGON_KEY) {
+    if (!hasApiKey(POLYGON_KEY)) {
       return null;
     }
 
@@ -76,10 +77,10 @@ class PolygonService {
       ) {
         const points = data.results.map((candle) => ({
           t: candle.t,
-          c: Math.round(candle.c * 100) / 100,
-          o: Math.round(candle.o * 100) / 100,
-          h: Math.round(candle.h * 100) / 100,
-          l: Math.round(candle.l * 100) / 100,
+          c: roundTo(candle.c, 2),
+          o: roundTo(candle.o, 2),
+          h: roundTo(candle.h, 2),
+          l: roundTo(candle.l, 2),
           v: candle.v || 0,
         }));
 

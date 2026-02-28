@@ -47,8 +47,6 @@ class StockIndexService {
       return [];
     }
 
-    const startTime = Date.now();
-
     try {
       // Search popular stocks locally (instant)
       const popularMatches = this._searchPopularStocks(queryLower);
@@ -89,11 +87,6 @@ class StockIndexService {
       // Rank by relevance
       const mergedResults = Array.from(allResults.values());
       const rankedResults = this._rankResults(mergedResults, queryLower);
-
-      const duration = Date.now() - startTime;
-      const apiOverrides = popularMatches.filter((local) =>
-        apiResults.some((api) => api.symbol === local.symbol),
-      ).length;
 
       return rankedResults.slice(0, limit);
     } catch (error) {
