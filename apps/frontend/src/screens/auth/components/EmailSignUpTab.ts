@@ -8,6 +8,7 @@ import { Colors } from "../../../constants/Colors";
 import { FontSize, FontStyle, FontFamily } from "../../../constants/Fonts";
 import Keyboard from "../../../components/Keyboard";
 import { authApi } from "../../../services/authApi";
+import BaseEmailAuthTab from "./BaseEmailAuthTab";
 
 type FocusedElement = "name" | "email" | "password" | "signup" | "signin";
 
@@ -17,17 +18,11 @@ interface IPasswordRules {
   hasNumber: boolean;
 }
 
-export default class EmailSignUpTab extends Lightning.Component {
+export default class EmailSignUpTab extends BaseEmailAuthTab {
   private focusedElement: FocusedElement = "name";
-  private showKeyboard: boolean = false;
   private nameValue: string = "";
   private emailValue: string = "";
   private passwordValue: string = "";
-  private isLoading: boolean = false;
-  private shakingFields: Set<string> = new Set();
-  private errorFields: Set<string> = new Set();
-  private errorGlowTimeouts: Map<string, NodeJS.Timeout> = new Map();
-  private fieldOriginalPositions: Map<string, number> = new Map();
   private passwordRules: IPasswordRules = {
     minLength: false,
     hasLetter: false,
@@ -65,7 +60,7 @@ export default class EmailSignUpTab extends Lightning.Component {
           text: {
             text: "",
             fontSize: 22,
-            textColor: 0xffef4444,
+            textColor: Colors.error,
             fontFace: FontFamily.Default,
             wordWrapWidth: 900,
           },
@@ -170,7 +165,7 @@ export default class EmailSignUpTab extends Lightning.Component {
           w: 380,
           h: 2,
           rect: true,
-          color: 0x40ffffff,
+          color: Colors.keyboardShaderBg,
         },
 
         Rule1: this._createPasswordRule(90, "Minimum 8 characters"),
@@ -185,8 +180,8 @@ export default class EmailSignUpTab extends Lightning.Component {
         w: 1920,
         h: 1080,
         rect: true,
-        colorTop: 0xf8001a0d,
-        colorBottom: 0xfa000000,
+        colorTop: Colors.keyboardOverlayTop,
+        colorBottom: Colors.keyboardOverlayBottom,
         alpha: 0,
         visible: false,
         zIndex: 100,
@@ -215,7 +210,7 @@ export default class EmailSignUpTab extends Lightning.Component {
               text: "Name",
               fontSize: 48,
               fontStyle: FontStyle.Bold,
-              textColor: 0xf0ffffff,
+              textColor: Colors.keyboardHeaderText,
               fontFace: FontFamily.Default,
             },
           },
@@ -227,7 +222,7 @@ export default class EmailSignUpTab extends Lightning.Component {
           w: 1720,
           h: 90,
           rect: true,
-          color: 0x40000000,
+          color: Colors.keyboardInputBg,
           shader: { type: Lightning.shaders.RoundedRectangle, radius: 18 },
 
           Placeholder: {
@@ -237,7 +232,7 @@ export default class EmailSignUpTab extends Lightning.Component {
             text: {
               text: "Navigate with remote, press OK to select",
               fontSize: 24,
-              textColor: 0x50ffffff,
+              textColor: Colors.keyboardPlaceholderText,
               fontFace: FontFamily.Default,
             },
           },
@@ -249,7 +244,7 @@ export default class EmailSignUpTab extends Lightning.Component {
             text: {
               fontSize: 34,
               fontStyle: "bold",
-              textColor: 0xffffffff,
+              textColor: Colors.keyboardInputText,
               letterSpacing: 1,
             },
           },
@@ -264,54 +259,36 @@ export default class EmailSignUpTab extends Lightning.Component {
     };
   }
 
-  private static _createInputField(
-    yPos: number,
-    label: string,
-    placeholder: string,
-  ): object {
-    return {
-      x: 0,
-      y: yPos,
-      w: 900,
-      h: 90,
-      rect: true,
-      color: Colors.authInputBackground,
-      shader: { type: Lightning.shaders.RoundedRectangle, radius: 12 },
+  protected getFocusOrder(): string[] {
+    return ["name", "email", "password", "signup", "signin"];
+  }
 
-      FocusBorder: {
-        x: -3,
-        y: -3,
-        w: 906,
-        h: 96,
-        rect: true,
-        color: Colors.authAccent,
-        shader: { type: Lightning.shaders.RoundedRectangle, radius: 14 },
-        alpha: 0,
-        zIndex: -1,
-      },
-
-      Label: {
-        x: 30,
-        y: 18,
-        text: {
-          text: label,
-          fontSize: FontSize.Small,
-          textColor: Colors.textTertiary,
-          fontFace: FontFamily.Default,
-        },
-      },
-
-      Value: {
-        x: 30,
-        y: 50,
-        text: {
-          text: placeholder,
-          fontSize: 28,
-          textColor: Colors.textQuaternary,
-          fontFace: FontFamily.Default,
-        },
-      },
+  protected getFieldName(fieldType: string): string {
+    const fieldMap: Record<string, string> = {
+      name: "NameField",
+      email: "EmailField",
+      password: "PasswordField",
+      signup: "SignUpButton",
+      signin: "SignInButton",
     };
+    return fieldMap[fieldType] || "";
+  }
+
+  protected getKeyboardTitle(fieldType: string): string {
+    const titleMap: Record<string, string> = {
+      name: "Enter your name",
+      email: "Enter your email",
+      password: "Enter your password",
+    };
+    return titleMap[fieldType] || "";
+  }
+
+  protected async handleSubmit(): Promise<void> {
+    await this._handleSignUp();
+  }
+
+  protected handleAlternateAction(): void {
+    this.fireAncestors("$navigateToSignIn");
   }
 
   private static _createPasswordRule(yPos: number, ruleText: string): object {
@@ -327,7 +304,7 @@ export default class EmailSignUpTab extends Lightning.Component {
         w: 38,
         h: 38,
         rect: true,
-        color: 0x30ffffff,
+        color: Colors.passwordCheckInactive,
         shader: { type: Lightning.shaders.RoundedRectangle, radius: 19 },
 
         CheckmarkInner: {
@@ -336,7 +313,7 @@ export default class EmailSignUpTab extends Lightning.Component {
           w: 30,
           h: 30,
           rect: true,
-          color: 0x25ffffff,
+          color: Colors.passwordCheckInactiveInner,
           shader: { type: Lightning.shaders.RoundedRectangle, radius: 15 },
 
           Icon: {
@@ -347,7 +324,7 @@ export default class EmailSignUpTab extends Lightning.Component {
               text: "✓",
               fontSize: 22,
               fontStyle: FontStyle.Bold,
-              textColor: 0x40ffffff,
+              textColor: Colors.passwordCheckInactiveIcon,
               fontFace: FontFamily.Default,
             },
           },
@@ -360,67 +337,13 @@ export default class EmailSignUpTab extends Lightning.Component {
         text: {
           text: ruleText,
           fontSize: 28,
-          textColor: 0x60ffffff,
+          textColor: Colors.passwordCheckInactiveText,
           fontFace: FontFamily.Default,
         },
       },
     };
   }
 
-  _getFocused(): Lightning.Component {
-    if (this.showKeyboard) {
-      const keyboardContainer = this.tag("KeyboardContainer");
-      if (keyboardContainer) {
-        const keyboard = keyboardContainer.tag("KeyboardComponent");
-        if (keyboard) {
-          return keyboard as Lightning.Component;
-        }
-      }
-    }
-    return this;
-  }
-
-  _handleUp(): boolean {
-    if (this.showKeyboard) return false;
-
-    const focusOrder: FocusedElement[] = [
-      "name",
-      "email",
-      "password",
-      "signup",
-      "signin",
-    ];
-
-    const currentIndex = focusOrder.indexOf(this.focusedElement);
-    if (currentIndex > 0) {
-      this.focusedElement = focusOrder[currentIndex - 1];
-      this._updateFocus();
-      return true;
-    }
-
-    this.fireAncestors("$focusBackToTab");
-    return true;
-  }
-
-  _handleDown(): boolean {
-    if (this.showKeyboard) return false;
-
-    const focusOrder: FocusedElement[] = [
-      "name",
-      "email",
-      "password",
-      "signup",
-      "signin",
-    ];
-
-    const currentIndex = focusOrder.indexOf(this.focusedElement);
-    if (currentIndex < focusOrder.length - 1) {
-      this.focusedElement = focusOrder[currentIndex + 1];
-      this._updateFocus();
-      return true;
-    }
-    return false;
-  }
 
   _handleEnter(): boolean {
     if (
@@ -434,24 +357,16 @@ export default class EmailSignUpTab extends Lightning.Component {
 
     if (this.focusedElement === "signup") {
       if (!this.isLoading) {
-        void this._handleSignUp();
+        void this.handleSubmit();
       }
       return true;
     }
 
     if (this.focusedElement === "signin") {
-      this.fireAncestors("$navigateToSignIn");
+      this.handleAlternateAction();
       return true;
     }
 
-    return false;
-  }
-
-  _handleBack(): boolean {
-    if (this.showKeyboard) {
-      this._hideKeyboard();
-      return true;
-    }
     return false;
   }
 
@@ -531,167 +446,7 @@ export default class EmailSignUpTab extends Lightning.Component {
     this._hideKeyboard();
   }
 
-  private _showKeyboard(): void {
-    this.showKeyboard = true;
-
-    const overlay = this.tag("KeyboardOverlay");
-    const keyboardContainer = this.tag("KeyboardContainer");
-
-    if (overlay) {
-      overlay.patch({ visible: true });
-      overlay.setSmooth("alpha", 1, { duration: 0.3 });
-    }
-
-    if (keyboardContainer) {
-      keyboardContainer.patch({ visible: true });
-      keyboardContainer.setSmooth("alpha", 1, { duration: 0.3 });
-
-      const header = keyboardContainer.tag("Header");
-      if (header) {
-        const title = header.tag("Title");
-        if (title && title.text) {
-          if (this.focusedElement === "name") {
-            title.text.text = "Enter your name";
-          } else if (this.focusedElement === "email") {
-            title.text.text = "Enter your email";
-          } else if (this.focusedElement === "password") {
-            title.text.text = "Enter your password";
-          }
-        }
-      }
-
-      this._updateKeyboardDisplay();
-    }
-
-    this.stage.update();
-  }
-
-  private _hideKeyboard(): void {
-    this.showKeyboard = false;
-
-    const overlay = this.tag("KeyboardOverlay");
-    const keyboardContainer = this.tag("KeyboardContainer");
-
-    if (overlay) {
-      overlay.setSmooth("alpha", 0, { duration: 0.3 });
-      setTimeout(() => {
-        overlay.patch({ visible: false });
-      }, 300);
-    }
-
-    if (keyboardContainer) {
-      keyboardContainer.setSmooth("alpha", 0, { duration: 0.3 });
-      setTimeout(() => {
-        keyboardContainer.patch({ visible: false });
-      }, 300);
-    }
-
-    this._updateFieldDisplay();
-  }
-
-  private _updateKeyboardDisplay(): void {
-    const keyboardContainer = this.tag("KeyboardContainer");
-    if (!keyboardContainer) return;
-
-    const inputDisplay = keyboardContainer.tag("InputDisplay");
-    const header = keyboardContainer.tag("Header");
-    if (!inputDisplay || !header) return;
-
-    const inputText = inputDisplay.tag("InputText");
-    const placeholder = inputDisplay.tag("Placeholder");
-    const title = header.tag("Title");
-
-    let displayValue = "";
-    let titleText = "";
-
-    if (this.focusedElement === "name") {
-      displayValue = this.nameValue;
-      titleText = "Name";
-    } else if (this.focusedElement === "email") {
-      displayValue = this.emailValue;
-      titleText = "Email";
-    } else if (this.focusedElement === "password") {
-      displayValue = "\u25CF".repeat(this.passwordValue.length);
-      titleText = "Password";
-    }
-
-    if (title && title.text) {
-      title.text.text = titleText;
-    }
-
-    if (placeholder) {
-      placeholder.patch({
-        alpha: displayValue.length > 0 ? 0 : 1,
-      });
-    }
-
-    if (inputText) {
-      inputText.patch({
-        text: {
-          text: displayValue,
-        },
-      });
-    }
-
-    this.stage.update();
-  }
-
-  private _updateFieldDisplay(): void {
-    const formContainer = this.tag("FormContainer");
-    if (!formContainer) return;
-
-    const nameField = formContainer.tag("NameField");
-    const emailField = formContainer.tag("EmailField");
-    const passwordField = formContainer.tag("PasswordField");
-
-    if (nameField) {
-      const nameValue = nameField.tag("Value");
-      if (nameValue) {
-        nameValue.patch({
-          text: {
-            text: this.nameValue || "Warren Buffett",
-            textColor: this.nameValue
-              ? Colors.textPrimary
-              : Colors.textQuaternary,
-          },
-        });
-      }
-    }
-
-    if (emailField) {
-      const emailValue = emailField.tag("Value");
-      if (emailValue) {
-        emailValue.patch({
-          text: {
-            text: this.emailValue || "investor@wallstreet.com",
-            textColor: this.emailValue
-              ? Colors.textPrimary
-              : Colors.textQuaternary,
-          },
-        });
-      }
-    }
-
-    if (passwordField) {
-      const passwordValue = passwordField.tag("Value");
-      if (passwordValue) {
-        passwordValue.patch({
-          text: {
-            text: this.passwordValue
-              ? "\u2022".repeat(this.passwordValue.length)
-              : "••••••••",
-            textColor: this.passwordValue
-              ? Colors.textPrimary
-              : Colors.textQuaternary,
-          },
-        });
-      }
-    }
-
-    this.stage.update();
-  }
-
-  private _updateFocus(): void {
+  protected _updateFocus(): void {
     const formContainer = this.tag("FormContainer");
     if (!formContainer) return;
 
@@ -758,7 +513,7 @@ export default class EmailSignUpTab extends Lightning.Component {
     });
   }
 
-  private _addCharacter(char: string): void {
+  protected _addCharacter(char: string): void {
     if (this.focusedElement === "name") {
       this.nameValue += char;
     } else if (this.focusedElement === "email") {
@@ -768,15 +523,12 @@ export default class EmailSignUpTab extends Lightning.Component {
       this._validatePassword();
     }
 
-    // Update both keyboard display (if shown) and field display
-    if (this.showKeyboard) {
-      this._updateKeyboardDisplay();
-    } else {
-      this._updateFieldDisplay();
-    }
+    this._updateKeyboardDisplay();
+    this._updateFieldDisplay();
+    this._hideBackendError();
   }
 
-  private _deleteCharacter(): void {
+  protected _deleteCharacter(): void {
     if (this.focusedElement === "name" && this.nameValue.length > 0) {
       this.nameValue = this.nameValue.slice(0, -1);
     } else if (this.focusedElement === "email" && this.emailValue.length > 0) {
@@ -789,15 +541,12 @@ export default class EmailSignUpTab extends Lightning.Component {
       this._validatePassword();
     }
 
-    // Update both keyboard display (if shown) and field display
-    if (this.showKeyboard) {
-      this._updateKeyboardDisplay();
-    } else {
-      this._updateFieldDisplay();
-    }
+    this._updateKeyboardDisplay();
+    this._updateFieldDisplay();
+    this._hideBackendError();
   }
 
-  private _clearField(): void {
+  protected _clearField(): void {
     if (this.focusedElement === "name") {
       this.nameValue = "";
     } else if (this.focusedElement === "email") {
@@ -807,6 +556,8 @@ export default class EmailSignUpTab extends Lightning.Component {
       this._validatePassword();
     }
     this._updateKeyboardDisplay();
+    this._updateFieldDisplay();
+    this._hideBackendError();
   }
 
   private _validatePassword(): void {
@@ -842,23 +593,23 @@ export default class EmailSignUpTab extends Lightning.Component {
         const checkmarkInner = checkmarkContainer.tag("CheckmarkInner");
 
         checkmarkContainer.patch({
-          color: valid ? Colors.authAccent : 0x30ffffff,
+          color: valid ? Colors.authAccent : Colors.passwordCheckInactive,
         });
 
         if (checkmarkInner) {
           checkmarkInner.patch({
-            color: valid ? Colors.authAccentHover : 0x25ffffff,
+            color: valid ? Colors.authAccentHover : Colors.passwordCheckInactiveInner,
           });
 
           const icon = checkmarkInner.tag("Icon");
           if (icon && icon.text) {
-            icon.text.textColor = valid ? 0xff000000 : 0x40ffffff;
+            icon.text.textColor = valid ? Colors.passwordCheckActiveIcon : Colors.passwordCheckInactiveIcon;
           }
         }
       }
 
       if (text && text.text) {
-        text.text.textColor = valid ? Colors.authAccent : 0x60ffffff;
+        text.text.textColor = valid ? Colors.authAccent : Colors.passwordCheckInactiveText;
       }
     });
 
@@ -929,142 +680,7 @@ export default class EmailSignUpTab extends Lightning.Component {
     }
   }
 
-  private _showBackendError(message: string): void {
-    const formContainer = this.tag("FormContainer");
-    if (!formContainer) return;
-
-    const errorMessage = formContainer.tag("BackendErrorMessage");
-    if (errorMessage && errorMessage.text) {
-      errorMessage.text.text = message;
-      errorMessage.setSmooth("alpha", 1, { duration: 0.3 });
-    }
-  }
-
-  private _hideBackendError(): void {
-    const formContainer = this.tag("FormContainer");
-    if (!formContainer) return;
-
-    const errorMessage = formContainer.tag("BackendErrorMessage");
-    if (errorMessage) {
-      errorMessage.setSmooth("alpha", 0, { duration: 0.3 });
-    }
-  }
-
-  private _shakeField(fieldName: string): void {
-    if (this.shakingFields.has(fieldName)) {
-      return;
-    }
-
-    const formContainer = this.tag("FormContainer");
-    if (!formContainer) {
-      return;
-    }
-
-    const field = formContainer.tag(fieldName);
-    if (!field) {
-      return;
-    }
-
-    // Store original position on first shake
-    if (!this.fieldOriginalPositions.has(fieldName)) {
-      this.fieldOriginalPositions.set(fieldName, field.x || 0);
-    }
-
-    const originalX = this.fieldOriginalPositions.get(fieldName) || 0;
-    this.shakingFields.add(fieldName);
-
-    // Force field back to original position before shaking
-    field.patch({ x: originalX });
-
-    field.setSmooth("x", originalX + 15, { duration: 0.1 });
-    setTimeout(() => {
-      field.setSmooth("x", originalX - 15, { duration: 0.1 });
-    }, 100);
-    setTimeout(() => {
-      field.setSmooth("x", originalX + 10, { duration: 0.1 });
-    }, 200);
-    setTimeout(() => {
-      field.setSmooth("x", originalX - 10, { duration: 0.1 });
-    }, 300);
-    setTimeout(() => {
-      field.setSmooth("x", originalX, { duration: 0.1 });
-      this.shakingFields.delete(fieldName);
-    }, 400);
-  }
-
-  private _showErrorGlow(fieldName: string): void {
-    const formContainer = this.tag("FormContainer");
-    if (!formContainer) {
-      return;
-    }
-
-    const field = formContainer.tag(fieldName);
-    if (!field) {
-      return;
-    }
-
-    const border = field.tag("FocusBorder");
-    if (!border) {
-      return;
-    }
-
-    // Clear any existing timeout for this field
-    const existingTimeout = this.errorGlowTimeouts.get(fieldName);
-    if (existingTimeout) {
-      clearTimeout(existingTimeout);
-      this.errorGlowTimeouts.delete(fieldName);
-    }
-
-    const fieldNameMap: Record<string, FocusedElement> = {
-      NameField: "name",
-      EmailField: "email",
-      PasswordField: "password",
-    };
-
-    const fieldElement = fieldNameMap[fieldName];
-
-    // Always add to errorFields and show red border immediately
-    this.errorFields.add(fieldName);
-
-    // Force red border immediately, regardless of focus state
-    border.patch({
-      color: 0xffef4444,
-      shader: {
-        type: Lightning.shaders.RoundedRectangle,
-        radius: 14,
-      },
-      alpha: 1,
-    });
-
-    // Set timeout to hide the glow after 1 second
-    const timeoutId = setTimeout(() => {
-      // Only proceed if this is still the active timeout for this field
-      if (this.errorGlowTimeouts.get(fieldName) === timeoutId) {
-        this.errorFields.delete(fieldName);
-        this.errorGlowTimeouts.delete(fieldName);
-
-        // If not focused, fade out the border
-        if (this.focusedElement !== fieldElement) {
-          border.setSmooth("alpha", 0, { duration: 0.3 });
-          setTimeout(() => {
-            border.patch({ color: Colors.authAccent });
-          }, 300);
-        } else {
-          // If focused, just reset to green immediately
-          border.patch({ color: Colors.authAccent });
-        }
-      }
-    }, 1000);
-
-    this.errorGlowTimeouts.set(fieldName, timeoutId);
-  }
-
-  private _isValidEmail(email: string): boolean {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  }
-
-  private _setLoadingState(loading: boolean): void {
+  protected _setLoadingState(loading: boolean): void {
     this.isLoading = loading;
     const formContainer = this.tag("FormContainer");
     if (!formContainer) return;
@@ -1099,44 +715,7 @@ export default class EmailSignUpTab extends Lightning.Component {
   }
 
   _focus(): void {
-    // Focus first field when user navigates into the form
     this.focusedElement = "name";
     this._updateFocus();
-  }
-
-  _clearAllFocus(): void {
-    const formContainer = this.tag("FormContainer");
-    if (!formContainer) return;
-
-    const elements: string[] = [
-      "NameField",
-      "EmailField",
-      "PasswordField",
-      "SignUpButton",
-      "SignInButton",
-    ];
-
-    elements.forEach((tag) => {
-      const element = formContainer.tag(tag);
-      if (!element) return;
-
-      if (tag === "SignInButton") {
-        const underline = element.tag("Underline");
-        if (underline) {
-          underline.setSmooth("alpha", 0, { duration: 0.2 });
-        }
-      } else if (tag === "SignUpButton") {
-        element.patch({
-          color: Colors.authAccent,
-        });
-      } else {
-        const border = element.tag("FocusBorder");
-        if (border) {
-          border.setSmooth("alpha", 0, { duration: 0.2 });
-        }
-      }
-    });
-
-    this.stage.update();
   }
 }

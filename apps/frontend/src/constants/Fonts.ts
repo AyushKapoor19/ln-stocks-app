@@ -1,16 +1,10 @@
 /**
- * Font Constants for Lightning Stocks App
- *
- * All font sizes are defined in 1080p coordinates (pixels).
- * Lightning.js automatically scales based on actual device resolution.
+ * Font Constants
  */
 export enum FontSize {
-  // Extra sizes
-  XXLarge = 84, // Main stock price
-  XLarge = 50, // Stock symbol/name
-  Large = 28, // Stock change, body text
-
-  // Standard sizes
+  XXLarge = 84,
+  XLarge = 50,
+  Large = 28,
   TitleXL = 92,
   TitleL = 62,
   TitleM = 48,
@@ -22,18 +16,14 @@ export enum FontSize {
   Button = 28,
   Label = 24,
   Caption = 22,
-  Medium = 22, // Arrow and medium elements
-  Small = 20, // Time buttons, small text
-  XSmall = 13, // Company name in search results
+  Medium = 22,
+  Small = 20,
+  XSmall = 13,
   StockPrice = 48,
   StockChange = 28,
   StockSymbol = 50,
 }
 
-/**
- * Font Style Constants
- * Maps to CSS font-weight values and font-style
- */
 export enum FontStyle {
   Thin = "100",
   Light = "300",
@@ -48,9 +38,6 @@ export enum FontStyle {
   Caption = "normal",
 }
 
-/**
- * Line Height Constants (in pixels for 1080p)
- */
 export enum LineHeight {
   Tight = 1.2,
   Normal = 1.5,
@@ -58,9 +45,6 @@ export enum LineHeight {
   Loose = 2.0,
 }
 
-/**
- * Font Family Constants
- */
 export enum FontFamily {
   Default = "Avenir Next",
   Title = "Avenir Next",

@@ -41,7 +41,7 @@ export default class AccountScreen extends BaseScreen {
             text: "Account Overview",
             fontSize: 64,
             fontStyle: FontStyle.Bold,
-            textColor: 0xffffffff,
+            textColor: Colors.white,
             fontFace: FontFamily.Default,
           },
         },
@@ -51,7 +51,7 @@ export default class AccountScreen extends BaseScreen {
           text: {
             text: "Manage your trading profile and account settings",
             fontSize: 26,
-            textColor: 0xff888888,
+            textColor: Colors.textQuaternary,
             fontFace: FontFamily.Default,
           },
         },
@@ -61,7 +61,7 @@ export default class AccountScreen extends BaseScreen {
           w: 1680,
           h: 2,
           rect: true,
-          color: 0x33ffffff,
+          color: Colors.separator,
         },
       },
 
@@ -77,7 +77,7 @@ export default class AccountScreen extends BaseScreen {
             text: "PERSONAL INFORMATION",
             fontSize: 20,
             fontStyle: FontStyle.Bold,
-            textColor: 0xff666666,
+            textColor: Colors.sectionTitleColor,
             letterSpacing: 2,
             fontFace: FontFamily.Default,
           },
@@ -93,7 +93,7 @@ export default class AccountScreen extends BaseScreen {
             text: {
               text: "Full Name",
               fontSize: 22,
-              textColor: 0xff888888,
+              textColor: Colors.textQuaternary,
               fontFace: FontFamily.Default,
             },
           },
@@ -104,7 +104,7 @@ export default class AccountScreen extends BaseScreen {
               text: "—",
               fontSize: 36,
               fontStyle: FontStyle.Bold,
-              textColor: 0xffffffff,
+              textColor: Colors.white,
               fontFace: FontFamily.Default,
             },
           },
@@ -114,7 +114,7 @@ export default class AccountScreen extends BaseScreen {
             w: 800,
             h: 1,
             rect: true,
-            color: 0x33ffffff,
+            color: Colors.separator,
           },
         },
 
@@ -128,7 +128,7 @@ export default class AccountScreen extends BaseScreen {
             text: {
               text: "Email Address",
               fontSize: 22,
-              textColor: 0xff888888,
+              textColor: Colors.textQuaternary,
               fontFace: FontFamily.Default,
             },
           },
@@ -139,7 +139,7 @@ export default class AccountScreen extends BaseScreen {
               text: "—",
               fontSize: 36,
               fontStyle: FontStyle.Bold,
-              textColor: 0xffffffff,
+              textColor: Colors.white,
               fontFace: FontFamily.Default,
             },
           },
@@ -149,7 +149,7 @@ export default class AccountScreen extends BaseScreen {
             w: 800,
             h: 1,
             rect: true,
-            color: 0x33ffffff,
+            color: Colors.separator,
           },
         },
       },
@@ -166,7 +166,7 @@ export default class AccountScreen extends BaseScreen {
             text: "ACCOUNT STATUS",
             fontSize: 20,
             fontStyle: FontStyle.Bold,
-            textColor: 0xff666666,
+            textColor: Colors.sectionTitleColor,
             letterSpacing: 2,
             fontFace: FontFamily.Default,
           },
@@ -186,7 +186,7 @@ export default class AccountScreen extends BaseScreen {
               text: {
                 text: "Status",
                 fontSize: 22,
-                textColor: 0xff888888,
+                textColor: Colors.textQuaternary,
                 fontFace: FontFamily.Default,
               },
             },
@@ -197,7 +197,7 @@ export default class AccountScreen extends BaseScreen {
                 text: "Active",
                 fontSize: 32,
                 fontStyle: FontStyle.Bold,
-                textColor: 0xff10b981,
+                textColor: Colors.success,
                 fontFace: FontFamily.Default,
               },
             },
@@ -208,7 +208,7 @@ export default class AccountScreen extends BaseScreen {
               w: 16,
               h: 16,
               rect: true,
-              color: 0xff10b981,
+              color: Colors.success,
               shader: { type: Lightning.shaders.RoundedRectangle, radius: 8 },
             },
           },
@@ -223,7 +223,7 @@ export default class AccountScreen extends BaseScreen {
               text: {
                 text: "Member Since",
                 fontSize: 22,
-                textColor: 0xff888888,
+                textColor: Colors.textQuaternary,
                 fontFace: FontFamily.Default,
               },
             },
@@ -234,7 +234,7 @@ export default class AccountScreen extends BaseScreen {
                 text: "—",
                 fontSize: 32,
                 fontStyle: FontStyle.Bold,
-                textColor: 0xffffffff,
+                textColor: Colors.white,
                 fontFace: FontFamily.Default,
               },
             },
@@ -250,7 +250,7 @@ export default class AccountScreen extends BaseScreen {
               text: {
                 text: "Last Login",
                 fontSize: 22,
-                textColor: 0xff888888,
+                textColor: Colors.textQuaternary,
                 fontFace: FontFamily.Default,
               },
             },
@@ -261,7 +261,7 @@ export default class AccountScreen extends BaseScreen {
                 text: "—",
                 fontSize: 32,
                 fontStyle: FontStyle.Bold,
-                textColor: 0xffffffff,
+                textColor: Colors.white,
                 fontFace: FontFamily.Default,
               },
             },
@@ -273,7 +273,7 @@ export default class AccountScreen extends BaseScreen {
           w: 1680,
           h: 1,
           rect: true,
-          color: 0x33ffffff,
+          color: Colors.separator,
         },
       },
 
@@ -289,7 +289,7 @@ export default class AccountScreen extends BaseScreen {
             text: "ACTIONS",
             fontSize: 20,
             fontStyle: FontStyle.Bold,
-            textColor: 0xff666666,
+            textColor: Colors.sectionTitleColor,
             letterSpacing: 2,
             fontFace: FontFamily.Default,
           },
@@ -304,7 +304,7 @@ export default class AccountScreen extends BaseScreen {
             w: 220,
             h: 80,
             rect: true,
-            color: 0xff333333,
+            color: Colors.buttonBackgroundUnfocused,
             alpha: 0.5,
             shader: { type: Lightning.shaders.RoundedRectangle, radius: 12 },
 
@@ -316,7 +316,7 @@ export default class AccountScreen extends BaseScreen {
                 text: "← Back",
                 fontSize: 32,
                 fontStyle: FontStyle.Bold,
-                textColor: 0xff999999,
+                textColor: Colors.buttonTextUnfocused,
                 fontFace: FontFamily.Default,
               },
             },
@@ -328,7 +328,7 @@ export default class AccountScreen extends BaseScreen {
             w: 340,
             h: 80,
             rect: true,
-            color: 0xff992222,
+            color: Colors.dangerButtonUnfocused,
             alpha: 0.5,
             shader: { type: Lightning.shaders.RoundedRectangle, radius: 12 },
 
@@ -340,7 +340,7 @@ export default class AccountScreen extends BaseScreen {
                 text: "Sign Out",
                 fontSize: 32,
                 fontStyle: FontStyle.Bold,
-                textColor: 0xffcccccc,
+                textColor: Colors.buttonTextLight,
                 fontFace: FontFamily.Default,
               },
             },
@@ -439,49 +439,46 @@ export default class AccountScreen extends BaseScreen {
     const buttonContainer = actionsSection.tag("ButtonContainer");
     if (!buttonContainer) return;
 
-    const backButton = buttonContainer.tag("BackButton");
-    const signOutButton = buttonContainer.tag("SignOutButton");
+    this._updateButtonFocus(
+      buttonContainer.tag("BackButton"),
+      "back",
+      Colors.buttonBackgroundFocused,
+      Colors.buttonBackgroundUnfocused,
+      Colors.buttonTextFocused,
+      Colors.buttonTextUnfocused
+    );
 
-    // Back button focus states
-    if (backButton) {
-      const backLabel = backButton.tag("Label");
+    this._updateButtonFocus(
+      buttonContainer.tag("SignOutButton"),
+      "signout",
+      Colors.dangerButtonFocused,
+      Colors.dangerButtonUnfocused,
+      Colors.buttonTextFocused,
+      Colors.buttonTextLight
+    );
+  }
 
-      if (this.focusedButton === "back") {
-        backButton.setSmooth("alpha", 1, { duration: 0.2 });
-        backButton.setSmooth("color", 0xff666666, { duration: 0.2 });
-        backButton.setSmooth("scale", 1.05, { duration: 0.2 });
-        if (backLabel && backLabel.text) {
-          backLabel.text.textColor = 0xffffffff;
-        }
-      } else {
-        backButton.setSmooth("alpha", 0.5, { duration: 0.2 });
-        backButton.setSmooth("color", 0xff333333, { duration: 0.2 });
-        backButton.setSmooth("scale", 1, { duration: 0.2 });
-        if (backLabel && backLabel.text) {
-          backLabel.text.textColor = 0xff999999;
-        }
-      }
-    }
+  private _updateButtonFocus(
+    button: Lightning.Component | undefined,
+    buttonType: "signout" | "back",
+    focusedColor: number,
+    unfocusedColor: number,
+    focusedTextColor: number,
+    unfocusedTextColor: number
+  ): void {
+    if (!button) return;
 
-    // Sign Out button focus states
-    if (signOutButton) {
-      const signOutLabel = signOutButton.tag("Label");
+    const label = button.tag("Label");
+    const isFocused = this.focusedButton === buttonType;
 
-      if (this.focusedButton === "signout") {
-        signOutButton.setSmooth("alpha", 1, { duration: 0.2 });
-        signOutButton.setSmooth("color", 0xffff4444, { duration: 0.2 });
-        signOutButton.setSmooth("scale", 1.05, { duration: 0.2 });
-        if (signOutLabel && signOutLabel.text) {
-          signOutLabel.text.textColor = 0xffffffff;
-        }
-      } else {
-        signOutButton.setSmooth("alpha", 0.5, { duration: 0.2 });
-        signOutButton.setSmooth("color", 0xff992222, { duration: 0.2 });
-        signOutButton.setSmooth("scale", 1, { duration: 0.2 });
-        if (signOutLabel && signOutLabel.text) {
-          signOutLabel.text.textColor = 0xffcccccc;
-        }
-      }
+    button.setSmooth("alpha", isFocused ? 1 : 0.5, { duration: 0.2 });
+    button.setSmooth("color", isFocused ? focusedColor : unfocusedColor, {
+      duration: 0.2,
+    });
+    button.setSmooth("scale", isFocused ? 1.05 : 1, { duration: 0.2 });
+
+    if (label && label.text) {
+      label.text.textColor = isFocused ? focusedTextColor : unfocusedTextColor;
     }
   }
 
