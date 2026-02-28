@@ -326,6 +326,10 @@ The Lightning.js application is designed for TV interfaces and runs as a web app
 
 ## Technology Stack
 
+<table>
+<tr>
+<td valign="top" width="33%">
+
 **Backend**
 - Fastify 4.28.1
 - PostgreSQL (pg 8.11.3)
@@ -333,15 +337,25 @@ The Lightning.js application is designed for TV interfaces and runs as a web app
 - bcrypt 5.1.1
 - qrcode 1.5.3
 
+</td>
+<td valign="top" width="33%">
+
 **Frontend (TV)**
 - Lightning.js 5.5.6
 - Chart.js 4.5.1
 - Vite 4.5.5
 
+</td>
+<td valign="top" width="33%">
+
 **Mobile Web**
 - Next.js 13.5.6
 - React 18.2.0
 - Tailwind CSS 3.4.0
+
+</td>
+</tr>
+</table>
 
 ## Testing
 
@@ -387,10 +401,3 @@ MIT License - see [LICENSE](LICENSE) file for details.
 
 This is a personal portfolio project. Issues, feedback, and discussions are welcome through the [issues page](https://github.com/AyushKapoor19/ln-stocks-app/issues).
 
----
-
-<div align="center">
-
-**Built by [Ayush Kapoor](https://github.com/AyushKapoor19)**
-
-</div>
