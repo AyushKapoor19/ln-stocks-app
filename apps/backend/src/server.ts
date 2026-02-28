@@ -43,10 +43,12 @@ logApiKeysStatus();
 await testConnection();
 
 // Initialize stock index for production-grade search (BLOCKING)
-
 try {
   await stockIndexService.initialize();
-} catch (error) {}
+  console.log("Stock index service initialized");
+} catch (error) {
+  console.error("Failed to initialize stock index service:", error);
+}
 
 // Register stock data routes
 app.get("/", healthRoute);
