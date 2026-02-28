@@ -292,35 +292,19 @@ utils/          # Utilities
 
 ## Security Features
 
-<table>
-<tr>
-<td width="50%">
-
 - **JWT-based authentication**
 - **Bcrypt password hashing** (10 rounds)
 - **Parameterized SQL queries**
 - **Environment-based secrets**
-
-</td>
-<td width="50%">
-
 - **SSL database connections**
 - **CORS configuration**
 - **Device code authentication flow**
 
-</td>
-</tr>
-</table>
-
 ## Deployment
 
-<table>
-<tr>
-<td>
+**Backend - Render**
 
-### Backend - Render
-
-**Live API:** `https://ln-stocks-backend.onrender.com`
+Live API: `https://ln-stocks-backend.onrender.com`
 
 ```bash
 # Build command
@@ -330,58 +314,34 @@ cd apps/backend && npm install && npm run build
 cd apps/backend && npm start
 ```
 
-</td>
-<td>
+**Mobile Web (Authentication Interface) - Vercel**
 
-### Mobile Web (Authentication Interface) - Vercel
-
-**Live URL:** `https://ln-stocks-web.vercel.app/activate`
+Live URL: `https://ln-stocks-web.vercel.app/activate`
 
 Used exclusively for TV device authentication via QR code or device code entry. Not a standalone stock tracking app.
 
-</td>
-</tr>
-</table>
-
-### Frontend (TV Application)
+**Frontend (TV Application)**
 
 The Lightning.js application is designed for TV interfaces and runs as a web application. It can be accessed via browser or deployed to hosting platforms.
 
 ## Technology Stack
 
-<table>
-<tr>
-<td width="33%">
+**Backend**
+- Fastify 4.28.1
+- PostgreSQL (pg 8.11.3)
+- jsonwebtoken 9.0.2
+- bcrypt 5.1.1
+- qrcode 1.5.3
 
-### Backend
+**Frontend (TV)**
+- Lightning.js 5.5.6
+- Chart.js 4.5.1
+- Vite 4.5.5
 
-- **Fastify** 4.28.1
-- **PostgreSQL** (pg 8.11.3)
-- **jsonwebtoken** 9.0.2
-- **bcrypt** 5.1.1
-- **qrcode** 1.5.3
-
-</td>
-<td width="33%">
-
-### Frontend (TV)
-
-- **Lightning.js** 5.5.6
-- **Chart.js** 4.5.1
-- **Vite** 4.5.5
-
-</td>
-<td width="33%">
-
-### Mobile Web
-
-- **Next.js** 13.5.6
-- **React** 18.2.0
-- **Tailwind CSS** 3.4.0
-
-</td>
-</tr>
-</table>
+**Mobile Web**
+- Next.js 13.5.6
+- React 18.2.0
+- Tailwind CSS 3.4.0
 
 ## Testing
 
