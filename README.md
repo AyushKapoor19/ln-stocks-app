@@ -1,112 +1,40 @@
-<div align="center">
-
 # LN Stocks App
 
-### Real-time stock market tracking for TV devices
+Stock tracking app for TV devices. Built this to learn Lightning.js and work with TV interfaces.
 
-Built with TypeScript • Lightning.js • Next.js • Fastify
+Tracks real-time stock prices, lets you search with a TV remote, and handles authentication via QR code from your phone.
 
-[![Node.js](https://img.shields.io/badge/Node.js-18.20.8-339933?style=flat&logo=node.js&logoColor=white)](https://nodejs.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.6.2-3178C6?style=flat&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+## Screenshots
 
-[API Docs](#api-endpoints) • [Report Bug](https://github.com/AyushKapoor19/ln-stocks-app/issues)
+Home screen with stock charts:
 
-</div>
+![Home Screen](./docs/screenshots/tv-home-screen.png)
 
----
+Search with on-screen keyboard:
 
-## Highlights
+![Search Screen](./docs/screenshots/tv-search-screen.png)
 
-<div align="center">
+QR code authentication:
 
-|   **TV Application**   |  **Real-Time Data**  | **Device Authentication** | **Interactive Charts** |
-| :--------------------: | :------------------: | :-----------------------: | :--------------------: |
-| Lightning.js Framework | Finnhub + Polygon.io |    Mobile QR Code Flow    | Chart.js Visualization |
+![Device Auth](./docs/screenshots/tv-device-auth.png)
 
-</div>
+Or sign up with email:
 
-## Features
+![Email Signup](./docs/screenshots/tv-email-signup.png)
 
-### TV Application - Real-Time Tracking
+## Tech
 
-<p align="center">
-  <img src="./docs/screenshots/tv-home-screen.png" alt="Home Screen" width="800">
-</p>
+**Backend:** Fastify + PostgreSQL with JWT auth  
+**TV App:** Lightning.js + Chart.js  
+**Auth UI:** Next.js for the phone-based login flow  
+**Market Data:** Finnhub and Polygon.io APIs
 
-Interactive stock charts with market overview, stock details, and watchlist management. Supports multiple time periods (1M, 3M, 1Y) with Chart.js visualizations.
+## Setup
 
----
-
-### Stock Search with On-Screen Keyboard
-
-<p align="center">
-  <img src="./docs/screenshots/tv-search-screen.png" alt="Search Screen" width="800">
-</p>
-
-Stock search with indexed popular symbols and on-screen keyboard navigation for TV remotes.
-
----
-
-### Device Code Authentication
-
-<p align="center">
-  <img src="./docs/screenshots/tv-device-auth.png" alt="Device Authentication" width="800">
-</p>
-
-Secure TV authentication via mobile device using QR code scanning or manual code entry. Visit the activation URL on your phone to approve.
-
----
-
-### Email Authentication
-
-<p align="center">
-  <img src="./docs/screenshots/tv-email-signup.png" alt="Email Sign Up" width="800">
-</p>
-
-Traditional email/password authentication with real-time validation and security requirements displayed on-screen.
-
-## Architecture
-
-**Monorepo structure** with three components:
-
-```
-ln-stocks-app/
-├── apps/
-│   ├── backend/        # REST API (Fastify)
-│   ├── frontend/       # TV Application (Lightning.js)
-│   └── mobile-web/     # Device Authentication Interface (Next.js)
-└── package.json        # Workspace configuration
-```
-
-### Backend
-
-- **Fastify 4.x** REST API
-- **PostgreSQL** database with dual-layer caching
-- **JWT authentication** with device code flow
-- Integration with **Finnhub** and **Polygon.io** APIs
-
-### Frontend (TV Application)
-
-- **Lightning.js 5.5.6** framework for set-top boxes
-- **Vite 4.5.5** build system
-- **Chart.js 4.5.1** visualizations
-- Multi-resolution support (720p, 1080p, 4K)
-
-### Mobile Web (Device Authentication Only)
-
-- **Next.js 13.5.6** with App Router for device code activation
-- **React 18.2.0** and **Tailwind CSS 3.4.0**
-- Purpose: QR code scanning and TV authentication via mobile device
-
-## Prerequisites
-
-- **Node.js** 18.20.8 (see `.nvmrc`)
-- **npm** 8.19.4+
-- **PostgreSQL** database
-- **Finnhub API key** - [Get one here](https://finnhub.io/)
-- **Polygon.io API key** - [Get one here](https://polygon.io/) _(Note: Polygon.io is now Massive)_
-
-## Installation
+You'll need:
+- Node.js 18.20.8
+- PostgreSQL
+- API keys from [Finnhub](https://finnhub.io/) and [Polygon.io](https://polygon.io/) (now called Massive)
 
 ```bash
 git clone https://github.com/AyushKapoor19/ln-stocks-app.git
@@ -114,290 +42,72 @@ cd ln-stocks-app
 npm install
 ```
 
-## Configuration
-
-### Backend Environment Variables
+### Configure backend
 
 Create `apps/backend/.env`:
 
 ```bash
 PORT=8787
 DATABASE_URL=postgresql://username:password@host/dbname?sslmode=require
-JWT_SECRET=<secure-random-string>
-FINNHUB_KEY=<your-finnhub-api-key>
-POLYGON_KEY=<your-polygon-api-key>
+JWT_SECRET=<your-secret>
+FINNHUB_KEY=<your-key>
+POLYGON_KEY=<your-key>
 ```
 
-### Database Setup
-
-1. Run the initial schema in your PostgreSQL database:
+Run the database migrations:
 
 ```bash
 psql -d <your-database-url> -f apps/backend/database/schema.sql
+cd apps/backend && npm run migrate
 ```
 
-2. Run migrations to add additional tables and columns:
+## Running everything
 
-```bash
-cd apps/backend
-npm run migrate
-```
-
-## Running the Application
-
-### All Services
-
+Start all services:
 ```bash
 npm run dev
 ```
 
-### Individual Services
-
-Backend:
-
+Or individually:
 ```bash
 npm run dev:backend
-```
-
-Frontend (TV):
-
-```bash
 npm run dev:frontend
+cd apps/mobile-web && npm run dev
 ```
 
-Mobile Web:
-
-```bash
-cd apps/mobile-web
-npm run dev
-```
-
-## Production Build
-
-### Backend
-
-```bash
-cd apps/backend
-npm run build
-npm start
-```
-
-### Frontend
-
-```bash
-cd apps/frontend
-npm run build
-```
-
-### Mobile Web
-
-```bash
-cd apps/mobile-web
-npm run build
-npm start
-```
-
-## API Endpoints
-
-**Base URL:** `https://ln-stocks-backend.onrender.com`
-
-<details>
-<summary><b>Market Data (v1)</b></summary>
-
-- `GET /v1/quotes?symbols=<symbols>` - Real-time quotes
-- `GET /v1/series?symbol=<symbol>&period=<period>` - Historical data
-- `GET /v1/metrics?symbols=<symbols>` - Market metrics
-
-</details>
-
-<details>
-<summary><b>Search (v1)</b></summary>
-
-- `GET /v1/search?q=<query>` - Stock search
-- `GET /v1/search/enhanced?q=<query>` - Enhanced search with index
-- `GET /v1/search/index-status` - Search index health
-
-</details>
-
-<details>
-<summary><b>Authentication</b></summary>
-
-- `POST /auth/signup` - Create account
-- `POST /auth/login` - User login
-- `GET /auth/verify` - Verify JWT token
-
-</details>
-
-<details>
-<summary><b>Device Code Authentication</b></summary>
-
-- `POST /auth/device-code/generate` - Generate device code
-- `GET /auth/device-code/status` - Check approval status
-- `POST /auth/device-code/verify` - Verify device code
-- `POST /auth/device-code/approve` - Approve with existing account
-- `POST /auth/device-code/approve-signup` - Approve with new account
-
-</details>
-
-<details>
-<summary><b>Health & Status</b></summary>
-
-- `GET /` - API information and health check
-
-</details>
-
-## Database Schema
-
-### Core Tables
-
-**users** - User accounts and authentication  
-**device_codes** - TV device authentication codes  
-**stock_series_cache** - Historical price data cache (24h TTL)
-
-## Project Structure
-
-### Backend (`apps/backend/src/`)
+## Structure
 
 ```
-routes/         # API endpoints
-services/       # Business logic
-types/          # TypeScript definitions
-utils/          # Helper functions
-constants/      # Configuration
-server.ts       # Application entry
+ln-stocks-app/
+├── apps/backend/        # API server
+├── apps/frontend/       # TV app
+└── apps/mobile-web/     # Phone auth UI
 ```
 
-### Frontend (`apps/frontend/src/`)
+## API
 
-```
-app/            # Application core
-screens/        # UI screens
-components/     # Reusable components
-services/       # API clients
-types/          # TypeScript definitions
-utils/          # Utilities
-constants/      # Configuration
-```
+Backend is live at `https://ln-stocks-backend.onrender.com`
 
-### Mobile Web (`apps/mobile-web/src/`)
+Some useful endpoints:
+- `GET /v1/quotes?symbols=AAPL,TSLA` - current prices
+- `GET /v1/series?symbol=AAPL&period=1M` - historical data
+- `GET /v1/search?q=apple` - search stocks
+- `POST /auth/signup` - create account
+- `POST /auth/login` - login
+- `POST /auth/device-code/generate` - start TV auth flow
 
-```
-app/            # Next.js pages
-components/     # React components
-services/       # API clients
-hooks/          # Custom hooks
-types/          # TypeScript definitions
-utils/          # Utilities
-```
+## How device auth works
 
-## Security Features
-
-- **JWT-based authentication**
-- **Bcrypt password hashing** (10 rounds)
-- **Parameterized SQL queries**
-- **Environment-based secrets**
-- **SSL database connections**
-- **CORS configuration**
-- **Device code authentication flow**
+TV generates a code and shows a QR code. Scan it with your phone (or manually enter the code), login or sign up, and the TV gets authenticated. Pretty straightforward.
 
 ## Deployment
 
-**Backend - Render**
+Backend runs on Render, auth UI is on Vercel (`https://ln-stocks-web.vercel.app/activate`), and the TV app is just a web app so you can host it anywhere.
 
-Live API: `https://ln-stocks-backend.onrender.com`
+## Notes
 
-```bash
-# Build command
-cd apps/backend && npm install && npm run build
-
-# Start command
-cd apps/backend && npm start
-```
-
-**Mobile Web (Authentication Interface) - Vercel**
-
-Live URL: `https://ln-stocks-web.vercel.app/activate`
-
-Used exclusively for TV device authentication via QR code or device code entry. Not a standalone stock tracking app.
-
-**Frontend (TV Application)**
-
-The Lightning.js application is designed for TV interfaces and runs as a web application. It can be accessed via browser or deployed to hosting platforms.
-
-## Technology Stack
-
-<table>
-<tr>
-<td valign="top" width="33%">
-
-**Backend**
-- Fastify 4.28.1
-- PostgreSQL (pg 8.11.3)
-- jsonwebtoken 9.0.2
-- bcrypt 5.1.1
-- qrcode 1.5.3
-
-</td>
-<td valign="top" width="33%">
-
-**Frontend (TV)**
-- Lightning.js 5.5.6
-- Chart.js 4.5.1
-- Vite 4.5.5
-
-</td>
-<td valign="top" width="33%">
-
-**Mobile Web**
-- Next.js 13.5.6
-- React 18.2.0
-- Tailwind CSS 3.4.0
-
-</td>
-</tr>
-</table>
-
-## Testing
-
-Test database connection:
-
-```bash
-cd apps/backend
-npm run test:db
-```
-
-## Environment Variables
-
-### Backend
-
-| Variable       | Description                     | Required           |
-| -------------- | ------------------------------- | ------------------ |
-| PORT           | Server port                     | No (default: 8787) |
-| DATABASE_URL   | PostgreSQL connection string    | Yes                |
-| JWT_SECRET     | JWT signing secret              | Yes                |
-| FINNHUB_KEY    | Finnhub API key                 | Yes                |
-| POLYGON_KEY    | Polygon.io API key              | Yes                |
-| MOBILE_WEB_URL | Mobile web URL for device codes | No                 |
-
-### Frontend
-
-| Variable     | Description     | Required                    |
-| ------------ | --------------- | --------------------------- |
-| VITE_API_URL | Backend API URL | No (defaults to production) |
-
-### Mobile Web (Authentication Interface)
-
-| Variable            | Description     | Required                    |
-| ------------------- | --------------- | --------------------------- |
-| NEXT_PUBLIC_API_URL | Backend API URL | No (defaults to production) |
-
----
+Stock data gets cached in Postgres for 24h. Passwords use bcrypt with 10 rounds. Device codes expire after 10 minutes so you gotta be quick with that phone scan.
 
 ## License
 
-MIT License - see [LICENSE](LICENSE) file for details.
-
-## Contributing
-
-This is a personal portfolio project. Issues, feedback, and discussions are welcome through the [issues page](https://github.com/AyushKapoor19/ln-stocks-app/issues).
-
+MIT
