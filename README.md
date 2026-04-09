@@ -1,8 +1,6 @@
 # LN Stocks App
 
-Stock tracking app for TV devices. Built this to learn Lightning.js and work with TV interfaces.
-
-Tracks real-time stock prices, lets you search with a TV remote, and handles authentication via QR code from your phone.
+Stock tracking app for TV devices. Tracks real-time stock prices, lets you search with a TV remote, and handles authentication via QR code from your phone.
 
 ## Screenshots
 
